@@ -1,0 +1,67 @@
+.header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 12px;
+    background-color: #ffffff;
+    height: 72px;
+    width: 100%;
+    font-family: "Tilt Warp", sans-serif;
+}
+.headerContent{
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    gap: 70px;
+}
+.headerLink{
+    text-decoration: none;
+    color: #1a1a1a;
+    font-size: 18px;
+    font-weight: 550;
+}
+
+#Home.active,#Horses.active, #Skills.active, #Guide.active{
+    color: #050505;
+    border-bottom: 3px solid #000000;
+    margin-top: 5px;
+    padding: 2px;
+}
+#Login{
+    padding: 12px 35px;
+    border-radius: 50px;
+    background: #e043ce;
+    background: linear-gradient(90deg, rgba(224, 67, 206, 1) 0%, rgba(212, 82, 255, 1) 100%);
+    color: white;
+    margin-right: 35px;
+}
+
+#HorseLogo{
+    width: 50px;
+    height: 50px;
+}
+
+.headerLoginSection {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-right: 35px;
+}
+
+.headerUsername {
+    color: #1a1a1a;
+    font-size: 18px;
+    font-weight: 550;
+}
+
+.logoutButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 12px 35px;
+    border-radius: 50px;
+    background: #e043ce;
+    background: linear-gradient(90deg, rgba(224, 67, 206, 1) 0%, rgba(212, 82, 255, 1) 100%);
+    color: white;
+}

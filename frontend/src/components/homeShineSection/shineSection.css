@@ -1,0 +1,94 @@
+.shineSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  margin-top: 5%;
+  overflow: hidden;
+
+}
+
+.shineSectionContent {
+  display: flex;
+  justify-content: start;
+  width: 100%;
+  height: 100%;
+}
+
+.shineSectionTitle{
+  width: 100%;
+  background-color: rgb(40, 40, 40);
+  font-size: 2.3rem;
+  text-align: center;
+  font-family: "Inder", sans-serif;
+  font-style: italic;
+  color: white;
+  padding: 15px;
+}
+
+#horseBox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    height: 100%;
+    width: 45%; 
+    background-color: rgb(213, 49, 49);
+    clip-path: polygon(0 0, 100% 0, 80% 100%, 0% 100%);
+    transition: background-color 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+@keyframes float {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate(var(--move-x), var(--move-y)) rotate(var(--rotation));
+    opacity: 0;
+  }
+}
+
+.floating-image {
+  position: absolute;
+  width: 70px;
+  height: 70px;
+  opacity: 0;
+  animation: float 6s infinite linear;
+  z-index: 1;
+  filter: brightness(1.5);
+}
+
+.floating-image:nth-child(1) { --move-x: 300px; --move-y: -200px; --rotation: 360deg; animation-duration: 12s; }
+.floating-image:nth-child(2) { --move-x: -300px; --move-y: 200px; --rotation: -360deg; animation-duration: 16s; }
+.floating-image:nth-child(3) { --move-x: 200px; --move-y: 300px; --rotation: 180deg; animation-duration: 24s; }
+.floating-image:nth-child(4) { --move-x: -200px; --move-y: -300px; --rotation: -180deg; animation-duration: 22s; }
+.floating-image:nth-child(5) { --move-x: 250px; --move-y: 250px; --rotation: 270deg; animation-duration: 10s; }
+
+.CarouselHorseImage {
+    width: 70%;
+    height: 700px;
+    object-fit: contain;
+    margin-right: 10%;
+    z-index: 2;
+    filter: drop-shadow(13px 0px 0px rgb(5, 5, 5));
+}
+
+#stylebox{
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 40%;
+  background-color: rgba(255, 255, 255, 0.285);
+  clip-path: polygon(0 0, 100% 0, 100% 30%, 0% 100%);
+  z-index: 1;
+ 
+}

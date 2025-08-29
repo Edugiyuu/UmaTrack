@@ -1,0 +1,39 @@
+.heroSection {
+    display: flex;
+    align-items: end;
+    justify-content: end;
+    position: relative;
+    flex-direction: column;
+    font-family: "Tilt Warp", sans-serif;
+}
+
+.heroSectionImg {
+    width: 97%;
+    height: 100%;
+    position: relative;
+    clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+}
+
+.overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.64);
+    pointer-events: none;
+    clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+}
+.heroSectionText {
+    position: absolute;
+    top: 32%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+}
+.titleText{
+    font-size: 60px;
+    font-weight: bold;
+    letter-spacing: 10px;
+}

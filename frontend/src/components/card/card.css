@@ -1,0 +1,57 @@
+.card{
+    display: flex;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    width: 25%;
+    height: 100%;
+}
+.cardContent{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    width: 500px;
+    height: 100%;
+    border: 1px solid #dddddd;
+    border-radius: 30px;
+    gap: 10px;
+    position: relative;
+    padding-bottom: 30px;
+   
+}
+.horseImg{
+    width: 70%;
+    height: 100%;   
+}
+.jpName {
+  position: absolute;
+  top: 65%;
+  left: -65px;
+  rotate: -90deg;
+  font-size: 1.7rem;
+}
+
+
+
+.horseName{
+    margin-top: 50px;
+    background-color: rgb(205, 205, 205);
+    text-align: center;
+    rotate: -5deg;
+    width: 101%;
+    color: white;
+    padding: 5px;
+}
+
+.SilenceSuzuka{
+    background-color: #40A245;
+}
+.ElCondorPasa{
+    background-color: #B83434;
+}
+.OguriCap{
+    background-color: #bcbcbc;
+}

@@ -1,0 +1,36 @@
+.UserProfileMain{
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    
+    font-family: "Inder", sans-serif;
+    font-size: 1.1rem;
+    color: rgb(73, 69, 65);
+    
+}
+
+.FavoriteHorse{
+    width: 25vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+    margin-left: 20px;
+    margin-top: 20px;
+
+}
+.FavoriteHorse img{
+    width: 25vw;
+    object-fit: cover;
+    object-position: 1px;
+    border-radius: 10px;
+    background-color: rgb(250, 250, 250);
+    border: 1px rgb(177, 177, 177) solid;
+    
+}
+.UserInfos{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}

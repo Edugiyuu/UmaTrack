@@ -1,0 +1,117 @@
+.CreateLoginInput {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  max-width: 55vw;
+  height: 60%;
+  margin: 13vh auto;
+  justify-content: start;
+  align-items: center;
+  background-color: #eeeeeef6;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.CreateLoginInput h2 {
+  font-family: "Tilt Warp", sans-serif;
+  letter-spacing: 2px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-family: "Inder", sans-serif;
+}
+
+.form-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+  flex-direction: column;
+  margin-left: 5%;
+  gap: 25px;
+}
+
+.form-group label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1c1c1c;
+}
+
+.form-group input {
+  padding: 12px;
+  font-size: 1.1rem;
+  width: 25vw;
+  border-radius: 8px;
+  border: 1.5px solid #c9c9c9;
+  background-color: transparent;
+  color: #030303;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+  font-family: "Inder", sans-serif;
+}
+
+.side-form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgb(236, 236, 236);
+  background-color: rgb(213, 50, 219);
+  height: 100%;
+  width: 35%;
+  border-end-start-radius: 11px;
+  border-start-start-radius: 11px;
+}
+
+.formLink {
+  font-family: "Inder", sans-serif;
+  color: rgb(20, 20, 20);
+}
+
+.sendButton{
+  background-color: rgb(221, 53, 224);
+  border: none;
+  padding: 10px;
+  padding-left: 25px;
+  padding-right: 25px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  color: white;
+  font-family: "Inder", sans-serif;
+  cursor: pointer;
+}
+.final-form{
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  gap: 30px;
+}
+
+.form-group input::placeholder {
+  color: #9a9a9a;
+}
+
+.form-group input:focus {
+  border-color: #6c63ff;
+  box-shadow: 0 0 6px #e263ff99;
+
+}
+
+.form-group input:hover {
+  border-color: #5a54e3;
+}
+
+@media (max-width: 990px) {
+  .form-container {
+    max-width: 90%;
+    padding: 0px;
+    width: 35%;
+  }
+
+  .form-group input {
+    padding: 10px;
+    font-size: 0.95rem;
+  }
+}
