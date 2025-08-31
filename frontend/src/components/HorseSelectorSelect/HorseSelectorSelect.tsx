@@ -4,6 +4,8 @@ import './HorseSelectorSelect.css'
 import { useState, useEffect } from 'react';
 import CustomLink from '../../utils/CustomLink';
 import { verifyToken } from '../../services/authToken';
+import { getUser } from '../../services/User';
+import type { HorseResponseProfile } from '../../types/horse';
 
 const horseColors: { [key: string]: string } = {
   'Oguri Cap': '#b8b8b8ff',
@@ -20,19 +22,11 @@ const horseColors: { [key: string]: string } = {
   'Vodka': '#8a2be2'
 };
 
-interface Horse {
-  id: string;
-  name: string;
-  speed: number;
-  stamina: number;
-  power: number;
-  wit: number;
-  passiveBuff: string;
-}
-
 const HorseSelectorSelect = () => {
-  const [horses, setHorses] = useState<Horse[]>([]);
-  const [selectedHorse, setSelectedHorse] = useState<Horse | null>(null);
+  const [horses, setHorses] = useState<HorseResponseProfile[]>([]);
+  const [selectedHorse, setSelectedHorse] = useState<HorseResponseProfile | null>(null);
+  const [userId, setUserId] = useState<any>(null);
+  const [userHorses, setUserHorses] = useState<HorseResponseProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [showPopup, setShowPopup] = useState(false);
 
@@ -47,6 +41,7 @@ const HorseSelectorSelect = () => {
       try {
         const response = await axios.get("http://localhost:3000/horse");
         setHorses(response.data);
+        setUserId(result.user.id);
       } catch (error) {
         console.error("Erro ao buscar cavalos:", error);
       } finally {
@@ -57,8 +52,30 @@ const HorseSelectorSelect = () => {
     checkAuthAndFetch();
   }, []);
 
-  const handleHorseSelect = (horse: Horse) => {
-    setSelectedHorse(horse);
+  useEffect(() => {
+    const checkUserHorses = async () => {
+      if (!userId) return; 
+
+      try {
+        const getResult = await getUser(userId);
+        setUserHorses(getResult.horses);
+        console.log(getResult.horses);
+      } catch (error) {
+        console.error("Erro ao buscar cavalos do usuário:", error);
+      }
+    };
+
+    checkUserHorses();
+  }, [userId]);
+
+  const isHorseOwned = (horse: HorseResponseProfile) => {
+    return userHorses.some(userHorse => userHorse.name === horse.name);
+  };
+
+  const handleHorseSelect = (horse: HorseResponseProfile) => {
+    if (isHorseOwned(horse)) {
+      setSelectedHorse(horse);
+    }
   };
 
   if (loading) {
@@ -111,14 +128,18 @@ const HorseSelectorSelect = () => {
       </div>
 
       <div className="HorseSelectorSelectContent">
-        {horses.map((horse) => (
-          <SelectorSelectMiniBox
-            key={horse.id}
-            horse={horse}
-            isSelected={selectedHorse?.id === horse.id}
-            onClick={() => handleHorseSelect(horse)}
-          />
-        ))}
+        {horses.map((horse) => {
+          const owned = isHorseOwned(horse);
+          return (
+            <SelectorSelectMiniBox
+              key={horse._id}
+              horse={horse}
+              isSelected={selectedHorse?._id === horse._id}
+              isOwned={owned}
+              onClick={() => handleHorseSelect(horse)}
+            />
+          );
+        })}
       </div>
     </div>
   );

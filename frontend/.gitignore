@@ -23,4 +23,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-frontend/src/assets/backgrounds/*.mp4

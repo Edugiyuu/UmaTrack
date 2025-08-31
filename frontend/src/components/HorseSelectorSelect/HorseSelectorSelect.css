@@ -63,10 +63,10 @@
 .HorseGifBox{
     width: 30%;
     height: 100%;
-    border: 3px solid rgba(0, 0, 0, 0.251);
+    border: 2px solid rgba(0, 0, 0, 0.251);
     position: relative;
     overflow: hidden;
-    clip-path: polygon(20% 0%, 100% 0%, 80% 100%, 0% 100%);
+ 
 }
 #stylebox2{
     width: 100%;

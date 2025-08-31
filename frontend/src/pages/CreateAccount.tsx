@@ -1,6 +1,6 @@
 import CreateLoginInput from '../components/CreateLoginInput/CreateLoginInput'
 import HeaderTop from '../components/headerTop/headerTop'
-import BackgroundLoop from '../assets/backgrounds/202508220016.mp4'
+import BackgroundLoop from '../assets/backgrounds/202508212358.mp4'
 
 const CreateAccount = () => {
   return (

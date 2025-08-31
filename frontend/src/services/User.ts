@@ -1,28 +1,14 @@
 import axios from "axios";
 import Cookies from 'universal-cookie';
+import type { CreateUserData, CreateUserResponse, UserResponseProfile } from "../types/user";
 
-interface CreateUserData {
-    email: string;
-    password: string;
-    username: string;
-}
 
-interface CreateUserResponse {
-    msg: string;
-    user: {
-        username: string;
-        email: string;
-        horses: any[];
-        _id: string;
-        createdAt: string;
-        updatedAt: string;
-    };
-}
+const API_BASE_URL = import.meta.env.VITE_API_URL
 
 export const createUser = async (userData: CreateUserData): Promise<CreateUserResponse> => {
     try {
         const response = await axios.post<CreateUserResponse>(
-            "http://localhost:3000/user/create",
+            `${API_BASE_URL}/user/create`,
             userData,
             {
                 headers: {
@@ -52,7 +38,7 @@ interface LoginResponse {
 export const LoginUser = async (userData: any): Promise<LoginResponse> => {
     try {
         const response = await axios.post<LoginResponse>(
-            "http://localhost:3000/user/login",
+            `${API_BASE_URL}/user/login`,
             userData
         );
 
@@ -77,26 +63,15 @@ export const logoutUser = () => {
     cookies.remove("token", { path: "/" });
 };
 
-interface UserResponse {
-    user: {
-        username: string;
-        email: string;
-        horses: any[];
-        _id: string;
-        createdAt: string;
-        updatedAt: string;
-    };
-}
-
-export const getUser = async (userId: string): Promise<UserResponse> => {
+export const getUser = async (userId: string): Promise<UserResponseProfile> => {
     try {
         const token = getToken();
         if (!token) {
             throw new Error("Token não encontrado");
         }
 
-        const response = await axios.get<UserResponse>(
-            `http://localhost:3000/user/${userId}`,
+        const response = await axios.get<UserResponseProfile>(
+            `${API_BASE_URL}/user/${userId}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`

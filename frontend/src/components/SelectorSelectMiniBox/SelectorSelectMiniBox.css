@@ -35,3 +35,22 @@
     object-fit: cover;
     object-position: 0px -10px;
 }
+
+.SelectorSelectMiniBox.disabled {
+  position: relative;
+}
+
+.locked-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  pointer-events: none;
+}
+
+.SelectorSelectMiniBox.disabled:hover {
+  transform: none;
+}
