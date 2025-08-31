@@ -17,8 +17,10 @@ export const create = async (req: Request, res: Response) => {
   if (userExist) {
     return res.status(422).json({ msg: "Esse Email já está em uso" });
   }
-
-  const randomHorse = await Horse.findOne({ name: "Silence Suzuka" }).lean();
+  
+  const horseCount = await Horse.countDocuments();
+  const randomIndex = Math.floor(Math.random() * horseCount);
+  const randomHorse = await Horse.findOne().skip(randomIndex).lean();
 
   if (!randomHorse) {
     return res.status(404).json({ msg: "Cavalo não encontrado" });
@@ -28,7 +30,7 @@ export const create = async (req: Request, res: Response) => {
     username,
     email,
     password,
-    horses: [randomHorse] // passa como array de subdocumento
+    horses: [randomHorse]
   });
 
   try {
