@@ -36,6 +36,7 @@ export const postHorses = async (req: Request, res: Response) => {
             power: req.body.power,
             speed: req.body.speed,
             wit: req.body.wit,
+            cost: req.body.cost
         });
         
         await newHorse.save();

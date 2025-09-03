@@ -1,5 +1,6 @@
 import axios from 'axios'
 import SelectorSelectMiniBox from '../SelectorSelectMiniBox/SelectorSelectMiniBox'
+import PurchaseModal from '../PurchaseModal/PurchaseModal'
 import './HorseSelectorSelect.css'
 import { useState, useEffect } from 'react';
 import CustomLink from '../../utils/CustomLink';
@@ -7,7 +8,7 @@ import { verifyToken } from '../../services/authToken';
 import { getUser } from '../../services/User';
 import type { HorseResponseProfile } from '../../types/horse';
 
-const horseColors: { [key: string]: string } = {
+export const horseColors: { [key: string]: string } = {
   'Oguri Cap': '#b8b8b8ff',
   'Silence Suzuka': '#2ab26cff',
   'Special Week': '#d45ce4ff',
@@ -27,8 +28,10 @@ const HorseSelectorSelect = () => {
   const [selectedHorse, setSelectedHorse] = useState<HorseResponseProfile | null>(null);
   const [userId, setUserId] = useState<any>(null);
   const [userHorses, setUserHorses] = useState<HorseResponseProfile[]>([]);
+  const [userMoney, setUserMoney] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [showPopup, setShowPopup] = useState(false);
+  const [horseToPurchase, setHorseToPurchase] = useState<HorseResponseProfile | null>(null);
 
   useEffect(() => {
     const checkAuthAndFetch = async () => {
@@ -59,7 +62,7 @@ const HorseSelectorSelect = () => {
       try {
         const getResult = await getUser(userId);
         setUserHorses(getResult.horses);
-        console.log(getResult.horses);
+        setUserMoney(getResult.monies);
       } catch (error) {
         console.error("Erro ao buscar cavalos do usuário:", error);
       }
@@ -75,7 +78,38 @@ const HorseSelectorSelect = () => {
   const handleHorseSelect = (horse: HorseResponseProfile) => {
     if (isHorseOwned(horse)) {
       setSelectedHorse(horse);
+    } else {
+      setHorseToPurchase(horse);
     }
+  };
+
+  const handlePurchaseHorse = async () => {
+    if (!horseToPurchase || !userId) return;
+
+    try {
+      if (userMoney < horseToPurchase.cost) {
+        alert("You dont have enough money to buy this horse");
+        return;
+      }
+
+      await axios.post(`http://localhost:3000/user/${userId}/purchase-horse`, {
+        horseId: horseToPurchase._id
+      });
+
+      setUserHorses([...userHorses, horseToPurchase]);
+      setUserMoney(userMoney - horseToPurchase.cost);
+      setSelectedHorse(horseToPurchase);
+      setHorseToPurchase(null);
+
+      alert("Cavalo comprado com sucesso!");
+
+    } catch (error) {
+      console.error("Erro ao comprar cavalo:", error);
+    }
+  };
+
+  const handleCancelPurchase = () => {
+    setHorseToPurchase(null);
   };
 
   if (loading) {
@@ -141,6 +175,15 @@ const HorseSelectorSelect = () => {
           );
         })}
       </div>
+
+      {horseToPurchase && (
+        <PurchaseModal
+          horse={horseToPurchase}
+          userMoney={userMoney}
+          onPurchase={handlePurchaseHorse}
+          onCancel={handleCancelPurchase}
+        />
+      )}
     </div>
   );
 };

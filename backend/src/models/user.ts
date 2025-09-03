@@ -12,7 +12,7 @@ const UserSchema = new mongoose.Schema({
     speed: { type: Number, required: true },
     wit: { type: Number, required: true }
   }],
-  monies: { type: Number, required: true, default:100.000},
+  monies: { type: Number, required: true, default:1000},
 }, { timestamps: true });
 
 export default mongoose.model("User", UserSchema);
