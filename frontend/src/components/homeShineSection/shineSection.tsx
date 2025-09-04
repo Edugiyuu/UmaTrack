@@ -1,5 +1,5 @@
 import './shineSection.css';
-import UmaSkill from '../../assets/UmaSkill1.png'
+import UmaSkill from '../../assets/gameIcons/UmaSkill1.png'
 import { useEffect } from 'react';
 import { TriggerScrollAnimation } from './animations';
 

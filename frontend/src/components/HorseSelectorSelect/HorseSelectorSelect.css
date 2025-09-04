@@ -1,129 +1,143 @@
 .HorseSelectorSelect {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    width: 100vw;
-    height: 100vh;
-    min-height: 45vh;
-    font-family: "Tilt Warp", sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100vw;
+  height: 100vh;
+  min-height: 45vh;
+  font-family: "Tilt Warp", sans-serif;
 }
 
 .HorseSelectorSelectContent {
-    display: flex;
-    flex-flow: row wrap;
-    width: 95%;
-    height: 40vh;
-    background-color: rgb(239, 239, 239);
-    border-radius: 15px;
-    padding-top: 15px;
-    margin-top: 2vh;
-    gap: 40px;
-    padding-left: 20px;
-    align-content: start;
-    justify-content: start;
-    overflow-y: auto;
+  display: flex;
+  flex-flow: row wrap;
+  width: 95%;
+  height: 40vh;
+  background-color: rgb(245, 245, 245);
+  border-radius: 15px;
+  padding-top: 15px;
+  margin-top: 2vh;
+  gap: 40px;
+  padding-left: 20px;
+  align-content: start;
+  justify-content: start;
+  overflow-y: auto;
 }
 
 .HorseInfoPanel {
-    display: flex;
-    flex-direction: row;
-    width: 95%;
-    height: 55vh;
-    margin-top: 1.5vh;
-    background-color: rgb(246, 246, 246);
-    border-radius: 15px;
+  display: flex;
+  flex-direction: row;
+  width: 95%;
+  height: 55vh;
+  margin-top: 3vh;
 }
 
 .HorseInfoPanel h2 {
-    color: #333;
-    margin-bottom: 15px;
-    text-align: center;
-    font-weight: 400;
+  color: var(--color-brown);
+  margin-bottom: 15px;
+  text-align: center;
+  font-weight: 100;
+  letter-spacing: 2px;
+  font-family: var(--font-staat);
+  font-size: 2rem;
+  font-style: italic;
+  margin-left: 10px;
 }
 
 .HorseStats {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: top;
+  gap: 15px;
 }
 
-.HorseStats p {
-    font-size: 16px;
-    color: #444;
-    width: 25%;
-    padding: 10px;
-    background-color: rgb(217, 217, 217);
-    clip-path: polygon(100% 0, 0 0, 0 100%, 99% 100%, 90% 50%);
-    text-align: center;
+.statIcon {
+  width: 38px;
+  height: 38px;
 }
 
-.HorseGifBox{
-    width: 30%;
-    height: 100%;
-    border: 2px solid rgba(0, 0, 0, 0.251);
-    position: relative;
-    overflow: hidden;
- 
+.HorseGifBox {
+  width: 30%;
+  height: 100%;
+  border: 2px solid rgba(0, 0, 0, 0.251);
+  position: relative;
+  overflow: hidden;
+
 }
-#stylebox2{
-    width: 100%;
-    height: 100%;
-    rotate: 40deg;
-    position: absolute;
-    background-color: rgba(255, 255, 255, 0.233);
-    object-fit: cover;
-    clip-path: polygon(0% 0%, 0% 100%, 25% 100%, 25% 25%, 75% 25%, 75% 75%, 25% 75%, 25% 100%, 100% 100%, 100% 0%);
-    
+
+#stylebox2 {
+  width: 100%;
+  height: 100%;
+  rotate: 40deg;
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.233);
+  object-fit: cover;
+  clip-path: polygon(0% 0%, 0% 100%, 25% 100%, 25% 25%, 75% 25%, 75% 75%, 25% 75%, 25% 100%, 100% 100%, 100% 0%);
+
 }
+
 .HorseGifBox img {
-    width: 100%;
-    height: 100%;
-    border-radius: 10px;
-    object-fit: contain;
-    position: relative;
-    padding: 5px;
-}
-#Speed{
-    width: 200px;
-    background-color: #4FADFF;
-}
-#Stamina{
-    width: 200px;
-    background-color: #FF7C6E;
-}
-#Power{
-    width: 200px;
-    background-color: #FF8B32;
-}
-#Wit{
-    width: 200px;
-    background-color: #21CE94;
-}
-.HorseStats div{
-    display: flex;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  object-fit: contain;
+  position: relative;
+  padding: 5px;
 }
 
-.CareerInfo{
-    display: flex;
-    width: 35%;
-    align-items: end;
-    justify-content: end;
-    margin-left: 15%;
+#Speed {
+  width: 100%;
+  background-color: #4FADFF;
 }
 
-.StartCareer{
-    color: rgb(241, 241, 241);
-    font-style: normal;
-    text-decoration: none;
-    background-color: rgb(33, 219, 77);
-    text-align: center;
-    width: 30%;
-    padding: 20px;
-    border-radius: 20px;
-    margin-bottom: 3%;
+#Stamina {
+  width: 100%;
+  background-color: #FF7C6E;
+}
+
+#Power {
+  width: 100%;
+  background-color: #FF8B32;
+}
+
+#Wit {
+  width: 100%;
+  background-color: #21CE94;
+}
+
+.HorseStats div {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-family: var(--font-tilt);
+  font-size: 1.05rem;
+  color: var(--color-brown);
+  width: 100%;
+  padding: 5px;
+  padding-left: 10px;
+  clip-path: polygon(100% 0, 0 0, 0 100%, 100% 100%, 93% 50%);
+}
+
+.CareerInfo {
+  display: flex;
+  width: 35%;
+  align-items: end;
+  justify-content: end;
+  margin-left: 15%;
+}
+
+.StartCareer {
+  color: rgb(241, 241, 241);
+  font-style: normal;
+  text-decoration: none;
+  background-color: rgb(33, 219, 77);
+  text-align: center;
+  width: 30%;
+  padding: 20px;
+  border-radius: 20px;
+  margin-bottom: 3%;
 }
 
 .popup-overlay {
@@ -179,6 +193,7 @@
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

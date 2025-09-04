@@ -3,9 +3,10 @@
     align-items: center;
     width: 100px;
     border: 2px solid transparent;
-    border-radius: 10px;
+    border-radius: 5px;
     height: 95px;
-    background-color: rgb(230, 230, 230);
+    border: 1px solid #c1c1c1;
+    
     cursor: pointer;
     transition: all 0.2s ease-in-out;
 }
@@ -22,18 +23,11 @@
 }
 
 .SelectorSelectMiniBox img {
-    width: 90%;
-    height: 100%;
-    border-radius: 5px;
-    object-fit: cover;
-    object-position: 5px -10px;
-}
-.SelectorSelectMiniBox img[id="Nice Nature"] {
     width: 100%;
     height: 100%;
     border-radius: 5px;
     object-fit: cover;
-    object-position: 0px -10px;
+  
 }
 
 .SelectorSelectMiniBox.disabled {

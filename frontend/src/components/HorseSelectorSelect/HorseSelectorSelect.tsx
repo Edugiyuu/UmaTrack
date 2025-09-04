@@ -7,6 +7,10 @@ import CustomLink from '../../utils/CustomLink';
 import { verifyToken } from '../../services/authToken';
 import { getUser } from '../../services/User';
 import type { HorseResponseProfile } from '../../types/horse';
+import speedIcon from '../../assets/gameIcons/speedIcon.png';
+import powerIcon from '../../assets/gameIcons/powerIcon.png';
+import staminaIcon from '../../assets/gameIcons/staminaIcon.png';
+import witIcon from '../../assets/gameIcons/witIcon.png';
 
 export const horseColors: { [key: string]: string } = {
   'Oguri Cap': '#b8b8b8ff',
@@ -57,7 +61,7 @@ const HorseSelectorSelect = () => {
 
   useEffect(() => {
     const checkUserHorses = async () => {
-      if (!userId) return; 
+      if (!userId) return;
 
       try {
         const getResult = await getUser(userId);
@@ -150,10 +154,26 @@ const HorseSelectorSelect = () => {
 
         <div className="HorseStats">
           <h2>{selectedHorse?.name}</h2>
-          <div><p id="Speed">Speed: </p><p>{selectedHorse?.speed}</p></div>
-          <div><p id="Stamina">Stamina:</p><p>{selectedHorse?.stamina}</p></div>
-          <div><p id="Power">Power:</p><p>{selectedHorse?.power}</p></div>
-          <div><p id="Wit">Wit:</p><p>{selectedHorse?.wit}</p></div>
+          <div id="Speed">
+            <img className='statIcon' src={speedIcon} />
+            <p>Speed: </p>
+            <p>{selectedHorse?.speed}</p>
+          </div>
+          <div id="Stamina">
+            <img className='statIcon' src={staminaIcon} />
+            <p>Stamina:</p>
+            <p>{selectedHorse?.stamina}</p>
+          </div>
+          <div id="Power">
+            <img className='statIcon' src={powerIcon} />
+            <p>Power:</p>
+            <p>{selectedHorse?.power}</p>
+          </div>
+          <div id="Wit">
+            <img className='statIcon' src={witIcon} />
+            <p>Wit:</p>
+            <p>{selectedHorse?.wit}</p>
+          </div>
         </div>
 
         <div className="CareerInfo">

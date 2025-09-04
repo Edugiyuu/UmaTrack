@@ -19,9 +19,10 @@
   flex-direction: column;
   background: white;
   text-align: center;
-  max-width: 850px;
+  max-width: 900px;
   border-radius: 10px;
   width: 100%;
+  height: 90%;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
@@ -35,9 +36,7 @@
 .horse-preview {
   position: relative;
   object-fit: cover;
-  margin: 0px;
-  padding: 0px;
-  width: 70%;
+  width: 63%;
   height: 45vh;
   object-position: 0px 10px;
   vertical-align: top;
@@ -46,8 +45,6 @@
 
 .horse-preview-container {
   position: relative;
-  margin: 0px;
-  padding: 0px;
 }
 
 .horse-details {
@@ -56,16 +53,14 @@
 
 .horse-details .stats {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
+  grid-template-columns: 100px 100px;
+  gap: 2rem;
   margin-top: 1rem;
+  font-size: 20px;
 }
 
 .modal-buttons {
-  margin-top: 1.5rem;
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
+
 }
 
 .buy-button,

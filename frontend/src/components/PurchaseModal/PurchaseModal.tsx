@@ -17,7 +17,7 @@ const PurchaseModal = ({ horse, userMoney, onPurchase, onCancel }: Props) => {
         <div className="modal-overlay">
             <div className="purchase-modal">
                 <div className='horse-preview-container' style={{ backgroundColor: horseColors[horse.name] }}>
-                    <Marquee direction="right" speed={140} className='marquee'>
+                    <Marquee direction="right" speed={180} className='marquee'>
                         {horse.name}
                     </Marquee>
 
