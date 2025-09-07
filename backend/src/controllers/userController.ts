@@ -138,3 +138,48 @@ export const remove = async (req: Request, res: Response) => {
     return res.status(500).json({ msg: 'USER_MESSAGES.ERROR_DELETING_USER', error });
   }
 }
+
+export const purchaseHorse = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { horseId } = req.body;
+
+  if (!horseId) {
+    return res.status(422).json({ msg: 'Horse ID é obrigatório' });
+  }
+
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ msg: "Usuário não encontrado" });
+    }
+
+    const horse = await Horse.findById(horseId);
+    if (!horse) {
+      return res.status(404).json({ msg: "Cavalo não encontrado" });
+    }
+
+    if (user.monies < horse.cost) {
+      return res.status(400).json({ 
+        msg: "Dinheiro insuficiente",
+        required: horse.cost,
+        available: user.monies
+      });
+    }
+
+    user.monies -= horse.cost;
+    user.horses.push(horse);
+    await user.save();
+
+    const { password, ...userWithoutPassword } = user.toObject();
+
+    res.status(200).json({
+      msg: "Cavalo comprado com sucesso!",
+      user: userWithoutPassword,
+      purchasedHorse: horse
+    });
+
+  } catch (error) {
+    console.error('Erro ao comprar cavalo:', error);
+    return res.status(500).json({ msg: 'Erro interno do servidor', error });
+  }
+};

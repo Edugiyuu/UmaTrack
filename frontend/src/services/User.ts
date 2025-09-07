@@ -89,3 +89,35 @@ export const getUser = async (userId: string): Promise<UserResponseProfile> => {
         throw new Error("Erro desconhecido ao buscar usuário");
     }
 };
+
+export const purchaseHorse = async (userId: string, horseId: string) => {
+  try {
+   
+    const token = getToken();
+    const response = await axios.post(
+            `${API_BASE_URL}/user/${userId}/purchase-horse`,
+            {
+                horseId: horseId
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+    );
+    
+    return {
+      success: true,
+      user: response.data.user,
+      purchasedHorse: response.data.purchasedHorse
+    };
+  } catch (error: any) {
+    console.error('Erro ao comprar cavalo:', error);
+    
+    if (error.response?.data?.msg) {
+      throw new Error(error.response.data.msg);
+    }
+    
+    throw new Error('Erro ao comprar cavalo');
+  }
+};

@@ -5,7 +5,7 @@ import './HorseSelectorSelect.css'
 import { useState, useEffect } from 'react';
 import CustomLink from '../../utils/CustomLink';
 import { verifyToken } from '../../services/authToken';
-import { getUser } from '../../services/User';
+import { getUser, purchaseHorse } from '../../services/User';
 import type { HorseResponseProfile } from '../../types/horse';
 import speedIcon from '../../assets/gameIcons/speedIcon.png';
 import powerIcon from '../../assets/gameIcons/powerIcon.png';
@@ -95,17 +95,15 @@ const HorseSelectorSelect = () => {
         alert("You dont have enough money to buy this horse");
         return;
       }
+      const buyHorse = await purchaseHorse(userId, horseToPurchase._id);
 
-      await axios.post(`http://localhost:3000/user/${userId}/purchase-horse`, {
-        horseId: horseToPurchase._id
-      });
-
-      setUserHorses([...userHorses, horseToPurchase]);
-      setUserMoney(userMoney - horseToPurchase.cost);
-      setSelectedHorse(horseToPurchase);
-      setHorseToPurchase(null);
-
-      alert("Cavalo comprado com sucesso!");
+      if (buyHorse) {
+        setUserHorses(buyHorse.user.horses);
+        setUserMoney(buyHorse.user.monies);
+        setSelectedHorse(horseToPurchase);
+        setHorseToPurchase(null);
+        alert("Cavalo comprado com sucesso!");
+      }
 
     } catch (error) {
       console.error("Erro ao comprar cavalo:", error);

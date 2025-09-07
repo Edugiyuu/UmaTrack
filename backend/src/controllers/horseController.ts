@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import Horse from '../models/horse';
+import mongoose from 'mongoose';
 
 
 export const getHorse = async (req: Request, res: Response) => {
@@ -43,6 +44,27 @@ export const postHorses = async (req: Request, res: Response) => {
         res.status(200).json(newHorse);
     } catch (error) {
         console.error('Erro ao buscar músicas:', error);
+        res.status(500).json({ error: 'Erro interno.' });
+    }
+};
+
+export const patchHorse = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    
+    try {
+        const updatedHorse = await Horse.findByIdAndUpdate(
+            id,
+            req.body,
+            { new: true }
+        );
+
+        if (!updatedHorse) {
+            return res.status(404).json({ error: 'Cavalo não encontrado.' });
+        }
+
+        res.status(200).json(updatedHorse);
+
+    } catch (error) {
         res.status(500).json({ error: 'Erro interno.' });
     }
 };
