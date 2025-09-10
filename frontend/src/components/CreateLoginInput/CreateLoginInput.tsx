@@ -4,6 +4,7 @@ import CustomLink from '../../utils/CustomLink';
 import { createUser, LoginUser } from '../../services/User';
 import { useNavigate } from 'react-router-dom';
 import SnackBar from '../SnackBar/SnackBar';
+import PopUp from '../PopUp/popUp';
 
 interface CreateLoginInputProps {
   isLogin?: boolean;
@@ -13,7 +14,6 @@ const CreateLoginInput: React.FC<CreateLoginInputProps> = ({ isLogin = false }) 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
-  const [loginError, setLoginError] = useState(false);
   const [loginSucess, setLoginSucess] = useState(false);
   const [createError, setCreateError] = useState(false);
   const [createSucess, setCreateSucess] = useState(false);
@@ -39,31 +39,20 @@ const CreateLoginInput: React.FC<CreateLoginInputProps> = ({ isLogin = false }) 
     e.preventDefault();
     try {
       await LoginUser({ email, password });
-      setLoginSucess(true)
-      setTimeout(() => {
-      navigate('/');
-    }, 3000);
+      setLoginSucess(true);
     } catch (error) {
       if (error instanceof Error) {
-        setLoginError(true);
+        setLoginSucess(false);
       }
     }
   };
 
   return (
     <div className='CreateLoginInput'>
-
+      <PopUp messageTitle={'Welcome back!'} onClose={function (){navigate('/');}} show={loginSucess} ></PopUp>
       {isLogin && (
         <div className='side-form'>
           <h2>Login</h2>
-          <SnackBar
-            errorAlert={loginError}
-            setErrorAlert={setLoginError}
-            sucessAlert={loginSucess}
-            setSucessAlert={setLoginSucess}
-            sucessMessage="Login successful"
-            errorMessage="Error logging in"
-          />
         </div>
       )}
       {!isLogin && (
