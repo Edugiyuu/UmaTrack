@@ -2,14 +2,14 @@ import axios from "axios";
 import Cookies from "universal-cookie";
 
 const cookies = new Cookies();
-const API_URL = "http://localhost:3000";
+const API_BASE_URL = import.meta.env.VITE_API_URL
 
 export const verifyToken = async () => {
     try {
         const token = cookies.get("token");
         if (!token) throw new Error("Token não encontrado");
 
-        const response = await axios.get(`${API_URL}/verify-token`, {
+        const response = await axios.get(`${API_BASE_URL}/verify-token`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
