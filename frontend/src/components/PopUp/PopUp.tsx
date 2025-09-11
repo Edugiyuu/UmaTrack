@@ -13,10 +13,11 @@ const PopUp: React.FC<PopUpProps> = ({ show, messageTitle, messageSubTitle, imag
   if (!show) return null;
 
   return (
+    
     <div className="popUpBackground">
       <div className="popUpContainer">
-        {imageUrl && <img src={imageUrl} alt="PopUp" className="popUpImage" />}
         <h2 className="popUpTitle">{messageTitle}</h2>
+        {imageUrl && <img src={imageUrl} alt="PopUp" className="popUpImage" />}
         {messageSubTitle && <p className="popUpSubtitle">{messageSubTitle}</p>}
         <button className="popUpButton" onClick={onClose}>
           Close

@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import './CreateLoginInput.css';
 import CustomLink from '../../utils/CustomLink';
 import { createUser, LoginUser } from '../../services/User';
+import GrassWonderChibi from '/horses/GrassWonder/Chibi1.png'
 import { useNavigate } from 'react-router-dom';
+import confetti from "canvas-confetti";
 import SnackBar from '../SnackBar/SnackBar';
-import PopUp from '../PopUp/popUp';
+import PopUp from '../PopUp/PopUp';
 
 interface CreateLoginInputProps {
   isLogin?: boolean;
@@ -15,21 +17,34 @@ const CreateLoginInput: React.FC<CreateLoginInputProps> = ({ isLogin = false }) 
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [loginSucess, setLoginSucess] = useState(false);
+  const [loginError, setLoginError] = useState(false);
   const [createError, setCreateError] = useState(false);
   const [createSucess, setCreateSucess] = useState(false);
+  const [firstHorse, setFirstHorse] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createUser({ email, username, password });
+      var result = await createUser({ email, username, password });
       setCreateSucess(true);
-      
-      setTimeout(() => {
-      navigate('/Login');
-    }, 3000);
+      console.log(result)
+      console.log(result.user)
+      console.log(result.user.horses)
+      console.log(result.user.horses[0])
+      setFirstHorse(result.user.horses[0].name)
+      console.log("Primeiro horse:", firstHorse);
+
+      confetti({
+        particleCount: 250,
+        spread: 180,
+        origin: { y: 0.6 },
+        zIndex: 9999,
+        scalar: 1.2
+      });
     } catch (error) {
       if (error instanceof Error) {
+        setLoginSucess(false);
         setCreateError(true);
       }
     }
@@ -40,19 +55,35 @@ const CreateLoginInput: React.FC<CreateLoginInputProps> = ({ isLogin = false }) 
     try {
       await LoginUser({ email, password });
       setLoginSucess(true);
+      confetti({
+        particleCount: 250,
+        spread: 180,
+        origin: { y: 0.6 },
+        zIndex: 9999,
+        scalar: 1.2
+      });
     } catch (error) {
       if (error instanceof Error) {
         setLoginSucess(false);
+        setLoginError(true);
       }
     }
   };
 
   return (
     <div className='CreateLoginInput'>
-      <PopUp messageTitle={'Welcome back!'} onClose={function (){navigate('/');}} show={loginSucess} ></PopUp>
+      <PopUp messageTitle={'Welcome back!'} onClose={function () { navigate('/'); }} show={loginSucess} imageUrl={GrassWonderChibi}></PopUp>
+      <PopUp messageTitle={'Created successfully!'} messageSubTitle={`You got ${firstHorse}!`} onClose={function () { navigate('/Login'); }} show={createSucess} imageUrl={GrassWonderChibi}></PopUp>
+
       {isLogin && (
         <div className='side-form'>
           <h2>Login</h2>
+          <SnackBar
+            errorAlert={loginError}
+            setErrorAlert={setLoginError}
+            sucessMessage="Logged in successfully"
+            errorMessage="Error logging in.."
+          />
         </div>
       )}
       {!isLogin && (
@@ -61,8 +92,6 @@ const CreateLoginInput: React.FC<CreateLoginInputProps> = ({ isLogin = false }) 
           <SnackBar
             errorAlert={createError}
             setErrorAlert={setCreateError}
-            sucessAlert={createSucess}
-            setSucessAlert={setCreateSucess}
             sucessMessage="Created successfully"
             errorMessage="Error creating account"
           />

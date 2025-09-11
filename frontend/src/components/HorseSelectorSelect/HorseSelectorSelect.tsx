@@ -11,6 +11,7 @@ import speedIcon from '../../assets/gameIcons/speedIcon.png';
 import powerIcon from '../../assets/gameIcons/powerIcon.png';
 import staminaIcon from '../../assets/gameIcons/staminaIcon.png';
 import witIcon from '../../assets/gameIcons/witIcon.png';
+import confetti from 'canvas-confetti';
 
 export const horseColors: { [key: string]: string } = {
   'Oguri Cap': '#b8b8b8ff',
@@ -102,7 +103,13 @@ const HorseSelectorSelect = () => {
         setUserMoney(buyHorse.user.monies);
         setSelectedHorse(horseToPurchase);
         setHorseToPurchase(null);
-        alert("Cavalo comprado com sucesso!");
+        confetti({
+                particleCount: 400,
+                spread: 240,
+                origin: { y: 0.6 },
+                zIndex: 9999,
+                scalar: 1.7
+              });
       }
 
     } catch (error) {

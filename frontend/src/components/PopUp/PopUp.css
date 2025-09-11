@@ -8,12 +8,13 @@
   background-color: rgba(0, 0, 0, 0.558);
   display: flex;
   justify-content: center;
+  flex-direction: column;
   align-items: center;
   backdrop-filter: blur(2px);
   z-index: 9999;
 }
 
-/* Container do PopUp */
+
 .popUpContainer {
   background-color: #fff;
   padding: 25px;
@@ -21,31 +22,31 @@
   width: 400px;
   max-width: 90%;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   animation: scaleIn 0.2s ease-in-out;
 }
 
-/* Título */
+
 .popUpTitle {
   font-size: 1.5rem;
   color: var(--color-brown);
-  margin-bottom: 10px;
-  font-weight: normal;
+  margin-bottom: 10px;font-weight: normal;
 }
 
-/* Subtítulo */
 .popUpSubtitle {
   font-size: 1rem;
-  color: #555;
+  color: #141414;
   margin-bottom: 20px;
+    font-family: var(--font-tilt);
 }
 
-/* Imagem opcional */
 .popUpImage {
-  max-width: 100%;
-  height: auto;
-  margin-bottom: 15px;
-  border-radius: 10px;
+  max-width: 25%;
+  margin-bottom: 5%;
 }
 
 .popUpButton {

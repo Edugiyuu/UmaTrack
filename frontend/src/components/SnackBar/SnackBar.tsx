@@ -12,8 +12,8 @@ const SnackBar = ({
 }: { 
     errorAlert: boolean, 
     setErrorAlert: React.Dispatch<React.SetStateAction<boolean>>, 
-    sucessAlert: boolean, 
-    setSucessAlert: React.Dispatch<React.SetStateAction<boolean>>
+    sucessAlert?: boolean, 
+    setSucessAlert?: React.Dispatch<React.SetStateAction<boolean>>
     sucessMessage: string,
     errorMessage: string
 }) => {
@@ -22,7 +22,7 @@ const SnackBar = ({
         <Snackbar
 				open={sucessAlert}
 				autoHideDuration={3000}
-				onClose={() => setSucessAlert(false)}
+				onClose={() => setSucessAlert && setSucessAlert(false)}
 				anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
 			>
 				<Alert className='PopUp' sx={{ fontSize: '1.10rem', paddingRight: '40px', marginTop: '10vh'}}>
