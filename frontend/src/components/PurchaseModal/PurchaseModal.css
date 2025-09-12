@@ -51,16 +51,39 @@
   margin: 1rem 0;
 }
 
-.horse-details .stats {
-  display: grid;
-  grid-template-columns: 100px 100px;
-  gap: 2rem;
-  margin-top: 1rem;
-  font-size: 20px;
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+  margin: 5vh;
+  font-size: 25px;
 }
 
-.modal-buttons {
+.horse-cost {
+  font-size: 34px;
+  color: rgb(21, 192, 21);
+}
 
+.stat-icon {
+    width: 4vh;
+    height: 4vh;
+    margin-right: 8px;
+    vertical-align:middle;
+}
+#Speed-stat {
+  color: #4FADFF;
+}
+
+#Stamina-stat {
+  color: #FF7C6E;
+}
+
+#Power-stat {
+  color: #FF8B32;
+}
+
+#Wit-stat {
+  color: #21CE94;
 }
 
 .buy-button,

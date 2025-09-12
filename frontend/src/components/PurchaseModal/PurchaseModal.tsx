@@ -2,6 +2,10 @@ import './PurchaseModal.css';
 import type { HorseResponseProfile } from '../../types/horse';
 import { horseColors } from '../HorseSelectorSelect/HorseSelectorSelect';
 import Marquee from "react-fast-marquee"
+import speedIcon from '../../assets/gameIcons/speedIcon.png';
+import powerIcon from '../../assets/gameIcons/powerIcon.png';
+import staminaIcon from '../../assets/gameIcons/staminaIcon.png';
+import witIcon from '../../assets/gameIcons/witIcon.png';
 
 interface Props {
     horse: HorseResponseProfile;
@@ -30,15 +34,26 @@ const PurchaseModal = ({ horse, userMoney, onPurchase, onCancel }: Props) => {
 
                 <h2>Buy <span className="horse-name" style={{ color: horseColors[horse.name] }}>{horse.name}</span>?</h2>
 
-
                 <div className="horse-details">
-                    <p><strong>Cost:</strong> ${horse.cost}</p>
+                    <p className='horse-cost'><strong>Cost:</strong> ${horse.cost}</p>
                     <p><strong>Your balance:</strong> ${userMoney}</p>
                     <div className="stats">
-                        <p>Speed: {horse.speed}</p>
-                        <p>Stamina: {horse.stamina}</p>
-                        <p>Power: {horse.power}</p>
-                        <p>Wit: {horse.wit}</p>
+                        <p id='Speed-stat'>
+                            <img src={speedIcon} className="stat-icon" />
+                            Speed: {horse.speed}
+                        </p>
+                        <p id='Stamina-stat'>
+                            <img src={staminaIcon} alt="Stamina" className="stat-icon" />
+                            Stamina: {horse.stamina}
+                        </p>
+                        <p id='Power-stat'>
+                            <img src={powerIcon} alt="Power" className="stat-icon" />
+                            Power: {horse.power}
+                        </p>
+                        <p id='Wit-stat'>
+                            <img src={witIcon} alt="Wit" className="stat-icon" />
+                            Wit: {horse.wit}
+                        </p>
                     </div>
                 </div>
                 <div className="modal-buttons">
