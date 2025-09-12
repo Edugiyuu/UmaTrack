@@ -1,0 +1,134 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.603);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  font-family: "Staatliches", sans-serif;
+  font-style: italic;
+  font-weight:100;
+}
+
+.purchase-modal {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  text-align: center;
+  max-width: 900px;
+  border-radius: 10px;
+  width: 100%;
+  height: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.purchase-modal h2 {
+  margin-top: 1vh;
+  font-family: "Staatliches", sans-serif;
+  font-style: italic;
+  font-weight:100;
+}
+
+.horse-preview {
+  position: relative;
+  object-fit: cover;
+  width: 63%;
+  height: 45vh;
+  object-position: 0px 10px;
+  vertical-align: top;
+  z-index: 2;
+}
+
+.horse-preview-container {
+  position: relative;
+}
+
+.horse-details {
+  margin: 1rem 0;
+}
+
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+  margin: 5vh;
+  font-size: 25px;
+}
+
+.horse-cost {
+  font-size: 34px;
+  color: rgb(21, 192, 21);
+}
+
+.stat-icon {
+    width: 4vh;
+    height: 4vh;
+    margin-right: 8px;
+    vertical-align:middle;
+}
+#Speed-stat {
+  color: #4FADFF;
+}
+
+#Stamina-stat {
+  color: #FF7C6E;
+}
+
+#Power-stat {
+  color: #FF8B32;
+}
+
+#Wit-stat {
+  color: #21CE94;
+}
+
+.buy-button,
+.cancel-button {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.buy-button {
+  padding: 12px 50px;
+
+  background: #e043ce;
+  background: linear-gradient(90deg, rgba(224, 67, 206, 1) 0%, rgba(212, 82, 255, 1) 100%);
+  color: white;
+  margin-right: 35px;
+}
+
+
+.buy-button.disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.cancel-button {
+  background: #f44336;
+  color: white;
+}
+
+.cancel-button:hover {
+  background: #da190b;
+}
+
+.marquee {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 1;
+  pointer-events: none;
+  font-size:100px;
+  color: white;
+  letter-spacing: 2px;
+}

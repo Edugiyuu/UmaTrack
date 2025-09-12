@@ -1,0 +1,74 @@
+/* Fundo escuro ocupando toda a tela */
+.popUpBackground {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.558);
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  backdrop-filter: blur(2px);
+  z-index: 9999;
+}
+
+
+.popUpContainer {
+  background-color: #fff;
+  padding: 25px;
+  border-radius: 16px;
+  width: 400px;
+  max-width: 90%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  animation: scaleIn 0.2s ease-in-out;
+}
+
+
+.popUpTitle {
+  font-size: 1.5rem;
+  color: var(--color-brown);
+  margin-bottom: 10px;font-weight: normal;
+}
+
+.popUpSubtitle {
+  font-size: 1rem;
+  color: #141414;
+  margin-bottom: 20px;
+    font-family: var(--font-tilt);
+}
+
+.popUpImage {
+  max-width: 25%;
+  margin-bottom: 5%;
+}
+
+.popUpButton {
+  padding: 10px 20px;
+  background-color: #de25eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background-color 0.2s ease-in-out;
+}
+
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

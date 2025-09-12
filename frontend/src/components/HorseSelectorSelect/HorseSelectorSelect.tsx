@@ -1,13 +1,19 @@
 import axios from 'axios'
 import SelectorSelectMiniBox from '../SelectorSelectMiniBox/SelectorSelectMiniBox'
+import PurchaseModal from '../PurchaseModal/PurchaseModal'
 import './HorseSelectorSelect.css'
 import { useState, useEffect } from 'react';
 import CustomLink from '../../utils/CustomLink';
 import { verifyToken } from '../../services/authToken';
-import { getUser } from '../../services/User';
+import { getUser, purchaseHorse } from '../../services/User';
 import type { HorseResponseProfile } from '../../types/horse';
+import speedIcon from '../../assets/gameIcons/speedIcon.png';
+import powerIcon from '../../assets/gameIcons/powerIcon.png';
+import staminaIcon from '../../assets/gameIcons/staminaIcon.png';
+import witIcon from '../../assets/gameIcons/witIcon.png';
+import confetti from 'canvas-confetti';
 
-const horseColors: { [key: string]: string } = {
+export const horseColors: { [key: string]: string } = {
   'Oguri Cap': '#b8b8b8ff',
   'Silence Suzuka': '#2ab26cff',
   'Special Week': '#d45ce4ff',
@@ -27,8 +33,10 @@ const HorseSelectorSelect = () => {
   const [selectedHorse, setSelectedHorse] = useState<HorseResponseProfile | null>(null);
   const [userId, setUserId] = useState<any>(null);
   const [userHorses, setUserHorses] = useState<HorseResponseProfile[]>([]);
+  const [userMoney, setUserMoney] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [showPopup, setShowPopup] = useState(false);
+  const [horseToPurchase, setHorseToPurchase] = useState<HorseResponseProfile | null>(null);
 
   useEffect(() => {
     const checkAuthAndFetch = async () => {
@@ -54,12 +62,12 @@ const HorseSelectorSelect = () => {
 
   useEffect(() => {
     const checkUserHorses = async () => {
-      if (!userId) return; 
+      if (!userId) return;
 
       try {
         const getResult = await getUser(userId);
         setUserHorses(getResult.horses);
-        console.log(getResult.horses);
+        setUserMoney(getResult.monies);
       } catch (error) {
         console.error("Erro ao buscar cavalos do usuário:", error);
       }
@@ -75,7 +83,42 @@ const HorseSelectorSelect = () => {
   const handleHorseSelect = (horse: HorseResponseProfile) => {
     if (isHorseOwned(horse)) {
       setSelectedHorse(horse);
+    } else {
+      setHorseToPurchase(horse);
     }
+  };
+
+  const handlePurchaseHorse = async () => {
+    if (!horseToPurchase || !userId) return;
+
+    try {
+      if (userMoney < horseToPurchase.cost) {
+        alert("You dont have enough money to buy this horse");
+        return;
+      }
+      const buyHorse = await purchaseHorse(userId, horseToPurchase._id);
+
+      if (buyHorse) {
+        setUserHorses(buyHorse.user.horses);
+        setUserMoney(buyHorse.user.monies);
+        setSelectedHorse(horseToPurchase);
+        setHorseToPurchase(null);
+        confetti({
+                particleCount: 400,
+                spread: 240,
+                origin: { y: 0.6 },
+                zIndex: 9999,
+                scalar: 1.7
+              });
+      }
+
+    } catch (error) {
+      console.error("Erro ao comprar cavalo:", error);
+    }
+  };
+
+  const handleCancelPurchase = () => {
+    setHorseToPurchase(null);
   };
 
   if (loading) {
@@ -116,10 +159,26 @@ const HorseSelectorSelect = () => {
 
         <div className="HorseStats">
           <h2>{selectedHorse?.name}</h2>
-          <div><p id="Speed">Speed: </p><p>{selectedHorse?.speed}</p></div>
-          <div><p id="Stamina">Stamina:</p><p>{selectedHorse?.stamina}</p></div>
-          <div><p id="Power">Power:</p><p>{selectedHorse?.power}</p></div>
-          <div><p id="Wit">Wit:</p><p>{selectedHorse?.wit}</p></div>
+          <div id="Speed">
+            <img className='statIcon' src={speedIcon} />
+            <p>Speed: </p>
+            <p>{selectedHorse?.speed}</p>
+          </div>
+          <div id="Stamina">
+            <img className='statIcon' src={staminaIcon} />
+            <p>Stamina:</p>
+            <p>{selectedHorse?.stamina}</p>
+          </div>
+          <div id="Power">
+            <img className='statIcon' src={powerIcon} />
+            <p>Power:</p>
+            <p>{selectedHorse?.power}</p>
+          </div>
+          <div id="Wit">
+            <img className='statIcon' src={witIcon} />
+            <p>Wit:</p>
+            <p>{selectedHorse?.wit}</p>
+          </div>
         </div>
 
         <div className="CareerInfo">
@@ -141,6 +200,15 @@ const HorseSelectorSelect = () => {
           );
         })}
       </div>
+
+      {horseToPurchase && (
+        <PurchaseModal
+          horse={horseToPurchase}
+          userMoney={userMoney}
+          onPurchase={handlePurchaseHorse}
+          onCancel={handleCancelPurchase}
+        />
+      )}
     </div>
   );
 };

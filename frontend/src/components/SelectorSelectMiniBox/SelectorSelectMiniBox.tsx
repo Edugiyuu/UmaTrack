@@ -12,10 +12,10 @@ const SelectorSelectMiniBox = ({ horse, isSelected, isOwned = true, onClick }: P
   return (
     <div 
       className={`SelectorSelectMiniBox ${isSelected ? 'selected' : ''} ${!isOwned ? 'disabled' : ''}`}
-      onClick={isOwned ? onClick : undefined}
+      onClick={onClick}
       style={{ 
         opacity: isOwned ? 1 : 0.5,
-        cursor: isOwned ? 'pointer' : 'not-allowed'
+        cursor: 'pointer'
       }}
     >
       <img 

@@ -7,7 +7,7 @@ const HorseSchema = new mongoose.Schema({
   power: { type: Number, required: true },
   speed: { type: Number, required: true },
   wit: { type: Number, required: true },
-  cost: {type:Number,required:true}
+  cost: {type:Number,required:true},
 }, { timestamps: true });
 
 export default mongoose.model("Horse", HorseSchema);

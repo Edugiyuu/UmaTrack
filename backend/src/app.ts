@@ -6,9 +6,6 @@ import mongoose from "mongoose";
 import cors from 'cors';
 import routes from "./routes";
 
-console.log('DB_USER:', process.env.DB_USER);
-console.log('DB_PASS:', process.env.DB_PASS);
-
 const app = express();
 app.use(express.json());
 app.use(cors());

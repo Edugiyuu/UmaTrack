@@ -6,4 +6,5 @@ export interface HorseResponseProfile {
     speed: number;
     wit: number;
     _id: string;
+    cost: number
 }

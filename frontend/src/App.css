@@ -4,3 +4,17 @@
     padding: 0;
     user-select: none;
 }
+:root {
+  --font-tilt: 'Tilt Warp', cursive;
+  --font-inder: 'Inder', sans-serif;
+  --font-rampart: 'Rampart One', cursive;
+  --font-staat: 'Staatliches', cursive;
+
+  --color-brown: #292420;
+  --color-red: #FF7C6E;
+  --color-orange: #FF8B32;
+  --color-yellow: #FFC107;
+  --color-green: #4CAF50;
+  --color-blue: #2196F3;
+  --color-indigo: #3F51B5;
+}

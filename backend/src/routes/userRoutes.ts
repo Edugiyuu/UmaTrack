@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { create, getUser, login } from '../controllers/userController';
+import { create, getUser, login, purchaseHorse } from '../controllers/userController';
 import { encryptPassword } from '../middleware/encryptPassword';
 import { authMiddleware } from '../middleware/authMiddleware';
 
@@ -15,7 +15,6 @@ router.get('/verify-token', authMiddleware, (req: AuthenticatedRequest, res: Res
 router.post('/user/create', encryptPassword, create);
 router.post('/user/login', login);
 router.get('/user/:id',authMiddleware, getUser);
-/* router.get('/users', getAllHorses);
-router.post('/user/create', postHorses); */
+router.post('/user/:id/purchase-horse', authMiddleware, purchaseHorse);
 
 export default router;
