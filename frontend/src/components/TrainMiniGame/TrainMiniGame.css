@@ -1,0 +1,136 @@
+.TrainMiniGameBackground {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.TrainMiniGame {
+    background: linear-gradient(145deg, #ffffff, #f0f0f0);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    max-width: 500px;
+    width: 90%;
+}
+
+.train-gif{
+    width: 100px;
+    height: auto;
+}
+
+.TrainMiniGame h2 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    color: #333;
+    text-transform: capitalize;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.TrainMiniGame p {
+    font-size: 1.2em;
+    margin: 15px 0;
+    color: #666;
+    line-height: 1.4;
+}
+
+.TrainMiniGame button {
+    font-size: 1.2em;
+    padding: 15px 30px;
+    margin: 10px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.TrainMiniGame button:first-of-type {
+    background: linear-gradient(145deg, #4CAF50, #45a049);
+    color: white;
+}
+
+.TrainMiniGame button:first-of-type:hover {
+    background: linear-gradient(145deg, #45a049, #3d8b40);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.TrainMiniGame button:last-of-type {
+    background: linear-gradient(145deg, #f44336, #da190b);
+    color: white;
+}
+
+.TrainMiniGame button:last-of-type:hover {
+    background: linear-gradient(145deg, #da190b, #c5170a);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.click-button {
+    font-size: 3em !important;
+    padding: 40px 60px !important;
+    background: linear-gradient(145deg, #2196F3, #1976D2) !important;
+    color: white !important;
+    border-radius: 50% !important;
+    width: 200px !important;
+    height: 200px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 20px auto !important;
+    animation: pulse 1s infinite;
+    transition: all 0.1s ease !important;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.7);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(33, 150, 243, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(33, 150, 243, 0);
+    }
+}
+
+.click-button:active {
+    transform: scale(0.95) !important;
+    animation: none;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .TrainMiniGame {
+        padding: 30px;
+        width: 95%;
+    }
+    
+    .TrainMiniGame h2 {
+        font-size: 2em;
+    }
+    
+    .click-button {
+        font-size: 2.5em !important;
+        width: 150px !important;
+        height: 150px !important;
+        padding: 30px 40px !important;
+    }
+}

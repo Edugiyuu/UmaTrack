@@ -47,7 +47,7 @@ const HorseSelectorSelect = () => {
       }
 
       try {
-        const response = await axios.get("http://localhost:3000/horse");
+        const response = await axios.get(`http://localhost:3000/horse`);
         setHorses(response.data);
         setUserId(result.user.id);
       } catch (error) {
@@ -182,7 +182,7 @@ const HorseSelectorSelect = () => {
         </div>
 
         <div className="CareerInfo">
-          <CustomLink to="Career" title="START" className="StartCareer" />
+          <CustomLink to={`Career/${selectedHorse?._id}`} title="START" className="StartCareer" />
         </div>
       </div>
 
