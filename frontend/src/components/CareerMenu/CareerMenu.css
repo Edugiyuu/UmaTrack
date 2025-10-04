@@ -1,4 +1,4 @@
-.careerModeMenu{
+.careerModeMenu {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -7,21 +7,34 @@
     font-family: var(--font-inder);
 }
 
-.statsToTrain{
+.statsToTrain {
     display: flex;
     flex-direction: column;
-    
+
     margin-top: 10px;
     flex-direction: row;
     align-items: center;
     justify-content: center;
 }
-.statsToTrain div p{
-    background-color: var(--speed);
+
+.statsToTrain div p {
+  
     width: 100%;
     text-align: center;
     font-size: 1.4rem;
-    
+
+}
+.speedTrain{
+    background-color: var(--speed);
+}
+.staminaTrain{
+    background-color: var(--stamina);
+}
+.powerTrain{
+    background-color: var(--power);
+}
+.witTrain{
+    background-color: var(--wit);
 }
 .statToTrain-container{
     display: flex;
@@ -31,5 +44,35 @@
     width: 15vw;
     height: 10vh;
     border: 1px solid rgb(222, 222, 222);
+
+}
+.statToTrain-container button{
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: none;
+    color: black;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.walking-gif {
+    position: relative;
+  object-fit: cover;
+  width: 20vw;
+  height: 100%;
+  object-position: 0px 10px;
+  vertical-align: top;
+  z-index: 2;
+}
+
+.walking-gif-container {
+   /*  background-image: url('../../assets/backgrounds/field2.png'); */
     
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: red;
+  
 }
