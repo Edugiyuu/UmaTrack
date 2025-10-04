@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import "./TrainMiniGame.css";
 import confetti from "canvas-confetti";
+import { PlayAudio } from "../../utils/PlayAudio";
 
 interface TrainMiniGameProps {
     show: boolean;
@@ -19,7 +20,9 @@ const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete
     const [score, setScore] = useState(0);
     const [circleSize, setCircleSize] = useState(200);
     const [gameActive, setGameActive] = useState(false);
-    const [randomNumber, setRandomNumber] = useState(Math.floor(Math.random() * 100));
+    const [randomPosition, setRandomPosition] = useState(Math.floor(Math.random() * 80)+20);
+    const [randomSpeed, setRandomSpeed] = useState(Math.floor(Math.random() * 5) + 6);
+    const [randomSize, setRandomSize] = useState(Math.floor(Math.random() * 150) + 200);
     const startGame = () => {
         setScore(0);
         setCircleSize(200);
@@ -41,9 +44,9 @@ const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete
             return;
         }
 
-        let size = 250;
+        let size = randomSize;
         const interval = setInterval(() => {
-            size -= 7; // velocidade de encolher
+            size -= randomSpeed; // velocidade de encolher
             if (size <= 20) {
                 clearInterval(interval);
                 // se não acertar até o fim, errou
@@ -54,7 +57,8 @@ const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete
                 }
 
                 setCircleSize(200); // reseta para próxima
-                setRandomNumber(Math.floor(Math.random() * 100)); // novo número aleatório
+                setRandomPosition(Math.floor(Math.random() * 80)+20); // novo número aleatório
+
             } else {
                 setCircleSize(size);
             }
@@ -80,11 +84,18 @@ const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete
                         shapes: ['star'],
                         colors: ["#34ef31ff"]
                     });
-                    setRandomNumber(Math.floor(Math.random() * 100));
-                    setCircleSize(200); // reseta para próxima tentativa
+                    PlayAudio(`../../audios/correct2.wav`, 0.8);
+                    setRandomPosition(Math.floor(Math.random() * 80)+20);
+                    setCircleSize(200);
+                    setRandomSpeed(Math.floor(Math.random() * 5) + 6);
+                    setRandomSize(Math.floor(Math.random() * 150) + 200); // novo tamanho aleatório
                 } else {
                     setScore((s) => s - 1);
-                    setRandomNumber(Math.floor(Math.random() * 100));
+                    PlayAudio(`../../audios/incorrect.wav`, 0.8);
+                    setRandomPosition(Math.floor(Math.random() * 80)+20);
+                    setRandomSpeed(Math.floor(Math.random() * 5) + 6);
+                    setRandomSize(Math.floor(Math.random() * 150) + 200); // novo tamanho aleatório
+
                 }
             }
         },
@@ -99,8 +110,8 @@ const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete
     if (!show) return null;
 
     return (
-        <div className="TrainMiniGameBackground" onClick={onClose}>
-            <div className="TrainMiniGame" onClick={(e) => e.stopPropagation()}>
+        <div className="TrainMiniGameBackground" >
+            <div className="TrainMiniGame" >
                 {!gameActive ? (
                     <div>
                         <h2>Train {trainType}</h2>
@@ -109,26 +120,38 @@ const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete
                         <button onClick={onClose}>Cancel</button>
                     </div>
                 ) : (
-                    <div className="qte-container">
-                        <h2>Score: {score}/{maxPoints}</h2>
-                        <div className="circle-target"
-                            style={{
-                                top: `${randomNumber}%`,
-                                bottom: `${randomNumber}%`,
-                                left: `${randomNumber}%`,
-                            }}
-                        >E</div>
-                        <div
-                            className="circle-moving"
-                            style={{
-                                width: `${circleSize}px`,
-                                height: `${circleSize}px`,
-                                top: `${randomNumber}%`,
-                                bottom: `${randomNumber}%`,
-                                left: `${randomNumber}%`,
-                            }}
-                        ></div>
-                        <p>Pressione <b>E</b> no momento certo!</p>
+                    <div className="game-area">
+
+
+                        <div className="qte-container">
+                            <h2>Score: {score}/{maxPoints}</h2>
+                            <div className="circle-target"
+                                style={{
+                                    top: `${randomPosition}%`,
+                                    left: `${randomPosition}%`,
+                                }}
+                            >E
+                            </div>
+                            <div
+                                className="circle-moving"
+                                style={{
+                                    width: `${circleSize}px`,
+                                    height: `${circleSize}px`,
+                                    top: `${randomPosition}%`,
+                                    left: `${randomPosition}%`,
+                                }}
+                            >
+                            </div>
+                             
+                        </div>
+                       <div className="train-gif-container">
+                            <img
+                            src={`/horses/NiceNature/Profile2.gif`}
+                            typeof='image/gif'
+                            className='train-gif'
+                        />
+                        </div>
+                        
                     </div>
                 )}
             </div>
