@@ -38,15 +38,15 @@
   margin-left: -50px;
   margin-top: -50px;
   border: 7px solid rgb(72, 236, 72);
-  border-radius: 30%;
-  background-color: rgba(100, 255, 61, 0.19)
+  border-radius: 40%;
+  background-color: rgba(100, 255, 61, 0.204)
 }
 
 .circle-moving {
   position: absolute;
-  background-color: rgba(239, 239, 239, 0.2);
-  border: 5px solid rgb(239, 239, 239);
-  border-radius: 30%;
+  background-color: rgba(223, 223, 223, 0.236);
+  border: 5px solid rgb(228, 228, 228);
+  border-radius: 40%;
   transform: translate(-50%, -50%);
 }
 e
