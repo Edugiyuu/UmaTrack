@@ -4,11 +4,12 @@ import { useParams } from 'react-router-dom';
 import './CareerMenu.css'
 import TrainMiniGame from '../TrainMiniGame/TrainMiniGame';
 import { horseColors } from '../HorseSelectorSelect/HorseSelectorSelect';
+import { useHorse } from '../../hooks/ContextHorse';
 
 
 const CareerMenu = () => {
     const { horseId } = useParams();
-    const [data, setData] = useState<any>();
+    const { horse, setHorse } = useHorse();
     const [training, setTraining] = useState<boolean>(false);
     const [turnsLeft, setTurnsLeft] = useState<number>(5);
     const [currentTrainType, setCurrentTrainType] = useState<'speed' | 'stamina' | 'power' | 'wit'>('speed');
@@ -17,7 +18,7 @@ const CareerMenu = () => {
         const fetchData = async () => {
             try {
                 const response = await getOneHorse(horseId!);
-                setData(response);
+                setHorse(response);
             } catch (error) {
                 console.error(error);
             }
@@ -37,13 +38,15 @@ const CareerMenu = () => {
     const handleTrainingComplete = (rewards: { speed: number; stamina: number; power: number; wit: number }) => {
         console.log('🎉 Recompensas do treinamento:', rewards);
 
-        setData((prev: any) => ({
-            ...prev,
-            speed: prev.speed + rewards.speed,
-            stamina: prev.stamina + rewards.stamina,
-            power: prev.power + rewards.power,
-            wit: prev.wit + rewards.wit
-        }));
+        if (horse) {
+            setHorse({
+                ...horse,
+                speed: horse.speed + rewards.speed,
+                stamina: horse.stamina + rewards.stamina,
+                power: horse.power + rewards.power,
+                wit: horse.wit + rewards.wit
+            });
+        }
 
         setTraining(false);
 
@@ -51,11 +54,11 @@ const CareerMenu = () => {
 
     return (
         <div className='careerModeMenu'>
-            <p>{data?.name}</p>
+            <p>{horse?.name}</p>
             <div className='walking-gif-container'
             style={{
-                        backgroundColor: data?.name
-                          ? horseColors[data?.name] || "#24bb6d"
+                        backgroundColor: horse?.name
+                          ? horseColors[horse?.name] || "#24bb6d"
                           : "#c2c2c2ff",
                       }}>
                 <img
@@ -65,7 +68,7 @@ const CareerMenu = () => {
             />
             </div>
             
-            <p>{data?.passiveBuff}</p>
+            <p>{horse?.passiveBuff}</p>
             <h3>Turns left: {turnsLeft}</h3>
 
             <TrainMiniGame
@@ -78,19 +81,19 @@ const CareerMenu = () => {
 
             <div className='statsToTrain'>
                 <div className='statToTrain-container'>
-                    <p className='speedTrain'>Speed: {data?.speed || 0}</p>
+                    <p className='speedTrain'>Speed: {horse?.speed || 0}</p>
                     <button onClick={() => startTraining('speed')}>Train</button>
                 </div>
                 <div className='statToTrain-container'>
-                    <p className='staminaTrain'>Stamina: {data?.stamina || 0}</p>
+                    <p className='staminaTrain'>Stamina: {horse?.stamina || 0}</p>
                     <button onClick={() => startTraining('stamina')}>Train</button>
                 </div>
                 <div className='statToTrain-container'>
-                    <p className='powerTrain'>Power: {data?.power || 0}</p>
+                    <p className='powerTrain'>Power: {horse?.power || 0}</p>
                     <button onClick={() => startTraining('power')}>Train</button>
                 </div>
                 <div className='statToTrain-container'>
-                    <p className='witTrain'>Wit: {data?.wit || 0}</p>
+                    <p className='witTrain'>Wit: {horse?.wit || 0}</p>
                     <button onClick={() => startTraining('wit')}>Train</button>
                 </div>
             </div>

@@ -16,6 +16,7 @@
     "axios": "^1.11.0",
     "canvas-confetti": "^1.9.3",
     "gsap": "^3.13.0",
+    "motion": "^12.23.22",
     "react": "^19.1.0",
     "react-confetti": "^6.4.0",
     "react-dom": "^19.1.0",
