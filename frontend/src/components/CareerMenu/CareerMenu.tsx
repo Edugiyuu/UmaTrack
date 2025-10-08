@@ -54,7 +54,7 @@ const CareerMenu = () => {
 
     return (
         <div className='careerModeMenu'>
-            <p>{horse?.name}</p>
+            <p id='horseNameTitle'>{horse?.name}</p>
             <div className='walking-gif-container'
             style={{
                         backgroundColor: horse?.name
@@ -69,7 +69,7 @@ const CareerMenu = () => {
             </div>
             
             <p>{horse?.passiveBuff}</p>
-            <h3>Turns left: {turnsLeft}</h3>
+            <h3 >Turns left: <b id='turnsLeft'>{turnsLeft}</b></h3>
 
             <TrainMiniGame
                 show={training}
