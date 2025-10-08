@@ -75,12 +75,14 @@
   border-radius: 30%;
   transform: translate(-50%, -50%);
 }
-e
 
-.train-gif{
-    width: 100px;
-    height: auto;
+.speedIcon, .powerIcon, .staminaIcon, .witIcon {
+    width: 30px;
+    height: 30px;
+    margin-right: 8px;
+    vertical-align: middle;
 }
+
 
 .TrainMiniGame h2 {
     font-size: 2.5em;

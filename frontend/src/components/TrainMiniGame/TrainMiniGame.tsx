@@ -4,7 +4,10 @@ import confetti from "canvas-confetti";
 import { PlayAudio } from "../../utils/PlayAudio";
 import CountUp from "../ui/CountUp/CountUp";
 import { useHorse } from "../../hooks/ContextHorse";
-
+import speedIcon from '../../assets/gameIcons/speedIcon.png'
+import staminaIcon from '../../assets/gameIcons/staminaIcon.png'
+import powerIcon from '../../assets/gameIcons/powerIcon.png'
+import witIcon from '../../assets/gameIcons/witIcon.png'
 
 interface TrainMiniGameProps {
     show: boolean;
@@ -163,7 +166,7 @@ const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete
                 {showResults && (
                     <div className="result-screen">
                         <h2>Treino concluído!</h2>
-                        <p>Final score: <CountUp
+                        <p>+<CountUp
                             from={0}
                             to={score}
                             separator=","
@@ -172,10 +175,10 @@ const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete
                             className="count-up-text"
                         /> pontos!</p>
                         <div>
-                            <p>{horse?.speed}</p>
-                            <p>{horse?.power}</p>
-                            <p>{horse?.stamina}</p>
-                            <p>{horse?.wit}</p>
+                            <p><img className="speedIcon" src={speedIcon}/> {horse?.speed}</p>
+                            <p><img className="powerIcon" src={powerIcon}/>{horse?.power}</p>
+                            <p><img className="staminaIcon" src={staminaIcon}/>{horse?.stamina}</p>
+                            <p><img className="witIcon" src={witIcon}/>{horse?.wit}</p>
                         </div>
                         <button onClick={() => {
                             const rewards = { speed: 0, stamina: 0, power: 0, wit: 0 };
