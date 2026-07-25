@@ -3,7 +3,7 @@ import "./TrainMiniGame.css";
 import confetti from "canvas-confetti";
 import { PlayAudio } from "../../utils/PlayAudio";
 import CountUp from "../ui/CountUp/CountUp";
-import { useHorse } from "../../hooks/ContextHorse";
+import type { HorseResponseProfile } from "../../types/horse";
 import speedIcon from '../../assets/gameIcons/speedIcon.png'
 import staminaIcon from '../../assets/gameIcons/staminaIcon.png'
 import powerIcon from '../../assets/gameIcons/powerIcon.png'
@@ -17,12 +17,13 @@ interface TrainMiniGameProps {
         stamina: number;
         power: number;
         wit: number;
-    }) => void;
+    }) => Promise<void> | void;
     trainType: "speed" | "stamina" | "power" | "wit";
     maxPoints?: number;
+    horse: HorseResponseProfile;
 }
 
-const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete, trainType, maxPoints = 3, }) => {
+const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete, trainType, horse, maxPoints = 3 }) => {
     const [score, setScore] = useState(0);
     const [circleSize, setCircleSize] = useState(200);
     const [gameActive, setGameActive] = useState(false);
@@ -30,13 +31,15 @@ const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete
     const [randomSpeed, setRandomSpeed] = useState(Math.floor(Math.random() * 5) + 6);
     const [randomSize, setRandomSize] = useState(Math.floor(Math.random() * 150) + 200);
     const [showResults, setShowResults] = useState(false);
-    const { horse } = useHorse();
+    const [saving, setSaving] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
     
     const startGame = () => {
         setScore(0);
         setCircleSize(200);
         setGameActive(true);
         setShowResults(false);
+        setSaveError(null);
     };
 
     const endGame = () => {
@@ -61,7 +64,7 @@ const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete
                 if (score <= 0) {
                     endGame();
                 } else {
-                    setScore(score - 1);
+                    setScore((current) => Math.max(0, current - 1));
                 }
 
                 setCircleSize(200); // reseta para próxima
@@ -73,16 +76,17 @@ const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete
         }, 50);
 
         return () => clearInterval(interval);
-    }, [gameActive, score]);
+    }, [gameActive, maxPoints, randomSize, randomSpeed, score]);
 
     // Quando o player aperta E
     const handleKeyPress = useCallback(
         (e: KeyboardEvent) => {
             if (!gameActive) return;
             if (e.key.toLowerCase() === "e") {
+                if (e.repeat) return;
                 // Verifica se a bolinha está "perto" do tamanho alvo
                 if (circleSize >= 80 && circleSize <= 110) {
-                    setScore((s) => s + 1);
+                    setScore((current) => Math.min(maxPoints, current + 1));
                     confetti({
                         particleCount: 10,
                         spread: 150,
@@ -92,14 +96,14 @@ const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete
                         shapes: ['star'],
                         colors: ["#34ef31ff"]
                     });
-                    PlayAudio(`../../audios/correct2.wav`, 0.8);
+                    PlayAudio(`${import.meta.env.BASE_URL}audios/correct2.wav`, 0.8);
                     setRandomPosition(Math.floor(Math.random() * 80) + 20);
                     setCircleSize(200);
                     setRandomSpeed(Math.floor(Math.random() * 5) + 6);
                     setRandomSize(Math.floor(Math.random() * 150) + 200); // novo tamanho aleatório
                 } else {
-                    setScore((s) => s - 1);
-                    PlayAudio(`../../audios/incorrect.wav`, 0.8);
+                    setScore((current) => Math.max(0, current - 1));
+                    PlayAudio(`${import.meta.env.BASE_URL}audios/incorrect.wav`, 0.8);
                     setRandomPosition(Math.floor(Math.random() * 80) + 20);
                     setRandomSpeed(Math.floor(Math.random() * 5) + 6);
                     setRandomSize(Math.floor(Math.random() * 150) + 200); // novo tamanho aleatório
@@ -107,7 +111,7 @@ const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete
                 }
             }
         },
-        [circleSize, gameActive]
+        [circleSize, gameActive, maxPoints]
     );
 
     useEffect(() => {
@@ -155,8 +159,8 @@ const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete
                         </div>
                         <div className="train-gif-container">
                             <img
-                                src={`/horses/NiceNature/Profile2.gif`}
-                                typeof='image/gif'
+                                src={`${import.meta.env.BASE_URL}horses/${horse.name.replace(/\s+/g, "")}/Profile2.gif`}
+                                alt={horse.name}
                                 className='train-gif'
                             />
                         </div>
@@ -180,13 +184,22 @@ const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete
                             <p><img className="staminaIcon" src={staminaIcon}/>{horse?.stamina}</p>
                             <p><img className="witIcon" src={witIcon}/>{horse?.wit}</p>
                         </div>
-                        <button onClick={() => {
-                            const rewards = { speed: 0, stamina: 0, power: 0, wit: 0 };
-                            rewards[trainType] = Math.min(score, maxPoints);
-                            onComplete(rewards);
-                            setShowResults(false);
+                        {saveError && <p role="alert">{saveError}</p>}
+                        <button disabled={saving} onClick={async () => {
+                            try {
+                                setSaving(true);
+                                setSaveError(null);
+                                const rewards = { speed: 0, stamina: 0, power: 0, wit: 0 };
+                                rewards[trainType] = Math.max(0, Math.min(score, maxPoints));
+                                await onComplete(rewards);
+                                setShowResults(false);
+                            } catch (error) {
+                                setSaveError(error instanceof Error ? error.message : "Could not save training.");
+                            } finally {
+                                setSaving(false);
+                            }
                         }}>
-                            OK
+                            {saving ? 'Saving...' : 'OK'}
                         </button>
                     </div>
                 )}

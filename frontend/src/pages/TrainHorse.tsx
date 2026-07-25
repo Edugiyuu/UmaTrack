@@ -1,4 +1,3 @@
-import React from 'react'
 import CareerMenu from '../components/CareerMenu/CareerMenu'
 
 const TrainHorse = () => {

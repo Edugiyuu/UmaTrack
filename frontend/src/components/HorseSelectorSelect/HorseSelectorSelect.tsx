@@ -1,11 +1,12 @@
-import axios from 'axios'
 import SelectorSelectMiniBox from '../SelectorSelectMiniBox/SelectorSelectMiniBox'
 import PurchaseModal from '../PurchaseModal/PurchaseModal'
 import './HorseSelectorSelect.css'
 import { useState, useEffect } from 'react';
 import CustomLink from '../../utils/CustomLink';
 import { verifyToken } from '../../services/authToken';
-import { getUser, purchaseHorse } from '../../services/User';
+import { getCurrentUser, purchaseHorse } from '../../services/User';
+import { getAllHorses } from '../../services/Horse';
+import { horseColors } from '../../constants/horseColors';
 import type { HorseResponseProfile } from '../../types/horse';
 import speedIcon from '../../assets/gameIcons/speedIcon.png';
 import powerIcon from '../../assets/gameIcons/powerIcon.png';
@@ -13,68 +14,55 @@ import staminaIcon from '../../assets/gameIcons/staminaIcon.png';
 import witIcon from '../../assets/gameIcons/witIcon.png';
 import confetti from 'canvas-confetti';
 
-export const horseColors: { [key: string]: string } = {
-  'Oguri Cap': '#b8b8b8ff',
-  'Silence Suzuka': '#2ab26cff',
-  'Special Week': '#d45ce4ff',
-  'Gold Ship': '#ffd700',
-  'Mejiro McQueen': '#800080',
-  'El Condor Pasa': '#ff4500',
-  'Daiwa Scarlet': '#ff0000',
-  'Nice Nature': '#775f58ff',
-  'Grass Wonder': '#3f8bc2ff',
-  'Tokai Teio': '#4169e1',
-  'Twin Turbo': '#ff8c00',
-  'Vodka': '#8a2be2'
-};
 
 const HorseSelectorSelect = () => {
   const [horses, setHorses] = useState<HorseResponseProfile[]>([]);
   const [selectedHorse, setSelectedHorse] = useState<HorseResponseProfile | null>(null);
-  const [userId, setUserId] = useState<any>(null);
   const [userHorses, setUserHorses] = useState<HorseResponseProfile[]>([]);
   const [userMoney, setUserMoney] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [showPopup, setShowPopup] = useState(false);
   const [horseToPurchase, setHorseToPurchase] = useState<HorseResponseProfile | null>(null);
+  const [purchasing, setPurchasing] = useState(false);
 
   useEffect(() => {
-    const checkAuthAndFetch = async () => {
+    let cancelled = false;
+
+    const loadPage = async () => {
       const result = await verifyToken();
 
       if (!result.valid) {
-        setShowPopup(true);
+        if (!cancelled) {
+          setShowPopup(true);
+          setLoading(false);
+        }
+        return;
       }
 
       try {
-        const response = await axios.get(`http://localhost:3000/horse`);
-        setHorses(response.data);
-        setUserId(result.user.id);
+        const [horseCatalog, user] = await Promise.all([
+          getAllHorses(),
+          getCurrentUser()
+        ]);
+        if (!cancelled) {
+          setHorses(horseCatalog);
+          setUserHorses(user.horses);
+          setUserMoney(user.monies);
+        }
       } catch (error) {
-        console.error("Erro ao buscar cavalos:", error);
+        if (!cancelled) {
+          console.error("Erro ao carregar seletor de cavalos:", error);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
-    checkAuthAndFetch();
+    loadPage();
+    return () => {
+      cancelled = true;
+    };
   }, []);
-
-  useEffect(() => {
-    const checkUserHorses = async () => {
-      if (!userId) return;
-
-      try {
-        const getResult = await getUser(userId);
-        setUserHorses(getResult.horses);
-        setUserMoney(getResult.monies);
-      } catch (error) {
-        console.error("Erro ao buscar cavalos do usuário:", error);
-      }
-    };
-
-    checkUserHorses();
-  }, [userId]);
 
   const isHorseOwned = (horse: HorseResponseProfile) => {
     return userHorses.some(userHorse => userHorse.name === horse.name);
@@ -89,14 +77,15 @@ const HorseSelectorSelect = () => {
   };
 
   const handlePurchaseHorse = async () => {
-    if (!horseToPurchase || !userId) return;
+    if (!horseToPurchase || purchasing) return;
 
     try {
+      setPurchasing(true);
       if (userMoney < horseToPurchase.cost) {
         alert("You dont have enough money to buy this horse");
         return;
       }
-      const buyHorse = await purchaseHorse(userId, horseToPurchase._id);
+      const buyHorse = await purchaseHorse(horseToPurchase._id);
 
       if (buyHorse) {
         setUserHorses(buyHorse.user.horses);
@@ -114,6 +103,8 @@ const HorseSelectorSelect = () => {
 
     } catch (error) {
       console.error("Erro ao comprar cavalo:", error);
+    } finally {
+      setPurchasing(false);
     }
   };
 
@@ -182,7 +173,9 @@ const HorseSelectorSelect = () => {
         </div>
 
         <div className="CareerInfo">
-          <CustomLink to={`Career/${selectedHorse?._id}`} title="START" className="StartCareer" />
+          {selectedHorse && (
+            <CustomLink to={`/HorseSelector/Career/${selectedHorse._id}`} title="START" className="StartCareer" />
+          )}
         </div>
       </div>
 
@@ -207,6 +200,7 @@ const HorseSelectorSelect = () => {
           userMoney={userMoney}
           onPurchase={handlePurchaseHorse}
           onCancel={handleCancelPurchase}
+          isPurchasing={purchasing}
         />
       )}
     </div>

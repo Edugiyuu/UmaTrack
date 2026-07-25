@@ -1,41 +1,41 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { getUser } from "../../services/User";
+import { getCurrentUser } from "../../services/User";
+import type { UserResponseProfile } from "../../types/user";
 import "./UserProfileMain.css";
 
 const UserProfileMain = () => {
-  const { userId } = useParams();
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<UserResponseProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await getUser(userId!);
+        const response = await getCurrentUser();
         setData(response);
-        console.log(response);
-        
       } catch (error) {
-        console.error("Erro ao buscar usuário:", error);
+        setError(error instanceof Error ? error.message : "Erro ao buscar usuário");
       } finally {
         setLoading(false);
       }
     };
 
-    if (userId) {
-      fetchUser();
-    }
-  }, [userId]);
+    fetchUser();
+  }, []);
 
   if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
+  if (!data) return <p>User not found.</p>;
 
-  console.log(data.horses[0].name);
+  const favoriteHorse = data.horses[0];
   
   return (
     <div className="UserProfileMain">
       <div className="FavoriteHorse">
         <h3>Favorite Horse</h3>
-        <img src={`/horses/${data.horses[0].name.replace(/\s+/g, "")}/${data.horses[0].name.replace(/\s+/g, "")}1.png`}/>
+        {favoriteHorse && (
+          <img alt={favoriteHorse.name} src={`/horses/${favoriteHorse.name.replace(/\s+/g, "")}/${favoriteHorse.name.replace(/\s+/g, "")}1.png`}/>
+        )}
       </div>
       <div className="UserInfos">
         <h1>{data.username}</h1>
