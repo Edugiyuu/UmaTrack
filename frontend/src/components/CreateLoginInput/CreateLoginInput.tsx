@@ -20,20 +20,15 @@ const CreateLoginInput: React.FC<CreateLoginInputProps> = ({ isLogin = false }) 
   const [loginError, setLoginError] = useState(false);
   const [createError, setCreateError] = useState(false);
   const [createSucess, setCreateSucess] = useState(false);
-  const [firstHorse, setFirstHorse] = useState(false);
+  const [firstHorse, setFirstHorse] = useState("");
   const navigate = useNavigate();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      var result = await createUser({ email, username, password });
+      const result = await createUser({ email, username, password });
       setCreateSucess(true);
-      console.log(result)
-      console.log(result.user)
-      console.log(result.user.horses)
-      console.log(result.user.horses[0])
-      setFirstHorse(result.user.horses[0].name)
-      console.log("Primeiro horse:", firstHorse);
+      setFirstHorse(result.user.horses[0]?.name ?? "a starter horse");
 
       confetti({
         particleCount: 250,

@@ -1,9 +1,20 @@
 import axios from "axios";
 import Cookies from 'universal-cookie';
 import type { CreateUserData, CreateUserResponse, UserResponseProfile } from "../types/user";
+import type { HorseResponseProfile } from "../types/horse";
 
+interface ApiErrorPayload {
+    msg?: string;
+}
 
-const API_BASE_URL = import.meta.env.VITE_API_URL
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
+
+const apiErrorMessage = (error: unknown, fallback: string) => {
+    if (axios.isAxiosError<ApiErrorPayload>(error)) {
+        return error.response?.data?.msg ?? fallback;
+    }
+    return fallback;
+};
 
 export const createUser = async (userData: CreateUserData): Promise<CreateUserResponse> => {
     try {
@@ -18,52 +29,52 @@ export const createUser = async (userData: CreateUserData): Promise<CreateUserRe
         );
         return response.data;
 
-    } catch (error: any) {
-        if (axios.isAxiosError(error)) {
-            if (error.response && error.response.data) {
-                throw new Error(error.response.data.msg || "Erro ao criar usuário");
-            }
-        }
-        throw new Error("Erro desconhecido ao criar usuário");
+    } catch (error: unknown) {
+        throw new Error(apiErrorMessage(error, "Erro ao criar usuário"));
     }
 };
 
 const cookies = new Cookies();
+
+interface LoginData {
+    email: string;
+    password: string;
+}
 
 interface LoginResponse {
     msg: string;
     token: string;
 }
 
-export const LoginUser = async (userData: any): Promise<LoginResponse> => {
+export const LoginUser = async (userData: LoginData): Promise<LoginResponse> => {
     try {
         const response = await axios.post<LoginResponse>(
             `${API_BASE_URL}/user/login`,
             userData
         );
 
-        cookies.set("token", response.data.token, { path: "/", maxAge: 3600 });
+        cookies.set("token", response.data.token, {
+            path: "/",
+            maxAge: 3600,
+            sameSite: "strict",
+            secure: window.location.protocol === "https:"
+        });
 
         return response.data;
-    } catch (error: any) {
-        if (axios.isAxiosError(error)) {
-            if (error.response && error.response.data) {
-                throw new Error(error.response.data.msg || "Erro ao criar usuário");
-            }
-        }
-        throw new Error("Erro desconhecido ao criar usuário");
+    } catch (error: unknown) {
+        throw new Error(apiErrorMessage(error, "Erro ao autenticar usuário"));
     }
 };
 
-export const getToken = () => {
-    return cookies.get("token");
+export const getToken = (): string | undefined => {
+    return cookies.get("token") as string | undefined;
 };
 
 export const logoutUser = () => {
     cookies.remove("token", { path: "/" });
 };
 
-export const getUser = async (userId: string): Promise<UserResponseProfile> => {
+export const getCurrentUser = async (): Promise<UserResponseProfile> => {
     try {
         const token = getToken();
         if (!token) {
@@ -71,7 +82,7 @@ export const getUser = async (userId: string): Promise<UserResponseProfile> => {
         }
 
         const response = await axios.get<UserResponseProfile>(
-            `${API_BASE_URL}/user/${userId}`,
+            `${API_BASE_URL}/user/me`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -80,44 +91,80 @@ export const getUser = async (userId: string): Promise<UserResponseProfile> => {
         );
 
         return response.data;
-    } catch (error: any) {
-        if (axios.isAxiosError(error)) {
-            if (error.response && error.response.data) {
-                throw new Error(error.response.data.msg || "Erro ao buscar usuário");
-            }
-        }
-        throw new Error("Erro desconhecido ao buscar usuário");
+    } catch (error: unknown) {
+        throw new Error(apiErrorMessage(error, "Erro ao buscar usuário"));
     }
 };
 
-export const purchaseHorse = async (userId: string, horseId: string) => {
+export const purchaseHorse = async (horseId: string) => {
   try {
-   
     const token = getToken();
-    const response = await axios.post(
-            `${API_BASE_URL}/user/${userId}/purchase-horse`,
-            {
-                horseId: horseId
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            }
+    if (!token) {
+      throw new Error("Token não encontrado");
+    }
+
+    const response = await axios.post<{
+      user: UserResponseProfile;
+      purchasedHorse: HorseResponseProfile;
+    }>(
+      `${API_BASE_URL}/user/me/purchase-horse`,
+      { horseId },
+      { headers: { Authorization: `Bearer ${token}` } }
     );
-    
+
     return {
       success: true,
       user: response.data.user,
       purchasedHorse: response.data.purchasedHorse
     };
-  } catch (error: any) {
-    console.error('Erro ao comprar cavalo:', error);
-    
-    if (error.response?.data?.msg) {
-      throw new Error(error.response.data.msg);
+  } catch (error: unknown) {
+    throw new Error(apiErrorMessage(error, "Erro ao comprar cavalo"));
+  }
+};
+
+export const getOwnedHorse = async (
+  horseId: string,
+  signal?: AbortSignal
+): Promise<HorseResponseProfile> => {
+  try {
+    const token = getToken();
+    if (!token) {
+      throw new Error("Token não encontrado");
     }
-    
-    throw new Error('Erro ao comprar cavalo');
+
+    const response = await axios.get<HorseResponseProfile>(
+      `${API_BASE_URL}/user/me/horses/${horseId}`,
+      {
+        signal,
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+    return response.data;
+  } catch (error: unknown) {
+    throw new Error(apiErrorMessage(error, "Erro ao buscar cavalo do usuário"));
+  }
+};
+
+export type TrainType = "speed" | "stamina" | "power" | "wit";
+
+export const trainHorse = async (
+  horseId: string,
+  trainType: TrainType,
+  points: number
+): Promise<HorseResponseProfile> => {
+  try {
+    const token = getToken();
+    if (!token) {
+      throw new Error("Token não encontrado");
+    }
+
+    const response = await axios.post<{ horse: HorseResponseProfile }>(
+      `${API_BASE_URL}/user/me/horses/${horseId}/train`,
+      { trainType, points },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return response.data.horse;
+  } catch (error: unknown) {
+    throw new Error(apiErrorMessage(error, "Erro ao salvar treino"));
   }
 };

@@ -7,22 +7,22 @@ export interface CreateUserData {
 }
 
 export interface CreateUserResponse {
-    msg: string;
-    user: {
-        username: string;
-        email: string;
-        horses: any[];
-        _id: string;
-        createdAt: string;
-        updatedAt: string;
-    };
-}
-export interface UserResponseProfile {
+  msg: string;
+  user: {
     username: string;
     email: string;
     horses: HorseResponseProfile[];
     _id: string;
-    monies: number;
     createdAt: string;
     updatedAt: string;
+  };
+}
+export interface UserResponseProfile {
+  username: string;
+  email: string;
+  horses: HorseResponseProfile[];
+  _id: string;
+  monies: number;
+  createdAt: string;
+  updatedAt: string;
 }

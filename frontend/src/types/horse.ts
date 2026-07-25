@@ -1,10 +1,12 @@
 export interface HorseResponseProfile {
-    name: string;
-    passiveBuff: string;
-    stamina: number;
-    power: number;
-    speed: number;
-    wit: number;
-    _id: string;
-    cost: number
+  name: string;
+  passiveBuff?: string;
+  stamina: number;
+  power: number;
+  speed: number;
+  wit: number;
+  _id: string;
+  sourceHorseId?: string;
+  cost: number;
+  turnsLeft?: number;
 }

@@ -1,6 +1,6 @@
 import './PurchaseModal.css';
 import type { HorseResponseProfile } from '../../types/horse';
-import { horseColors } from '../HorseSelectorSelect/HorseSelectorSelect';
+import { horseColors } from '../../constants/horseColors';
 import Marquee from "react-fast-marquee"
 import speedIcon from '../../assets/gameIcons/speedIcon.png';
 import powerIcon from '../../assets/gameIcons/powerIcon.png';
@@ -12,9 +12,10 @@ interface Props {
     userMoney: number;
     onPurchase: () => void;
     onCancel: () => void;
+    isPurchasing: boolean;
 }
 
-const PurchaseModal = ({ horse, userMoney, onPurchase, onCancel }: Props) => {
+const PurchaseModal = ({ horse, userMoney, onPurchase, onCancel, isPurchasing }: Props) => {
     const canAfford = userMoney >= horse.cost;
 
     return (
@@ -59,10 +60,10 @@ const PurchaseModal = ({ horse, userMoney, onPurchase, onCancel }: Props) => {
                 <div className="modal-buttons">
                     <button
                         onClick={onPurchase}
-                        disabled={!canAfford}
+                        disabled={!canAfford || isPurchasing}
                         className={`buy-button ${!canAfford ? 'disabled' : ''}`}
                     >
-                        {canAfford ? 'Buy' : 'Not enough monies..'}
+                        {isPurchasing ? 'Buying...' : canAfford ? 'Buy' : 'Not enough monies..'}
                     </button>
                     <button onClick={onCancel} className="cancel-button">
                         Cancel

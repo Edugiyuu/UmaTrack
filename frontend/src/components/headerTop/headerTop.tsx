@@ -1,15 +1,11 @@
 import './headerTop.css'
 import HorseLogo from '../../assets/horseLogo.png'
 import CustomLink from '../../utils/CustomLink'
-import Cookies from "universal-cookie";
 import { useEffect, useState } from 'react';
 import { verifyToken, logoutUser } from '../../services/authToken';
 
-const cookies = new Cookies();
-
 const HeaderTop = () => {
   const [username, setUsername] = useState<string | null>(null);
-  const [userId, setUserId] = useState<any>(null);
 
   useEffect(() => {
     const checkToken = async () => {
@@ -19,14 +15,12 @@ const HeaderTop = () => {
         
         if (result.valid && result.user) {
           setUsername(result.user.userName);
-          setUserId(result.user.id)
-          
         } else {
-          cookies.remove("token");
+          logoutUser();
           setUsername(null);
         }
-      } catch (error) {
-        cookies.remove("token");
+      } catch {
+        logoutUser();
         setUsername(null);
       }
     };
@@ -48,7 +42,7 @@ const HeaderTop = () => {
       <div className="headerLoginSection">
         {username ? (
           <>
-            <CustomLink className="headerUsername" to={`/UserProfile/${userId}`} title={username}/>
+            <CustomLink className="headerUsername" to="/UserProfile" title={username}/>
             <button 
               onClick={() => {
                 logoutUser();

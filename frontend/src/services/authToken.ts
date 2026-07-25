@@ -1,27 +1,35 @@
 import axios from "axios";
-import Cookies from "universal-cookie";
+import { getToken } from "./User";
+export { logoutUser } from "./User";
 
-const cookies = new Cookies();
-const API_BASE_URL = import.meta.env.VITE_API_URL
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
-export const verifyToken = async () => {
+export interface VerifyTokenResponse {
+    valid: boolean;
+    user?: {
+        id: string;
+        userName: string;
+        iat: number;
+        exp: number;
+    };
+}
+
+export const verifyToken = async (): Promise<VerifyTokenResponse> => {
     try {
-        const token = cookies.get("token");
+        const token = getToken();
         if (!token) throw new Error("Token não encontrado");
 
-        const response = await axios.get(`${API_BASE_URL}/verify-token`, {
+        const response = await axios.get<VerifyTokenResponse>(`${API_BASE_URL}/verify-token`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
         });
 
         return response.data;
-    } catch (error: any) {
-        console.error("Erro ao verificar token:", error.response?.data || error.message);
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+            console.error("Erro ao verificar token:", error.response?.status ?? error.message);
+        }
         return { valid: false };
     }
-};
-
-export const logoutUser = () => {
-    cookies.remove("token", { path: "/" });
 };
