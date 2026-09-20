@@ -1,3 +1,5 @@
 /_bmad/config.user.toml
 /_bmad/custom/*.user.toml
 /_bmad/**/*.bak
+
+frontend/public/models/*.glb
