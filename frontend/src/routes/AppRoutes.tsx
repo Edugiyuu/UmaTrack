@@ -6,6 +6,7 @@ import Login from "../pages/Login";
 import UserProfile from "../pages/UserProfile";
 import TrainHorse from "../pages/TrainHorse";
 import RaceTrackSelection from "../pages/RaceTrackSelection";
+import RaceRun from "../pages/RaceRun";
 
 const AppRoutes = () => {
   return (
@@ -17,6 +18,7 @@ const AppRoutes = () => {
       <Route path="/UserProfile" element={<UserProfile/>} />
       <Route path="/HorseSelector/Career/:horseId" element={<TrainHorse/>} />
       <Route path="/Race/:horseId" element={<RaceTrackSelection/>} />
+      <Route path="/Race/:horseId/:trackSlug" element={<RaceRun/>} />
     </Routes>
   )
 }
