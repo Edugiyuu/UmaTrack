@@ -1,4 +1,4 @@
-import User from "../models/user";
+import User, { MAX_ENERGY, MAX_MOOD } from "../models/user";
 import Horse from "../models/horse";
 import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
@@ -7,6 +7,13 @@ import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import type { AuthenticatedRequest } from '../middleware/authMiddleware';
 import { findOwnedHorse, serializeOwnedHorse } from '../services/ownedHorse';
+import {
+  TRAINING_ENERGY_COST,
+  TRAIN_TYPES,
+  resolveRest,
+  resolveTraining,
+  type TrainType
+} from '../services/trainingEngine';
 
 export const create = async (req: Request, res: Response) => {
   const { email, password, username } = req.body;
@@ -259,20 +266,36 @@ export const getOwnedHorse = async (req: AuthenticatedRequest, res: Response) =>
   }
 };
 
-const trainTypes = ['speed', 'stamina', 'power', 'wit'] as const;
-
 export const trainHorse = async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user?.id;
   const { horseId } = req.params;
-  const { trainType, points } = req.body as { trainType?: string; points?: number };
+  const { trainType, score, maxScore, points } = req.body as {
+    trainType?: string;
+    score?: number;
+    maxScore?: number;
+    /** Legacy field from before the dynamic training update. */
+    points?: number;
+  };
 
   if (!userId) {
     return res.status(401).json({ msg: 'Usuário não autenticado' });
   }
-  if (!trainTypes.includes(trainType as typeof trainTypes[number])) {
+  if (!TRAIN_TYPES.includes(trainType as TrainType)) {
     return res.status(422).json({ msg: 'Tipo de treino inválido' });
   }
-  if (points === undefined || !Number.isInteger(points) || points < 0 || points > 10) {
+
+  const reportedScore = score ?? points;
+  const reportedMax = maxScore ?? 10;
+
+  if (
+    reportedScore === undefined ||
+    !Number.isFinite(reportedScore) ||
+    reportedScore < 0 ||
+    !Number.isFinite(reportedMax) ||
+    reportedMax <= 0 ||
+    reportedMax > 50 ||
+    reportedScore > reportedMax
+  ) {
     return res.status(422).json({ msg: 'Pontuação de treino inválida' });
   }
 
@@ -282,38 +305,82 @@ export const trainHorse = async (req: AuthenticatedRequest, res: Response) => {
       return res.status(404).json({ msg: 'Cavalo não pertence ao usuário' });
     }
 
-    const { horse, ownedHorse } = result;
+    const { horse, ownedHorse, user } = result;
 
     if (ownedHorse.turnsLeft <= 0) {
       return res.status(409).json({ msg: 'Não há turnos restantes' });
     }
 
-    const statPath = `horses.$.${trainType}`;
-    const updatedUser = await User.findOneAndUpdate(
-      {
-        _id: userId,
-        horses: { $elemMatch: { _id: ownedHorse._id, turnsLeft: { $gt: 0 } } }
+    const outcome = resolveTraining({
+      stats: {
+        speed: ownedHorse.speed,
+        stamina: ownedHorse.stamina,
+        power: ownedHorse.power,
+        wit: ownedHorse.wit
       },
-      {
-        $inc: {
-          [statPath]: points,
-          'horses.$.turnsLeft': -1
-        }
-      },
-      { new: true, runValidators: true }
-    );
+      trainType: trainType as TrainType,
+      score: reportedScore,
+      maxScore: reportedMax,
+      energy: ownedHorse.energy,
+      mood: ownedHorse.mood
+    });
 
-    if (!updatedUser) {
-      return res.status(409).json({ msg: 'Treino não pôde ser concluído' });
-    }
+    ownedHorse[trainType as TrainType] += outcome.statGain;
+    ownedHorse.skillPoints += outcome.skillPointsGained;
+    ownedHorse.energy = Math.max(0, ownedHorse.energy - outcome.energySpent);
+    ownedHorse.mood = Math.min(MAX_MOOD, Math.max(1, ownedHorse.mood + outcome.moodChange));
+    ownedHorse.turnsLeft -= 1;
 
-    const updatedOwnedHorse = updatedUser.horses.id(ownedHorse._id);
-    if (!updatedOwnedHorse) {
-      return res.status(500).json({ msg: 'Cavalo atualizado não encontrado' });
-    }
+    await user.save();
 
-    return res.json({ horse: serializeOwnedHorse(horse, updatedOwnedHorse) });
+    return res.json({
+      horse: serializeOwnedHorse(horse, ownedHorse),
+      training: outcome
+    });
   } catch {
     return res.status(500).json({ msg: 'Erro ao salvar treino' });
   }
 };
+
+export const restHorse = async (req: AuthenticatedRequest, res: Response) => {
+  const userId = req.user?.id;
+  const { horseId } = req.params;
+
+  if (!userId) {
+    return res.status(401).json({ msg: 'Usuário não autenticado' });
+  }
+
+  try {
+    const result = await findOwnedHorse(userId, horseId);
+    if (!result) {
+      return res.status(404).json({ msg: 'Cavalo não pertence ao usuário' });
+    }
+
+    const { horse, ownedHorse, user } = result;
+
+    if (ownedHorse.turnsLeft <= 0) {
+      return res.status(409).json({ msg: 'Não há turnos restantes' });
+    }
+    if (ownedHorse.energy >= MAX_ENERGY) {
+      return res.status(409).json({ msg: 'Ela já está descansada' });
+    }
+
+    const rested = resolveRest(ownedHorse.energy, ownedHorse.mood);
+    const energyRecovered = rested.energy - ownedHorse.energy;
+
+    ownedHorse.energy = rested.energy;
+    ownedHorse.mood = rested.mood;
+    ownedHorse.turnsLeft -= 1;
+
+    await user.save();
+
+    return res.json({
+      horse: serializeOwnedHorse(horse, ownedHorse),
+      rest: { energyRecovered, energy: rested.energy, mood: rested.mood }
+    });
+  } catch {
+    return res.status(500).json({ msg: 'Erro ao descansar' });
+  }
+};
+
+export const TRAINING_CONSTANTS = { TRAINING_ENERGY_COST };
