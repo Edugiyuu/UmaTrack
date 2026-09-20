@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon  src/app.ts",
     "race:check": "ts-node --compilerOptions {\\\"module\\\":\\\"CommonJS\\\"} src/scripts/raceEngineCheck.ts",
-    "training:check": "ts-node --compilerOptions {\\\"module\\\":\\\"CommonJS\\\"} src/scripts/trainingEngineCheck.ts"
+    "training:check": "ts-node --compilerOptions {\\\"module\\\":\\\"CommonJS\\\"} src/scripts/trainingEngineCheck.ts",
+    "seed:horses": "ts-node --compilerOptions {\\\"module\\\":\\\"CommonJS\\\"} src/scripts/seedHorses.ts"
   },
   "keywords": [],
   "author": "",
