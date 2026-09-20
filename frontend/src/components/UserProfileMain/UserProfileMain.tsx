@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getCurrentUser } from "../../services/User";
 import type { UserResponseProfile } from "../../types/user";
+import RaceHistory from "../RaceHistory/RaceHistory";
 import "./UserProfileMain.css";
 
 const UserProfileMain = () => {
@@ -41,6 +42,7 @@ const UserProfileMain = () => {
         <h1>{data.username}</h1>
         <h3>Monies: {data.monies}</h3>
       </div>
+      <RaceHistory />
     </div>
   );
 };

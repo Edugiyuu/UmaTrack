@@ -1,0 +1,80 @@
+.RaceHistory {
+  width: min(640px, 100%);
+  padding: 16px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  color: #2b2b2b;
+}
+
+.RaceHistory header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.RaceHistory h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.RaceHistory header span {
+  font-size: 0.82rem;
+  color: #6b6b6b;
+}
+
+.RaceHistory__state {
+  margin: 0;
+  color: #6b6b6b;
+  font-size: 0.88rem;
+}
+
+.RaceHistory ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.RaceHistory li {
+  display: grid;
+  grid-template-columns: 42px 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #f6f7f6;
+  font-size: 0.85rem;
+}
+
+.RaceHistory li.is-win {
+  background: rgba(36, 187, 109, 0.14);
+}
+
+.RaceHistory__place {
+  font-weight: 700;
+}
+
+.RaceHistory__track {
+  display: flex;
+  flex-direction: column;
+}
+
+.RaceHistory__track small {
+  color: #767676;
+  font-size: 0.74rem;
+}
+
+.RaceHistory__time {
+  font-variant-numeric: tabular-nums;
+  color: #5d5d5d;
+}
+
+.RaceHistory__prize {
+  font-weight: 700;
+  color: #17794a;
+}

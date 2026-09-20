@@ -174,7 +174,10 @@ const HorseSelectorSelect = () => {
 
         <div className="CareerInfo">
           {selectedHorse && (
-            <CustomLink to={`/HorseSelector/Career/${selectedHorse._id}`} title="START" className="StartCareer" />
+            <>
+              <CustomLink to={`/HorseSelector/Career/${selectedHorse._id}`} title="START" className="StartCareer" />
+              <CustomLink to={`/Race/${selectedHorse._id}`} title="RACES" className="StartRaces" />
+            </>
           )}
         </div>
       </div>
