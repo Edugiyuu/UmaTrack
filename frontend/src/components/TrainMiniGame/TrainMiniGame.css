@@ -146,3 +146,15 @@
         padding: 30px 40px !important;
     }
 }
+.result-sp {
+  color: #17794a;
+  font-weight: 700;
+}
+
+.result-notes {
+  margin: 6px 0;
+  padding-left: 18px;
+  text-align: left;
+  font-size: 0.82rem;
+  color: #5d5d5d;
+}

@@ -1,0 +1,160 @@
+.SkillPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  color: #2b2b2b;
+}
+
+.SkillPanel__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.SkillPanel__header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.SkillPanel__points {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(36, 187, 109, 0.16);
+  color: #17794a;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.SkillPanel__filter {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.SkillPanel__state {
+  margin: 0;
+  color: #6b6b6b;
+  font-size: 0.88rem;
+}
+
+.SkillPanel__error {
+  margin: 0;
+  color: #b03a1a;
+  font-size: 0.84rem;
+}
+
+.SkillPanel__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.SkillPanel__card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 10px;
+  border-left: 4px solid #b9b9b9;
+  background: #f7f8f7;
+}
+
+.SkillPanel__card--common { border-left-color: #7d8f85; }
+.SkillPanel__card--rare { border-left-color: #2e8bc0; }
+.SkillPanel__card--unique { border-left-color: #e0a100; }
+
+.SkillPanel__card.is-learned {
+  background: rgba(36, 187, 109, 0.1);
+}
+
+.SkillPanel__card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.SkillPanel__rarity {
+  font-size: 0.7rem;
+  color: #767676;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.SkillPanel__description {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: #5d5d5d;
+}
+
+.SkillPanel__requirements {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.SkillPanel__requirements li {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+}
+
+.SkillPanel__requirements li.is-met {
+  background: rgba(36, 187, 109, 0.16);
+  color: #17794a;
+}
+
+.SkillPanel__requirements li.is-missing {
+  background: rgba(228, 87, 46, 0.16);
+  color: #b03a1a;
+}
+
+.SkillPanel__card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.SkillPanel__card-foot button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  background: #24bb6d;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.SkillPanel__card-foot button:disabled {
+  background: #c9c9c9;
+  cursor: not-allowed;
+}
+
+.SkillPanel__learned {
+  color: #17794a;
+}
+
+.SkillPanel__blocker {
+  margin: 0;
+  font-size: 0.74rem;
+  color: #b03a1a;
+}

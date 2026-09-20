@@ -147,24 +147,64 @@ export const getOwnedHorse = async (
 
 export type TrainType = "speed" | "stamina" | "power" | "wit";
 
-export const trainHorse = async (
-  horseId: string,
-  trainType: TrainType,
-  points: number
-): Promise<HorseResponseProfile> => {
-  try {
-    const token = getToken();
-    if (!token) {
-      throw new Error("Token não encontrado");
-    }
+export interface TrainingOutcome {
+    statGain: number;
+    skillPointsGained: number;
+    energySpent: number;
+    moodChange: number;
+    failed: boolean;
+    notes: string[];
+}
 
-    const response = await axios.post<{ horse: HorseResponseProfile }>(
-      `${API_BASE_URL}/user/me/horses/${horseId}/train`,
-      { trainType, points },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    return response.data.horse;
-  } catch (error: unknown) {
-    throw new Error(apiErrorMessage(error, "Erro ao salvar treino"));
-  }
+/**
+ * Reports the minigame performance. The server decides the reward, so the score and
+ * the score that was available are all we send.
+ */
+export const trainHorse = async (
+    horseId: string,
+    trainType: TrainType,
+    score: number,
+    maxScore: number
+): Promise<{ horse: HorseResponseProfile; training: TrainingOutcome }> => {
+    try {
+        const token = getToken();
+        if (!token) {
+            throw new Error("Token não encontrado");
+        }
+
+        const response = await axios.post<{ horse: HorseResponseProfile; training: TrainingOutcome }>(
+            `${API_BASE_URL}/user/me/horses/${horseId}/train`,
+            { trainType, score, maxScore },
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+        return response.data;
+    } catch (error: unknown) {
+        throw new Error(apiErrorMessage(error, "Erro ao salvar treino"));
+    }
+};
+
+export interface RestOutcome {
+    energyRecovered: number;
+    energy: number;
+    mood: number;
+}
+
+export const restHorse = async (
+    horseId: string
+): Promise<{ horse: HorseResponseProfile; rest: RestOutcome }> => {
+    try {
+        const token = getToken();
+        if (!token) {
+            throw new Error("Token não encontrado");
+        }
+
+        const response = await axios.post<{ horse: HorseResponseProfile; rest: RestOutcome }>(
+            `${API_BASE_URL}/user/me/horses/${horseId}/rest`,
+            {},
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+        return response.data;
+    } catch (error: unknown) {
+        throw new Error(apiErrorMessage(error, "Erro ao descansar"));
+    }
 };
