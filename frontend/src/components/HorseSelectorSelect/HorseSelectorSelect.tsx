@@ -8,6 +8,7 @@ import { getCurrentUser, purchaseHorse } from '../../services/User';
 import { getAllHorses } from '../../services/Horse';
 import { horseColors } from '../../constants/horseColors';
 import type { HorseResponseProfile } from '../../types/horse';
+import { horseAnimation } from '../../utils/horseImage';
 import speedIcon from '../../assets/gameIcons/speedIcon.png';
 import powerIcon from '../../assets/gameIcons/powerIcon.png';
 import staminaIcon from '../../assets/gameIcons/staminaIcon.png';
@@ -142,7 +143,7 @@ const HorseSelectorSelect = () => {
           <div id="stylebox2"></div>
           {selectedHorse && (
             <img
-              src={`/horses/${selectedHorse.name.replace(/\s+/g, "")}/Profile1.gif`}
+              {...horseAnimation(selectedHorse.name, 'Profile1.gif')}
               alt={selectedHorse.name}
             />
           )}

@@ -9,6 +9,7 @@ import speedIcon from '../../assets/gameIcons/speedIcon.png'
 import staminaIcon from '../../assets/gameIcons/staminaIcon.png'
 import powerIcon from '../../assets/gameIcons/powerIcon.png'
 import witIcon from '../../assets/gameIcons/witIcon.png'
+import { horseAnimation } from "../../utils/horseImage";
 
 interface TrainMiniGameProps {
     show: boolean;
@@ -158,7 +159,7 @@ const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete
                         </div>
                         <div className="train-gif-container">
                             <img
-                                src={`${import.meta.env.BASE_URL}horses/${horse.name.replace(/\s+/g, "")}/Profile2.gif`}
+                                {...horseAnimation(horse.name, 'Train1.gif')}
                                 alt={horse.name}
                                 className='train-gif'
                             />

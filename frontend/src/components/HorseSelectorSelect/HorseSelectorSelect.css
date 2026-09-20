@@ -3,7 +3,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  width: 100vw;
+  /* 100% instead of 100vw: 100vw includes the scrollbar width. */
+  width: 100%;
   height: 100vh;
   min-height: 45vh;
   font-family: "Tilt Warp", sans-serif;

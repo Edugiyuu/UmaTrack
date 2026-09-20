@@ -1,4 +1,5 @@
-import './PurchaseModal.css';
+import './PurchaseModal.css'
+import { horseAnimation } from '../../utils/horseImage';
 import type { HorseResponseProfile } from '../../types/horse';
 import { horseColors } from '../../constants/horseColors';
 import Marquee from "react-fast-marquee"
@@ -27,7 +28,7 @@ const PurchaseModal = ({ horse, userMoney, onPurchase, onCancel, isPurchasing }:
                     </Marquee>
 
                     <img
-                        src={`/horses/${horse.name.replace(/\s+/g, "")}/Profile1.gif`}
+                        {...horseAnimation(horse.name, 'Profile1.gif')}
                         alt={horse.name}
                         className="horse-preview"
                     />

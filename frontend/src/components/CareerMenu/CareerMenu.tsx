@@ -12,6 +12,7 @@ import {
 } from '../../services/User';
 import { horseColors } from '../../constants/horseColors';
 import type { HorseResponseProfile } from '../../types/horse';
+import { horseAnimation } from '../../utils/horseImage';
 
 /** Mirrors TRAINING_ENERGY_COST and RACE_ENERGY_COST on the server. */
 const TRAINING_ENERGY_COST = 20;
@@ -125,7 +126,7 @@ const CareerMenu = () => {
                           : "#c2c2c2ff",
                       }}>
                 <img
-                src={`/horses/${horse.name.replace(/\s+/g, "")}/Profile2.gif`}
+                {...horseAnimation(horse.name, 'Profile2.gif')}
                 alt={horse.name}
                 className='walking-gif'
             />

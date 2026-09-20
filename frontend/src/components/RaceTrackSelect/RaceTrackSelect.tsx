@@ -80,9 +80,15 @@ const RaceTrackSelect = () => {
     navigate(`/Race/${horseId}/${selectedTrack.slug}?style=${style}`);
   }, [horseId, selectedTrack, blockers, navigate, style]);
 
-  if (loading) return <p className="RaceTrackSelect__state">Carregando pistas...</p>;
-  if (error && !horse) return <p className="RaceTrackSelect__state">{error}</p>;
-  if (!horse) return <p className="RaceTrackSelect__state">Cavalo não encontrado.</p>;
+  if (loading || !horse) {
+    return (
+      <div className="RaceTrackSelect RaceTrackSelect--empty">
+        <p className="RaceTrackSelect__state" role={error ? "alert" : undefined}>
+          {loading ? "Carregando pistas..." : error ?? "Cavalo não encontrado."}
+        </p>
+      </div>
+    );
+  }
 
   const unmet = selectedTrack ? checkRequirements(selectedTrack, horse).filter((check) => !check.met) : [];
 

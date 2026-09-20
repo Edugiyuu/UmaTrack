@@ -1,5 +1,7 @@
 .RaceHistory {
-  width: min(640px, 100%);
+  flex: 1 1 320px;
+  min-width: 0;
+  max-width: 640px;
   padding: 16px;
   border-radius: 14px;
   background: #ffffff;
