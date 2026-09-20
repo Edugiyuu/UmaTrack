@@ -1,0 +1,212 @@
+import type { SkillEffectKind, SkillPhase, SkillRarity, SkillTerrain, StatName } from "../models/skill";
+
+export interface SkillSeed {
+  slug: string;
+  name: string;
+  description: string;
+  rarity: SkillRarity;
+  cost: number;
+  effect: {
+    kind: SkillEffectKind;
+    stat?: StatName;
+    value: number;
+    duration: number;
+  };
+  trigger: {
+    phase: SkillPhase;
+    terrain: SkillTerrain;
+    baseChance: number;
+    maxStaminaRatio?: number;
+    minPosition?: number;
+  };
+  requirements: { speed: number; stamina: number; power: number; wit: number };
+}
+
+/**
+ * Skill catalogue. `effect.value` is read by the race engine and its unit depends on
+ * `effect.kind`: m/s for speedBoost / startDash / cornerBoost, a multiplier for
+ * accelBoost, a fraction of the stamina bar for staminaRecover / staminaSave, a
+ * fraction of the slope penalty cancelled for inclineBoost, and raw stat points
+ * for flatStat.
+ */
+export const SKILL_CATALOG: SkillSeed[] = [
+  // --- Largada ---
+  {
+    slug: "concentration",
+    name: "Concentração",
+    description: "Largada limpa: ganha impulso nos primeiros metros da corrida.",
+    rarity: "common",
+    cost: 60,
+    effect: { kind: "startDash", value: 1.1, duration: 3 },
+    trigger: { phase: "opening", terrain: "any", baseChance: 0.75 },
+    requirements: { speed: 0, stamina: 0, power: 40, wit: 30 }
+  },
+  {
+    slug: "gate-burst",
+    name: "Explosão de Portão",
+    description: "Aceleração brutal logo após o portão abrir.",
+    rarity: "rare",
+    cost: 130,
+    effect: { kind: "accelBoost", value: 0.45, duration: 5 },
+    trigger: { phase: "opening", terrain: "any", baseChance: 0.6 },
+    requirements: { speed: 60, stamina: 0, power: 110, wit: 40 }
+  },
+
+  // --- Velocidade ---
+  {
+    slug: "homestretch-surge",
+    name: "Arrancada Final",
+    description: "Um salto de velocidade quando a reta final aparece.",
+    rarity: "common",
+    cost: 90,
+    effect: { kind: "speedBoost", value: 0.9, duration: 5 },
+    trigger: { phase: "final", terrain: "any", baseChance: 0.06 },
+    requirements: { speed: 90, stamina: 0, power: 0, wit: 50 }
+  },
+  {
+    slug: "lightning-step",
+    name: "Passo Relâmpago",
+    description: "Cadência perfeita na reta: velocidade extra em piso plano.",
+    rarity: "rare",
+    cost: 160,
+    effect: { kind: "speedBoost", value: 1.3, duration: 4 },
+    trigger: { phase: "middle", terrain: "straight", baseChance: 0.05 },
+    requirements: { speed: 130, stamina: 0, power: 60, wit: 70 }
+  },
+  {
+    slug: "last-spurt",
+    name: "Último Fôlego",
+    description: "Tudo o que sobrou nos metros finais.",
+    rarity: "unique",
+    cost: 240,
+    effect: { kind: "speedBoost", value: 1.8, duration: 6 },
+    trigger: { phase: "spurt", terrain: "any", baseChance: 0.12 },
+    requirements: { speed: 150, stamina: 120, power: 90, wit: 90 }
+  },
+
+  // --- Fôlego ---
+  {
+    slug: "steady-breathing",
+    name: "Respiração Constante",
+    description: "Economiza fôlego durante o meio da prova.",
+    rarity: "common",
+    cost: 80,
+    effect: { kind: "staminaSave", value: 0.2, duration: 12 },
+    trigger: { phase: "middle", terrain: "any", baseChance: 0.05 },
+    requirements: { speed: 0, stamina: 80, power: 0, wit: 60 }
+  },
+  {
+    slug: "second-wind",
+    name: "Segundo Fôlego",
+    description: "Recupera fôlego quando o tanque está quase vazio.",
+    rarity: "rare",
+    cost: 170,
+    effect: { kind: "staminaRecover", value: 0.18, duration: 0 },
+    trigger: { phase: "any", terrain: "any", baseChance: 0.08, maxStaminaRatio: 0.3 },
+    requirements: { speed: 0, stamina: 130, power: 0, wit: 100 }
+  },
+  {
+    slug: "iron-lungs",
+    name: "Pulmões de Ferro",
+    description: "Aumenta permanentemente a resistência durante a prova.",
+    rarity: "common",
+    cost: 110,
+    effect: { kind: "flatStat", stat: "stamina", value: 25, duration: 0 },
+    trigger: { phase: "any", terrain: "any", baseChance: 1 },
+    requirements: { speed: 0, stamina: 100, power: 0, wit: 0 }
+  },
+
+  // --- Subida / Power ---
+  {
+    slug: "hill-climber",
+    name: "Escaladora",
+    description: "Reduz boa parte da perda de velocidade nas subidas.",
+    rarity: "common",
+    cost: 120,
+    effect: { kind: "inclineBoost", value: 0.35, duration: 6 },
+    trigger: { phase: "any", terrain: "uphill", baseChance: 0.1 },
+    requirements: { speed: 0, stamina: 60, power: 110, wit: 40 }
+  },
+  {
+    slug: "mountain-heart",
+    name: "Coração de Montanha",
+    description: "Quase ignora a inclinação nas rampas mais duras.",
+    rarity: "unique",
+    cost: 260,
+    effect: { kind: "inclineBoost", value: 0.7, duration: 8 },
+    trigger: { phase: "any", terrain: "uphill", baseChance: 0.14 },
+    requirements: { speed: 60, stamina: 120, power: 180, wit: 60 }
+  },
+  {
+    slug: "downhill-glide",
+    name: "Planagem",
+    description: "Aproveita cada descida para ganhar embalo.",
+    rarity: "common",
+    cost: 95,
+    effect: { kind: "speedBoost", value: 1, duration: 4 },
+    trigger: { phase: "any", terrain: "downhill", baseChance: 0.12 },
+    requirements: { speed: 70, stamina: 0, power: 0, wit: 90 }
+  },
+  {
+    slug: "raw-power",
+    name: "Força Bruta",
+    description: "Empurra o corpo inteiro a cada passada. Power extra na prova.",
+    rarity: "common",
+    cost: 110,
+    effect: { kind: "flatStat", stat: "power", value: 25, duration: 0 },
+    trigger: { phase: "any", terrain: "any", baseChance: 1 },
+    requirements: { speed: 0, stamina: 0, power: 100, wit: 0 }
+  },
+
+  // --- Curvas / Wit ---
+  {
+    slug: "corner-adept",
+    name: "Especialista em Curva",
+    description: "Traça a curva por dentro e perde menos velocidade.",
+    rarity: "common",
+    cost: 100,
+    effect: { kind: "cornerBoost", value: 0.8, duration: 4 },
+    trigger: { phase: "any", terrain: "corner", baseChance: 0.1 },
+    requirements: { speed: 60, stamina: 0, power: 70, wit: 90 }
+  },
+  {
+    slug: "race-reader",
+    name: "Leitura de Prova",
+    description: "Lê o pelotão e escolhe a hora certa de atacar quando está atrás.",
+    rarity: "rare",
+    cost: 150,
+    effect: { kind: "speedBoost", value: 1.1, duration: 5 },
+    trigger: { phase: "final", terrain: "any", baseChance: 0.09, minPosition: 4 },
+    requirements: { speed: 80, stamina: 80, power: 0, wit: 140 }
+  },
+  {
+    slug: "pace-keeper",
+    name: "Ritmista",
+    description: "Mantém o ritmo ideal e gasta menos fôlego a prova inteira.",
+    rarity: "rare",
+    cost: 180,
+    effect: { kind: "staminaSave", value: 0.15, duration: 20 },
+    trigger: { phase: "any", terrain: "any", baseChance: 0.06 },
+    requirements: { speed: 0, stamina: 110, power: 0, wit: 130 }
+  },
+  {
+    slug: "keen-eye",
+    name: "Olhar Aguçado",
+    description: "Percepção apurada: Wit extra durante a prova.",
+    rarity: "common",
+    cost: 110,
+    effect: { kind: "flatStat", stat: "wit", value: 25, duration: 0 },
+    trigger: { phase: "any", terrain: "any", baseChance: 1 },
+    requirements: { speed: 0, stamina: 0, power: 0, wit: 100 }
+  },
+  {
+    slug: "sprint-gear",
+    name: "Marcha de Sprint",
+    description: "Velocidade extra durante toda a prova.",
+    rarity: "common",
+    cost: 110,
+    effect: { kind: "flatStat", stat: "speed", value: 25, duration: 0 },
+    trigger: { phase: "any", terrain: "any", baseChance: 1 },
+    requirements: { speed: 100, stamina: 0, power: 0, wit: 0 }
+  }
+];

@@ -6,6 +6,7 @@ import mongoose from 'mongoose';
 
 import jwt from 'jsonwebtoken';
 import type { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { findOwnedHorse, serializeOwnedHorse } from '../services/ownedHorse';
 
 export const create = async (req: Request, res: Response) => {
   const { email, password, username } = req.body;
@@ -239,36 +240,6 @@ export const purchaseHorse = async (req: AuthenticatedRequest, res: Response) =>
     return res.status(500).json({ msg: 'Erro interno do servidor' });
   }
 };
-const findOwnedHorse = async (userId: string, horseId: string) => {
-  if (!mongoose.isValidObjectId(horseId)) {
-    return null;
-  }
-
-  const horse = await Horse.findById(horseId);
-  if (!horse) {
-    return null;
-  }
-
-  const user = await User.findById(userId);
-  if (!user) {
-    return null;
-  }
-
-  const ownedHorse = user.horses.find((candidate) =>
-    candidate.sourceHorseId?.toString() === horse.id || candidate.name === horse.name
-  );
-
-  return ownedHorse ? { horse, ownedHorse, user } : null;
-};
-
-const serializeOwnedHorse = (catalogHorse: InstanceType<typeof Horse>, ownedHorse: Record<string, unknown>) => ({
-  ...ownedHorse,
-  _id: catalogHorse.id,
-  sourceHorseId: catalogHorse.id,
-  cost: catalogHorse.cost,
-  turnsLeft: ownedHorse.turnsLeft ?? 5
-});
-
 export const getOwnedHorse = async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user?.id;
   const { horseId } = req.params;
@@ -282,15 +253,7 @@ export const getOwnedHorse = async (req: AuthenticatedRequest, res: Response) =>
       return res.status(404).json({ msg: 'Cavalo não pertence ao usuário' });
     }
 
-    const { horse, ownedHorse, user } = result;
-    if (!ownedHorse.sourceHorseId || ownedHorse.turnsLeft === undefined || ownedHorse.cost === undefined) {
-      ownedHorse.sourceHorseId = horse._id;
-      ownedHorse.turnsLeft ??= 5;
-      ownedHorse.cost ??= horse.cost;
-      await user.save();
-    }
-
-    return res.json(serializeOwnedHorse(horse, ownedHorse.toObject()));
+    return res.json(serializeOwnedHorse(result.horse, result.ownedHorse));
   } catch {
     return res.status(500).json({ msg: 'Erro ao buscar cavalo do usuário' });
   }
@@ -319,13 +282,7 @@ export const trainHorse = async (req: AuthenticatedRequest, res: Response) => {
       return res.status(404).json({ msg: 'Cavalo não pertence ao usuário' });
     }
 
-    const { horse, ownedHorse, user } = result;
-    if (!ownedHorse.sourceHorseId || ownedHorse.turnsLeft === undefined || ownedHorse.cost === undefined) {
-      ownedHorse.sourceHorseId = horse._id;
-      ownedHorse.turnsLeft ??= 5;
-      ownedHorse.cost ??= horse.cost;
-      await user.save();
-    }
+    const { horse, ownedHorse } = result;
 
     if (ownedHorse.turnsLeft <= 0) {
       return res.status(409).json({ msg: 'Não há turnos restantes' });
@@ -355,7 +312,7 @@ export const trainHorse = async (req: AuthenticatedRequest, res: Response) => {
       return res.status(500).json({ msg: 'Cavalo atualizado não encontrado' });
     }
 
-    return res.json({ horse: serializeOwnedHorse(horse, updatedOwnedHorse.toObject()) });
+    return res.json({ horse: serializeOwnedHorse(horse, updatedOwnedHorse) });
   } catch {
     return res.status(500).json({ msg: 'Erro ao salvar treino' });
   }

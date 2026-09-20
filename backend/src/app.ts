@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import cors from 'cors';
 import routes from "./routes";
 import { ensureTracksSeeded } from "./services/seedTracks";
+import { ensureSkillsSeeded } from "./services/seedSkills";
 
 const app = express();
 app.use(express.json());
@@ -22,7 +23,7 @@ const dbPassword = process.env.DB_PASS;
 mongoose.connect(`mongodb+srv://${dbUser}:${dbPassword}@backend.yxyhheq.mongodb.net/?retryWrites=true&w=majority&appName=Backend`)
   .then(() => {
     console.log('Conectou ao banco!');
-    return ensureTracksSeeded();
+    return Promise.all([ensureTracksSeeded(), ensureSkillsSeeded()]);
   })
   .then(() => {
     app.listen(3000, () => {
