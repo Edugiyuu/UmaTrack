@@ -58,13 +58,20 @@ export const generateRivals = ({
   excludeName
 }: GenerateRivalsOptions): RaceRunnerInput[] => {
   const rng = createRng(seed ^ 0x9e3779b9);
+
+  // Deterministic shuffle, then hand out names by index: two rivals in the same field
+  // must never share a name.
   const names = RIVAL_NAMES.filter((name) => name !== excludeName);
+  for (let index = names.length - 1; index > 0; index -= 1) {
+    const swap = Math.floor(rng() * (index + 1));
+    [names[index], names[swap]] = [names[swap], names[index]];
+  }
 
   // 1.0 at difficulty 5: an average field sits right on the track requirements.
   const difficultyScale = 0.86 + difficulty * 0.028;
 
   return Array.from({ length: Math.max(0, count) }, (_, index) => {
-    const name = names[(index + Math.floor(rng() * names.length)) % names.length];
+    const name = names[index % names.length];
     const spread = 0.82 + rng() * 0.36;
     const style = RUNNING_STYLES[Math.floor(rng() * RUNNING_STYLES.length)] as RunningStyle;
 
