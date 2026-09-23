@@ -1,0 +1,154 @@
+.GuideContent {
+  padding: 28px 24px 56px;
+  background: #f4f6f5;
+  min-height: calc(100vh - 72px);
+}
+
+.GuideContent__intro {
+  max-width: 78ch;
+  margin-bottom: 30px;
+}
+
+.GuideContent__intro h1 {
+  margin: 0 0 8px;
+}
+
+.GuideContent__intro p {
+  margin: 0;
+  color: #5d5d5d;
+  line-height: 1.6;
+}
+
+.GuideContent__loop {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.GuideContent__loop li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px 7px 7px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.GuideContent__loop span {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #24bb6d;
+  color: #ffffff;
+  font-size: 0.75rem;
+}
+
+.GuideContent__section {
+  margin-bottom: 34px;
+}
+
+.GuideContent__section h2 {
+  margin: 0 0 12px;
+  font-size: 1.25rem;
+}
+
+.GuideContent__text {
+  max-width: 78ch;
+  margin: 0 0 10px;
+  color: #4a4a4a;
+  line-height: 1.6;
+  font-size: 0.92rem;
+}
+
+.GuideContent__error {
+  color: #b03a1a;
+  font-size: 0.85rem;
+}
+
+.GuideContent__attributes,
+.GuideContent__styles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.GuideContent__attributes article,
+.GuideContent__styles article {
+  padding: 16px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+}
+
+.GuideContent__attributes img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.GuideContent__attributes h3,
+.GuideContent__styles h3 {
+  margin: 8px 0 6px;
+  font-size: 1rem;
+}
+
+.GuideContent__attributes p,
+.GuideContent__styles p {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: #5d5d5d;
+}
+
+.GuideContent__tracks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.GuideContent__tracks article {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+}
+
+.GuideContent__tracks header {
+  display: flex;
+  flex-direction: column;
+}
+
+.GuideContent__tracks h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.GuideContent__tracks header span {
+  font-size: 0.76rem;
+  color: #767676;
+}
+
+.GuideContent__track-terrain {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #b03a1a;
+}
+
+.GuideContent__track-req {
+  margin: 0;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: #5d5d5d;
+}

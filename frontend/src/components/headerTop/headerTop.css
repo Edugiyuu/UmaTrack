@@ -65,3 +65,31 @@
     background: linear-gradient(90deg, rgba(224, 67, 206, 1) 0%, rgba(212, 82, 255, 1) 100%);
     color: white;
 }
+/* The header used a fixed 70px gap and a 35px right margin, which pushed it past the
+   viewport on narrow screens and gave every page a horizontal scrollbar. */
+@media (max-width: 900px) {
+  .header {
+    flex-wrap: wrap;
+    height: auto;
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  .headerContent {
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+
+  .headerLink {
+    font-size: 16px;
+  }
+
+  #Login {
+    padding: 10px 22px;
+    margin-right: 0;
+  }
+
+  #HorseLogo {
+    width: 38px;
+  }
+}

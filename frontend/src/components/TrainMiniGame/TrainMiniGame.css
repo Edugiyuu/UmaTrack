@@ -2,7 +2,8 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
+    right: 0;
+    width: auto;
     height: 100vh;
     background: rgba(0, 0, 0, 0.636);
     display: flex;
@@ -145,4 +146,16 @@
         height: 150px !important;
         padding: 30px 40px !important;
     }
+}
+.result-sp {
+  color: #17794a;
+  font-weight: 700;
+}
+
+.result-notes {
+  margin: 6px 0;
+  padding-left: 18px;
+  text-align: left;
+  font-size: 0.82rem;
+  color: #5d5d5d;
 }

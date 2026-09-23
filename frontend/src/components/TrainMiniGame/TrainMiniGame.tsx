@@ -4,20 +4,18 @@ import confetti from "canvas-confetti";
 import { PlayAudio } from "../../utils/PlayAudio";
 import CountUp from "../ui/CountUp/CountUp";
 import type { HorseResponseProfile } from "../../types/horse";
+import type { TrainingOutcome } from "../../services/User";
 import speedIcon from '../../assets/gameIcons/speedIcon.png'
 import staminaIcon from '../../assets/gameIcons/staminaIcon.png'
 import powerIcon from '../../assets/gameIcons/powerIcon.png'
 import witIcon from '../../assets/gameIcons/witIcon.png'
+import { horseAnimation } from "../../utils/horseImage";
 
 interface TrainMiniGameProps {
     show: boolean;
     onClose: () => void;
-    onComplete: (rewards: {
-        speed: number;
-        stamina: number;
-        power: number;
-        wit: number;
-    }) => Promise<void> | void;
+    /** Reports the raw score; the server answers with what she actually gained. */
+    onComplete: (score: number) => Promise<TrainingOutcome>;
     trainType: "speed" | "stamina" | "power" | "wit";
     maxPoints?: number;
     horse: HorseResponseProfile;
@@ -33,6 +31,7 @@ const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete
     const [showResults, setShowResults] = useState(false);
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
+    const [outcome, setOutcome] = useState<TrainingOutcome | null>(null);
     
     const startGame = () => {
         setScore(0);
@@ -40,6 +39,7 @@ const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete
         setGameActive(true);
         setShowResults(false);
         setSaveError(null);
+        setOutcome(null);
     };
 
     const endGame = () => {
@@ -159,7 +159,7 @@ const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete
                         </div>
                         <div className="train-gif-container">
                             <img
-                                src={`${import.meta.env.BASE_URL}horses/${horse.name.replace(/\s+/g, "")}/Profile2.gif`}
+                                {...horseAnimation(horse.name, 'Train1.gif')}
                                 alt={horse.name}
                                 className='train-gif'
                             />
@@ -170,14 +170,30 @@ const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete
                 {showResults && (
                     <div className="result-screen">
                         <h2>Treino concluído!</h2>
-                        <p>+<CountUp
-                            from={0}
-                            to={score}
-                            separator=","
-                            direction="up"
-                            duration={2}
-                            className="count-up-text"
-                        /> pontos!</p>
+                        {outcome ? (
+                            <>
+                                <p>
+                                    +<CountUp
+                                        from={0}
+                                        to={outcome.statGain}
+                                        separator=","
+                                        direction="up"
+                                        duration={1.5}
+                                        className="count-up-text"
+                                    /> de {trainType}
+                                </p>
+                                <p className="result-sp">+{outcome.skillPointsGained} skill points</p>
+                                {outcome.notes.length > 0 && (
+                                    <ul className="result-notes">
+                                        {outcome.notes.map((note) => (
+                                            <li key={note}>{note}</li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </>
+                        ) : (
+                            <p>Acertos: <b>{score}</b>/{maxPoints}</p>
+                        )}
                         <div>
                             <p><img className="speedIcon" src={speedIcon}/> {horse?.speed}</p>
                             <p><img className="powerIcon" src={powerIcon}/>{horse?.power}</p>
@@ -185,22 +201,26 @@ const TrainMiniGame: React.FC<TrainMiniGameProps> = ({ show, onClose, onComplete
                             <p><img className="witIcon" src={witIcon}/>{horse?.wit}</p>
                         </div>
                         {saveError && <p role="alert">{saveError}</p>}
-                        <button disabled={saving} onClick={async () => {
-                            try {
-                                setSaving(true);
-                                setSaveError(null);
-                                const rewards = { speed: 0, stamina: 0, power: 0, wit: 0 };
-                                rewards[trainType] = Math.max(0, Math.min(score, maxPoints));
-                                await onComplete(rewards);
-                                setShowResults(false);
-                            } catch (error) {
-                                setSaveError(error instanceof Error ? error.message : "Could not save training.");
-                            } finally {
-                                setSaving(false);
-                            }
-                        }}>
-                            {saving ? 'Saving...' : 'OK'}
-                        </button>
+                        {outcome ? (
+                            <button onClick={() => { setShowResults(false); setOutcome(null); onClose(); }}>
+                                Fechar
+                            </button>
+                        ) : (
+                            <button disabled={saving} onClick={async () => {
+                                try {
+                                    setSaving(true);
+                                    setSaveError(null);
+                                    const result = await onComplete(Math.max(0, Math.min(score, maxPoints)));
+                                    setOutcome(result);
+                                } catch (error) {
+                                    setSaveError(error instanceof Error ? error.message : "Could not save training.");
+                                } finally {
+                                    setSaving(false);
+                                }
+                            }}>
+                                {saving ? 'Saving...' : 'OK'}
+                            </button>
+                        )}
                     </div>
                 )}
             </div>

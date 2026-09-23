@@ -5,6 +5,8 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from 'cors';
 import routes from "./routes";
+import { ensureTracksSeeded } from "./services/seedTracks";
+import { ensureSkillsSeeded } from "./services/seedSkills";
 
 const app = express();
 app.use(express.json());
@@ -17,12 +19,22 @@ app.get('/', (req, res) => {
 
 const dbUser = process.env.DB_USER;
 const dbPassword = process.env.DB_PASS;
+const port = Number(process.env.PORT) || 3000;
 
-mongoose.connect(`mongodb+srv://${dbUser}:${dbPassword}@backend.yxyhheq.mongodb.net/?retryWrites=true&w=majority&appName=Backend`)
+// MONGODB_URI wins so the app can be pointed at a local server; without it we keep
+// building the Atlas URL from the credentials the way it always did.
+const mongoUri =
+  process.env.MONGODB_URI ??
+  `mongodb+srv://${dbUser}:${dbPassword}@backend.yxyhheq.mongodb.net/?retryWrites=true&w=majority&appName=Backend`;
+
+mongoose.connect(mongoUri)
   .then(() => {
     console.log('Conectou ao banco!');
-    app.listen(3000, () => {
-      console.log('Servidor rodando em: http://localhost:3000');
+    return Promise.all([ensureTracksSeeded(), ensureSkillsSeeded()]);
+  })
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`Servidor rodando em: http://localhost:${port}`);
     });
   })
   .catch((err: any) => {
