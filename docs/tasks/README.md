@@ -1,17 +1,60 @@
-# Tasks — Sistema de corridas
+# Tasks — UmaSprint
 
 Cada task tem a sua própria branch, criada a partir de `main`, com commit e push próprios.
-O design completo está em [`docs/race-system-design.md`](../race-system-design.md).
+O design do sistema de corridas está em [`docs/race-system-design.md`](../race-system-design.md).
 
-| # | Task | Branch | Status |
-|---|---|---|---|
-| 00 | Plano e documentação | `docs/race-system-plan` | ✅ |
-| 01 | Modelo + catálogo de pistas | `feat/track-system` | ✅ |
-| 02 | Catálogo de skills + skill points | `feat/skill-system` | ✅ |
-| 03 | Motor de simulação de corrida | `feat/race-engine` | ✅ |
-| 04 | API de corrida + prêmios + histórico | `feat/race-api` | ✅ |
-| 05 | Treino dinâmico (ganhos variáveis, energia, SP) | `feat/dynamic-training` | ✅ |
-| 06 | UI: seleção de pista | `feat/race-ui-track-select` | ✅ |
-| 07 | UI: corrida animada + resultados | `feat/race-ui-runner` | ✅ |
-| 08 | UI: painel de skills no career | `feat/skill-ui` | ✅ |
-| 09 | Integração final do loop de jogo | `feat/race-loop-integration` | ✅ |
+## Como criar uma task
+
+1. Copie [`TEMPLATE.md`](TEMPLATE.md) para `docs/tasks/NN-slug.md` e preencha.
+2. Crie a branch a partir de `main` seguindo a convenção abaixo.
+3. Adicione a linha na tabela de [status](#status).
+4. Ao terminar, feche o **Definition of Done** do próprio arquivo e atualize o status aqui.
+
+### Convenções
+
+- **Nome do arquivo:** `NN-slug-curto.md`, `NN` em dois dígitos e sequencial.
+- **Branch:** `feat/…` (funcionalidade), `fix/…` (correção), `docs/…` (documentação),
+  `refactor/…` (sem mudança de comportamento).
+- **Tamanho:** `P` cabe em uma sessão, `M` em uma ou duas, `G` deve ser quebrada em
+  subtasks antes de começar — uma branch por task, independente do tamanho.
+- **Idioma:** documentação em português; código, nomes de arquivo e branches em inglês.
+
+### Legenda de status
+
+| Ícone | Significado |
+|---|---|
+| 🔲 | Não iniciada |
+| 🚧 | Em andamento |
+| 🔍 | Em revisão |
+| ✅ | Concluída |
+
+## Status
+
+| # | Task | Branch | Tamanho | Status |
+|---|---|---|---|---|
+| 00 | Plano e documentação | `docs/race-system-plan` | M | ✅ |
+| 01 | [Modelo + catálogo de pistas](01-track-system.md) | `feat/track-system` | M | ✅ |
+| 02 | [Catálogo de skills + skill points](02-skill-system.md) | `feat/skill-system` | M | ✅ |
+| 03 | [Motor de simulação de corrida](03-race-engine.md) | `feat/race-engine` | G | ✅ |
+| 04 | [API de corrida + prêmios + histórico](04-race-api.md) | `feat/race-api` | M | ✅ |
+| 05 | [Treino dinâmico (ganhos variáveis, energia, SP)](05-dynamic-training.md) | `feat/dynamic-training` | M | ✅ |
+| 06 | [UI: seleção de pista](06-race-ui-track-select.md) | `feat/race-ui-track-select` | M | ✅ |
+| 07 | [UI: corrida animada + resultados](07-race-ui-runner.md) | `feat/race-ui-runner` | G | ✅ |
+| 08 | [UI: painel de skills no career](08-skill-ui.md) | `feat/skill-ui` | M | ✅ |
+| 09 | [Integração final do loop de jogo](09-race-loop-integration.md) | `feat/race-loop-integration` | M | ✅ |
+| 10 | [Documentação e template de tasks](10-task-template.md) | `docs/task-template` | P | 🚧 |
+| 11 | [Refazer o frontend da tela de corrida](11-race-ui-redesign.md) | `feat/race-ui-redesign` | G | 🔲 |
+| 12 | [Telemetria da corrida no motor](12-race-telemetry-engine.md) | `feat/race-telemetry-engine` | M | 🔲 |
+| 13 | [HUD de desempenho durante a corrida](13-race-telemetry-hud.md) | `feat/race-telemetry-hud` | M | 🔲 |
+
+### Ordem sugerida para 11–13
+
+`11` e `12` são independentes e podem ser feitas em paralelo — uma é só frontend, a outra só
+backend. `13` precisa das duas: dos dados que `12` expõe e do layout que `11` prepara, por
+isso sai de `feat/race-ui-redesign`.
+
+```
+11 (UI) ──┐
+          ├──> 13 (HUD)
+12 (motor)┘
+```
