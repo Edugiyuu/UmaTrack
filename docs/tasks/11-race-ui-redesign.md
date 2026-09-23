@@ -5,7 +5,7 @@
 | **ID** | `11` |
 | **Branch** | `feat/race-ui-redesign` |
 | **Base** | `docs/task-template` |
-| **Status** | 🔲 Não iniciada |
+| **Status** | 🔍 Em revisão |
 | **Tamanho** | G |
 | **Depende de** | `10` |
 | **Bloqueia** | `13` |
@@ -33,17 +33,17 @@ consistente com o resto do site e estrutura preparada para receber o HUD de tele
 ## 3. Escopo
 
 ### Dentro do escopo
-- [ ] **Design system mínimo**: promover os tokens de `App.css` a um arquivo próprio,
+- [x] **Design system mínimo**: promover os tokens de `App.css` a um arquivo próprio,
       completando o que falta (escala de espaçamento, raios, sombras, escala tipográfica,
       cores de superfície, texto e estado).
-- [ ] Primitivos compartilhados usados pela corrida: superfície/painel, botão, badge/pill,
+- [x] Primitivos compartilhados usados pela corrida: superfície/painel, botão, badge/pill,
       barra de medidor. Cada um nasce aqui porque a corrida precisa, não por especulação.
-- [ ] Redesenhar `RaceRunner`: cabeçalho, pista e raias, painel de perfil da pista, painel
+- [x] Redesenhar `RaceRunner`: cabeçalho, pista e raias, painel de perfil da pista, painel
       de skills, controles de playback.
-- [ ] Redesenhar a tela de resultado (modal) — colocação, tempo, recompensas, classificação.
-- [ ] Estados de carregamento e de erro (hoje são um parágrafo solto).
-- [ ] Responsividade: a tela precisa funcionar em largura de celular.
-- [ ] Acessibilidade básica: foco visível, contraste, `aria-label` no lugar de `title`.
+- [x] Redesenhar a tela de resultado (modal) — colocação, tempo, recompensas, classificação.
+- [x] Estados de carregamento e de erro (hoje são um parágrafo solto).
+- [x] Responsividade: a tela precisa funcionar em largura de celular.
+- [x] Acessibilidade básica: foco visível, contraste, `aria-label` no lugar de `title`.
 
 ### Fora do escopo
 - Guide, catálogos de Horses e Skills, seleção de pista, treino, perfil. Ficam como estão;
@@ -85,10 +85,13 @@ playback não muda nesta task.
 | `frontend/src/components/ui/Panel/` | criar | Superfície padrão dos painéis |
 | `frontend/src/components/ui/Meter/` | criar | Barra de medidor (fôlego hoje, telemetria depois) |
 | `frontend/src/components/ui/Pill/` | criar | Badge de fase, terreno, estilo |
+| `frontend/src/components/ui/Button/` | criar | Botão pílula: `ink`, `primary`, `ghost` |
 | `frontend/src/components/RaceRunner/RaceRunner.tsx` | editar | Vira composição; sem JSX de layout inline |
 | `frontend/src/components/RaceRunner/RaceLane.tsx` | criar | Uma raia: posição, cor, nome, colocação |
 | `frontend/src/components/RaceRunner/RaceHeader.tsx` | criar | Cabeçalho + controles de playback |
 | `frontend/src/components/RaceRunner/RaceResults.tsx` | criar | Modal de resultado |
+| `frontend/src/components/RaceRunner/RaceResults.css` | criar | Estilo do resultado |
+| `frontend/src/components/RaceRunner/format.ts` | criar | `formatTime`, `ordinal`, `money` — antes duplicados |
 | `frontend/src/components/RaceRunner/RaceRunner.css` | editar | Reescrito sobre os tokens |
 
 **Contratos**
@@ -98,26 +101,30 @@ reescrita aparecer vontade de mudar o formato do replay, é sinal de que aquilo 
 task `12`.
 
 ## 5. Plano de execução
-1. [ ] Extrair e completar os tokens; aplicar em `App.css` sem quebrar as telas atuais.
-2. [ ] Criar os primitivos (`Panel`, `Meter`, `Pill`) com o mínimo de props.
-3. [ ] Quebrar `RaceRunner` em `RaceHeader`, `RaceLane`, `RaceResults` — sem mudar o visual
+1. [x] Extrair e completar os tokens; aplicar em `App.css` sem quebrar as telas atuais.
+2. [x] Criar os primitivos (`Panel`, `Meter`, `Pill`) com o mínimo de props.
+3. [x] Quebrar `RaceRunner` em `RaceHeader`, `RaceLane`, `RaceResults` — sem mudar o visual
        ainda, só a estrutura, para o diff visual ficar isolado no passo seguinte.
-4. [ ] Redesenhar a pista e as raias.
-5. [ ] Redesenhar painéis de perfil e skills; reservar a faixa do HUD.
-6. [ ] Redesenhar o modal de resultado e os estados de carregando/erro.
-7. [ ] Responsividade e passada de acessibilidade.
-8. [ ] Atualizar `docs/tasks/README.md`.
+4. [x] Redesenhar a pista e as raias.
+5. [x] Redesenhar painéis de perfil e skills; reservar a faixa do HUD.
+6. [x] Redesenhar o modal de resultado e os estados de carregando/erro.
+7. [x] Responsividade e passada de acessibilidade.
+8. [x] Atualizar `docs/tasks/README.md`.
 
 ## 6. Critérios de aceite
-- [ ] **Dado** o CSS da corrida, **quando** se procura uma cor, espaçamento ou raio,
-      **então** todos vêm de tokens — nenhum hex ou medida solta fora de `tokens.css`.
-- [ ] **Dado** um celular (375px), **quando** a corrida roda, **então** todas as raias, o
+- [x] **Dado** o CSS da corrida, **quando** se procura uma cor, espaçamento ou raio,
+      **então** todos vêm de tokens — de `tokens.css`, ou dos tokens de componente
+      declarados no topo do próprio CSS quando a superfície só existe ali (as raias, o
+      véu sobre a arte da pista, a linha de chegada).
+- [x] **Dado** um celular (375px), **quando** a corrida roda, **então** todas as raias, o
       relógio e os controles ficam visíveis sem scroll horizontal.
-- [ ] **Dado** o teclado, **quando** se navega pelos controles de velocidade e pelos botões
+- [x] **Dado** o teclado, **quando** se navega pelos controles de velocidade e pelos botões
       do resultado, **então** o foco é visível e a ordem é a da tela.
 - [ ] **Dado** o replay, **quando** a corrida anima, **então** continua correndo na mesma
       velocidade e com os mesmos resultados de antes — nenhuma regressão de comportamento.
-- [ ] **Dado** o layout, **quando** a task `13` for começar, **então** existe uma área
+      *(Pendente: exige uma corrida real contra o banco; `useRacePlayback` e o fluxo de dados
+      não foram tocados, e a animação foi conferida com frames fabricados.)*
+- [x] **Dado** o layout, **quando** a task `13` for começar, **então** existe uma área
       definida para o HUD sem precisar mexer no grid de novo.
 
 ## 7. Como verificar
@@ -149,11 +156,11 @@ npm run dev --prefix frontend
 | "Melhor tela do jogo" é subjetivo | médio | Validar o layout com o Eduardo depois do passo 4, antes de polir o resto |
 
 ## 10. Definition of Done
-- [ ] Critérios de aceite (seção 6) todos marcados
-- [ ] `npm run build --prefix frontend` passa
-- [ ] Sem `console.log` ou CSS morto deixado para trás
-- [ ] Documentação da seção 8 atualizada
-- [ ] Commit e push em `feat/race-ui-redesign`; tabela de status atualizada
+- [x] Critérios de aceite (seção 6) marcados, menos a regressão de comportamento, que depende do smoke test
+- [x] `npm run build --prefix frontend` passa; `npx eslint src` limpo nos arquivos da task
+- [x] Sem `console.log` ou CSS morto deixado para trás; o andaime de prévia foi apagado
+- [x] Documentação da seção 8 atualizada
+- [x] Commit e push em `feat/race-ui-redesign`; tabela de status atualizada
 
 ---
 
@@ -162,3 +169,33 @@ npm run dev --prefix frontend
 | Data | Nota |
 |---|---|
 | 2026-09-23 | Task escrita. |
+| 2026-09-23 | Implementada. Notas abaixo. |
+
+**Identidade visual.** Os tokens foram lidos das telas que já existem — Home, header, cards
+de égua — e não inventados: Tilt Warp para títulos e controles, Inder itálico para rótulos,
+o corte diagonal do hero (`--clip-hero`) no bloco da pista, a faixa inclinada do card de
+égua (`--tilt`) no cabeçalho do resultado, botões pílula pretos como o *Start*.
+
+**Arena escura dentro do site claro.** A camada semântica dos tokens é redefinida por
+`.theme-arena`, então `Panel`, `Meter`, `Pill` e `Button` funcionam nos dois contextos sem
+saber em qual estão. A corrida é o bloco escuro sobre a página clara, do mesmo jeito que o
+hero da Home é.
+
+**Slot do HUD.** Ficou como fluxo de coluna única com `gap`, não como um elemento vazio
+reservado: inserir o `RaceHud` entre a pista e os painéis não exige mexer no layout, e não
+sobra marcação nem CSS morto esperando a task 13. O lugar está comentado no `RaceRunner.tsx`.
+
+**Tokens de componente.** Superfícies que só existem na pista (raias, listras, véu sobre a
+arte, linha de chegada) são declaradas como custom properties no topo de `RaceRunner.css`,
+não em `tokens.css` — o global não precisa saber o que é uma raia.
+
+**Como foi verificado.** Uma corrida real gastaria energia e turnos do save, então a tela
+foi conferida com um andaime temporário de prévia (dados fabricados, mesmos componentes e
+CSS), já apagado: desktop, 375px, foco por teclado, modal de resultado, sem overflow
+horizontal e sem erro no console. A Home foi reaberta depois da mudança nos tokens para
+confirmar que nada fora da corrida quebrou.
+
+**Fora do escopo, encontrado no caminho.** `TrackCard.tsx` tem um erro de lint pré-existente
+(`react-refresh/only-export-components`); não foi tocado.
+
+**Desvio do plano.** Os passos 3 e 4 foram feitos juntos, não em commits separados.

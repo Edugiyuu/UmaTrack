@@ -43,7 +43,7 @@ O design do sistema de corridas está em [`docs/race-system-design.md`](../race-
 | 08 | [UI: painel de skills no career](08-skill-ui.md) | `feat/skill-ui` | M | ✅ |
 | 09 | [Integração final do loop de jogo](09-race-loop-integration.md) | `feat/race-loop-integration` | M | ✅ |
 | 10 | [Documentação e template de tasks](10-task-template.md) | `docs/task-template` | P | 🚧 |
-| 11 | [Refazer o frontend da tela de corrida](11-race-ui-redesign.md) | `feat/race-ui-redesign` | G | 🔲 |
+| 11 | [Refazer o frontend da tela de corrida](11-race-ui-redesign.md) | `feat/race-ui-redesign` | G | 🔍 |
 | 12 | [Telemetria da corrida no motor](12-race-telemetry-engine.md) | `feat/race-telemetry-engine` | M | 🔲 |
 | 13 | [HUD de desempenho durante a corrida](13-race-telemetry-hud.md) | `feat/race-telemetry-hud` | M | 🔲 |
 

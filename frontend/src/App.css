@@ -1,3 +1,5 @@
+@import './styles/tokens.css';
+
 *{
     box-sizing: border-box;
     margin: 0;
@@ -5,7 +7,7 @@
     user-select: none;
 }
 body {
-  background-color: #f4f6f5;
+  background-color: var(--surface-page);
 }
 
 @font-face {
@@ -13,23 +15,6 @@ body {
   src: url('./fonts/DaydreamDEMO.otf') format('opentype');
 }
 
-:root {
-  --font-tilt: 'Tilt Warp', cursive;
-  --font-inder: 'Inder', sans-serif;
-  --font-rampart: 'Rampart One', cursive;
-  --font-staat: 'Staatliches', cursive;
-  --font-daydream: 'Daydream', sans-serif;
-
-  --color-brown: #292420;
-  --color-red: #FF7C6E;
-  --color-orange: #FF8B32;
-  --color-yellow: #FFC107;
-  --color-green: #4CAF50;
-  --color-blue: #2196F3;
-  --color-indigo: #3F51B5;
-  
-  --speed:#4FADFF;
-  --stamina:#FF7C6E;
-  --power:#FF8B32;
-  --wit:#21CE94;
-}
+/* The fonts, palette and stat colours used to live here; they moved to
+   ./styles/tokens.css with the same names, alongside the spacing, radius, shadow
+   and semantic tokens the rest of the interface is built from. */

@@ -1,0 +1,189 @@
+/**
+ * Design tokens.
+ *
+ * Read off the screens the game already has — the Home hero, the shine section, the
+ * horse cards and the header — rather than invented. The look those screens share:
+ * heavy italic type, flat colour blocks, diagonal cuts, tilted label bands, generous
+ * pill radii and a dark overlay whenever a photo carries text.
+ *
+ * Three layers, and components may only ever reach for the third:
+ *   1. brand    — the palette, fonts and shapes the game was built with
+ *   2. scale    — spacing, radii, shadows, type, motion
+ *   3. semantic — what a colour is *for* (surface, text, accent, danger...)
+ *
+ * The semantic layer is redefined by `.theme-arena`, so the same Panel, Meter and
+ * Pill render on the light page and inside the dark race arena without a single
+ * component knowing which one it is in.
+ */
+
+:root {
+  /* --- brand: fonts ------------------------------------------------------ */
+  --font-tilt: 'Tilt Warp', cursive;
+  --font-inder: 'Inder', sans-serif;
+  --font-rampart: 'Rampart One', cursive;
+  --font-staat: 'Staatliches', cursive;
+  --font-daydream: 'Daydream', sans-serif;
+
+  /** Headings and controls, as in the header and the hero. */
+  --font-ui: var(--font-tilt);
+  /** Body copy and section titles, as in the home cards and the shine band. */
+  --font-body: var(--font-inder);
+
+  /* --- brand: palette ---------------------------------------------------- */
+  --color-brown: #292420;
+  --color-red: #FF7C6E;
+  --color-orange: #FF8B32;
+  --color-yellow: #FFC107;
+  --color-green: #4CAF50;
+  --color-blue: #2196F3;
+  --color-indigo: #3F51B5;
+
+  --speed: #4FADFF;
+  --stamina: #FF7C6E;
+  --power: #FF8B32;
+  --wit: #21CE94;
+
+  /** The magenta the header and its buttons are built on. */
+  --brand-magenta: #e043ce;
+  --brand-violet: #d452ff;
+  --brand-gradient: linear-gradient(90deg, var(--brand-magenta) 0%, var(--brand-violet) 100%);
+  /** The near-black of the home Start button and the dark band of the shine section. */
+  --brand-ink: #0c0c0c;
+  --brand-ink-hover: #000000;
+  /** Text on a solid dark or coloured block. */
+  --on-solid: #ffffff;
+  --brand-band: #282828;
+  /** The red of the shine section block. */
+  --brand-red: #d53131;
+  /** The green the race screens adopted for "go". */
+  --brand-turf: #24bb6d;
+  --brand-turf-dark: #08130d;
+  --brand-gold: #ffd76a;
+
+  /* --- brand: shapes ----------------------------------------------------- */
+  /** The hero's cut: a block whose bottom edge falls to the left. */
+  --clip-hero: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+  /** The shine section's cut: a block whose right edge leans in. */
+  --clip-wedge: polygon(0 0, 100% 0, 88% 100%, 0 100%);
+  /** The tilt the horse cards give their name band. */
+  --tilt: -5deg;
+  /** The overlay that makes text readable over track art, as on the hero. */
+  --overlay-photo: rgba(0, 0, 0, 0.64);
+
+  /* --- scale: spacing ---------------------------------------------------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 48px;
+
+  /* --- scale: radii ------------------------------------------------------ */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  /** The 30px the home cards and the Start button use. */
+  --radius-card: 30px;
+  --radius-pill: 999px;
+
+  /* --- scale: elevation -------------------------------------------------- */
+  --shadow-1: 0 2px 6px rgba(0, 0, 0, 0.12);
+  --shadow-2: 0 8px 20px rgba(0, 0, 0, 0.14);
+  --shadow-3: 0 18px 50px rgba(0, 0, 0, 0.32);
+
+  /* --- scale: type ------------------------------------------------------- */
+  --text-xs: 0.74rem;
+  --text-sm: 0.84rem;
+  --text-md: 0.95rem;
+  --text-lg: 1.15rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+  --text-display: clamp(2rem, 5vw, 3.5rem);
+  --weight-regular: 400;
+  --weight-medium: 550;
+  --weight-bold: 700;
+  --tracking-caps: 0.08em;
+  /** The hero spaces its title out hard; used sparingly. */
+  --tracking-display: 0.12em;
+
+  /* --- scale: motion ----------------------------------------------------- */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /* --- semantic: light (the site) ---------------------------------------- */
+  --surface-page: #f4f6f5;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-sunken: #eceeed;
+  --surface-overlay: rgba(12, 12, 12, 0.72);
+  --border: #dddddd;
+  --border-strong: #c2c9c5;
+
+  --text: #1a1a1a;
+  --text-muted: #6b7671;
+  --text-inverse: #ffffff;
+
+  --accent: var(--brand-turf);
+  --accent-contrast: #ffffff;
+  --accent-soft: rgba(36, 187, 109, 0.14);
+
+  --success: var(--color-green);
+  --warning: var(--color-yellow);
+  --danger: var(--brand-red);
+  --highlight: #9a6a00;
+  --highlight-soft: rgba(255, 193, 7, 0.18);
+
+  /* Terrain readings, shared by the track profile and the race panels. */
+  --uphill: #e2552a;
+  --downhill: #0277bd;
+  --curve: #9a6a00;
+
+  --focus-ring: 0 0 0 3px rgba(212, 82, 255, 0.5);
+}
+
+/**
+ * The race arena. Dark by design, the way the hero puts a dark block on the light
+ * page: it pushes the track forward and keeps thirteen moving runners legible.
+ * Only semantic tokens are redefined here.
+ */
+.theme-arena {
+  --surface-page: #101a14;
+  --surface: #17251d;
+  --surface-raised: #1d2e24;
+  --surface-sunken: #0c1510;
+  --surface-overlay: rgba(6, 12, 9, 0.85);
+  --border: #2f4438;
+  --border-strong: #3c5449;
+
+  --text: #f3f5f4;
+  --text-muted: #9fb3a7;
+  --text-inverse: #08130d;
+
+  --accent: var(--brand-turf);
+  --accent-contrast: var(--brand-turf-dark);
+  --accent-soft: rgba(36, 187, 109, 0.18);
+
+  --danger: #ff8a65;
+  --highlight: var(--brand-gold);
+  --highlight-soft: rgba(255, 215, 106, 0.14);
+
+  --uphill: #ff8a65;
+  --downhill: #81d4fa;
+  --curve: var(--brand-gold);
+
+  --shadow-1: 0 2px 6px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 10px 24px rgba(0, 0, 0, 0.45);
+  --shadow-3: 0 18px 50px rgba(0, 0, 0, 0.5);
+
+  --focus-ring: 0 0 0 3px rgba(255, 215, 106, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+  }
+}

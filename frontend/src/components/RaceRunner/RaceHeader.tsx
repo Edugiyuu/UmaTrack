@@ -1,0 +1,80 @@
+import Button from "../ui/Button/Button";
+import Pill from "../ui/Pill/Pill";
+import { formatTime } from "./format";
+import {
+  RUNNING_STYLE_LABEL,
+  SURFACE_LABEL,
+  TERRAIN_LABEL,
+  CATEGORY_LABEL
+} from "../../constants/trackVisuals";
+import type { RunningStyle, TrackResponse } from "../../types/race";
+
+export interface RaceHeaderProps {
+  track: TrackResponse;
+  style: RunningStyle;
+  /** Race time being shown, in seconds. */
+  time: number;
+  speed: number;
+  speeds: readonly number[];
+  onSpeedChange: (speed: number) => void;
+  onSkip: () => void;
+}
+
+/**
+ * The title block: which race this is, on the left, and the clock and playback
+ * controls on the right. The track name sits on the game's tilted band.
+ */
+const RaceHeader = ({
+  track,
+  style,
+  time,
+  speed,
+  speeds,
+  onSpeedChange,
+  onSkip
+}: RaceHeaderProps) => (
+  <header className="RaceRunner__header">
+    <div className="RaceRunner__identity">
+      <h1 className="RaceRunner__title">{track.name}</h1>
+      <div className="RaceRunner__tags">
+        <Pill solid>{track.distance}m</Pill>
+        <Pill>{CATEGORY_LABEL[track.category]}</Pill>
+        <Pill>{SURFACE_LABEL[track.surface]}</Pill>
+        <Pill tone={track.terrain === "incline" ? "uphill" : "neutral"}>
+          {TERRAIN_LABEL[track.terrain]}
+        </Pill>
+        <Pill tone="accent">{RUNNING_STYLE_LABEL[style]}</Pill>
+      </div>
+    </div>
+
+    <div className="RaceRunner__clock">
+      <span className="RaceRunner__time" aria-label="Tempo de prova">
+        {formatTime(time)}
+      </span>
+      <div className="RaceRunner__controls">
+        <div
+          className="RaceRunner__speeds"
+          role="group"
+          aria-label="Velocidade da transmissão"
+        >
+          {speeds.map((option) => (
+            <Button
+              key={option}
+              size="sm"
+              variant={speed === option ? "primary" : "ghost"}
+              aria-pressed={speed === option}
+              onClick={() => onSpeedChange(option)}
+            >
+              {option}x
+            </Button>
+          ))}
+        </div>
+        <Button size="sm" variant="ink" onClick={onSkip}>
+          Pular para o resultado
+        </Button>
+      </div>
+    </div>
+  </header>
+);
+
+export default RaceHeader;

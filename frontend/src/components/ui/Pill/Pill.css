@@ -1,0 +1,33 @@
+.Pill {
+  --pill-color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--pill-color);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--pill-color);
+  white-space: nowrap;
+}
+
+.Pill--accent { --pill-color: var(--accent); }
+.Pill--uphill { --pill-color: var(--uphill); }
+.Pill--downhill { --pill-color: var(--downhill); }
+.Pill--curve { --pill-color: var(--curve); }
+.Pill--danger { --pill-color: var(--danger); }
+
+.Pill--solid {
+  background-color: var(--pill-color);
+  color: var(--text-inverse);
+}
+
+.Pill--solid.Pill--neutral {
+  background-color: var(--brand-band);
+  border-color: var(--brand-band);
+  color: var(--on-solid);
+}
