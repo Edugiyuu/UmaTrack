@@ -164,7 +164,7 @@ export interface RaceFrame {
 ## 7. Como verificar
 
 ```bash
-npx tsx backend/src/scripts/raceEngineCheck.ts
+npm run race:check --prefix backend
 ```
 
 - Rodar o script na branch `main` e na branch da task com a mesma seed; comparar as
@@ -189,7 +189,7 @@ npx tsx backend/src/scripts/raceEngineCheck.ts
 
 ## 10. Definition of Done
 - [ ] Critérios de aceite (seção 6) todos marcados
-- [ ] `npm run build --prefix backend` passa
+- [ ] `npx tsc --noEmit` passa no backend (não existe script `build` lá)
 - [ ] Script de verificação rodado e resultado colado no registro de execução
 - [ ] Documentação da seção 8 atualizada
 - [ ] Commit e push em `feat/race-telemetry-engine`; tabela de status atualizada

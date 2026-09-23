@@ -86,7 +86,7 @@
 
 ## 10. Definition of Done
 - [ ] Critérios de aceite (seção 6) todos marcados
-- [ ] Build passa (`npm run build` no backend e no frontend)
+- [ ] Build passa: `npm run build --prefix frontend` e `npx tsc --noEmit` no backend
 - [ ] Sem `console.log` / código morto deixado para trás
 - [ ] Documentação da seção 8 atualizada
 - [ ] Commit e push na branch própria; tabela em `docs/tasks/README.md` atualizada
