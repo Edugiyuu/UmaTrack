@@ -3,6 +3,9 @@
 Este documento descreve o design completo do sistema de corridas, pistas e skills
 do UmaSprint. Ele é a referência para as tasks em [`docs/tasks/`](./tasks).
 
+Procurando como **jogar** em vez de como o sistema é construído? Veja o
+[Guia do Jogador](./guia-do-jogador.md).
+
 ## 1. Visão geral
 
 O loop de jogo passa a ser:
