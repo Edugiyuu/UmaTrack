@@ -187,6 +187,8 @@ export interface RestOutcome {
     energyRecovered: number;
     energy: number;
     mood: number;
+    /** False when she rested on an empty turn counter, which costs nothing. */
+    turnSpent: boolean;
 }
 
 export const restHorse = async (

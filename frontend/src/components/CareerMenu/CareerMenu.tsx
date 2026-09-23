@@ -98,13 +98,16 @@ const CareerMenu = () => {
     };
 
     const handleRest = async () => {
-        if (!horseId || resting || turnsLeft <= 0) return;
+        if (!horseId || resting || energy >= 100) return;
         try {
             setResting(true);
             setError(null);
             const { horse: updatedHorse, rest } = await restHorse(horseId);
             setHorse(updatedHorse);
-            setNotice(`Ela descansou: +${rest.energyRecovered} de energia.`);
+            setNotice(
+                `Ela descansou: +${rest.energyRecovered} de energia.` +
+                (rest.turnSpent ? '' : ' (sem turnos, o descanso saiu de graça)')
+            );
         } catch (error) {
             setError(error instanceof Error ? error.message : 'Could not rest.');
         } finally {
@@ -171,8 +174,12 @@ const CareerMenu = () => {
                 <button
                     type='button'
                     onClick={handleRest}
-                    disabled={resting || turnsLeft <= 0 || energy >= 100}
-                    title={`Gasta 1 turno e devolve energia. Treinar custa ${TRAINING_ENERGY_COST}.`}
+                    disabled={resting || energy >= 100}
+                    title={
+                        turnsLeft > 0
+                            ? `Gasta 1 turno e devolve energia. Treinar custa ${TRAINING_ENERGY_COST}.`
+                            : 'Sem turnos, descansar não custa nada — é como voltar a poder correr.'
+                    }
                 >
                     {resting ? 'Descansando...' : 'Descansar'}
                 </button>

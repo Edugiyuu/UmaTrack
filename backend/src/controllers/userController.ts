@@ -358,25 +358,34 @@ export const restHorse = async (req: AuthenticatedRequest, res: Response) => {
 
     const { horse, ownedHorse, user } = result;
 
-    if (ownedHorse.turnsLeft <= 0) {
-      return res.status(409).json({ msg: 'Não há turnos restantes' });
-    }
     if (ownedHorse.energy >= MAX_ENERGY) {
       return res.status(409).json({ msg: 'Ela já está descansada' });
     }
+
+    // Resting is the only way to get energy back, so it has to stay available even
+    // with no turns left: spending all five turns training drains exactly the full
+    // energy bar, and without this the horse could neither train, rest nor race.
+    const outOfTurns = ownedHorse.turnsLeft <= 0;
 
     const rested = resolveRest(ownedHorse.energy, ownedHorse.mood);
     const energyRecovered = rested.energy - ownedHorse.energy;
 
     ownedHorse.energy = rested.energy;
     ownedHorse.mood = rested.mood;
-    ownedHorse.turnsLeft -= 1;
+    if (!outOfTurns) {
+      ownedHorse.turnsLeft -= 1;
+    }
 
     await user.save();
 
     return res.json({
       horse: serializeOwnedHorse(horse, ownedHorse),
-      rest: { energyRecovered, energy: rested.energy, mood: rested.mood }
+      rest: {
+        energyRecovered,
+        energy: rested.energy,
+        mood: rested.mood,
+        turnSpent: !outOfTurns
+      }
     });
   } catch {
     return res.status(500).json({ msg: 'Erro ao descansar' });
