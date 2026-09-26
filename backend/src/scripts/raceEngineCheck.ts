@@ -1,15 +1,16 @@
 /**
- * Sanity check for the race engine, runnable without a database:
+ * Sanity check for the turn-based race engine, runnable without a database:
  *
  *   npm run race:check
  *
- * It asserts the properties the design relies on: the simulation is deterministic,
- * a climb rewards Power while a flat sprint rewards Speed, and a thin stamina bar
- * actually breaks down before the line.
+ * It asserts the properties the design relies on (docs/tasks/14-race-turn-engine.md):
+ * the simulation is deterministic, each stat does its job, corners cost speed, a thin
+ * stamina bar breaks down before the line and same-turn finishes never tie.
  */
 import { TRACK_CATALOG } from "../data/tracks";
+import { SKILL_CATALOG } from "../data/skills";
 import { simulateRace } from "../services/raceEngine";
-import type { RaceRunnerInput, RaceTrackInput } from "../types/race";
+import type { RaceRunnerInput, RaceSkill, RaceTrackInput, RaceTrackSegment } from "../types/race";
 
 const track = (slug: string): RaceTrackInput => {
   const found = TRACK_CATALOG.find((candidate) => candidate.slug === slug);
@@ -17,17 +18,62 @@ const track = (slug: string): RaceTrackInput => {
   return found;
 };
 
+/** A bare track: only distance and corners matter to the engine. */
+const customTrack = (distance: number, segments: RaceTrackSegment[]): RaceTrackInput => ({
+  ...track("sapporo-sprint"),
+  slug: "custom",
+  name: "custom",
+  distance,
+  segments
+});
+
+const straight = (lengthRatio: number): RaceTrackSegment => ({
+  label: "Reta",
+  lengthRatio,
+  grade: 0,
+  curve: 0
+});
+const corner = (lengthRatio: number): RaceTrackSegment => ({
+  label: "Curva",
+  lengthRatio,
+  grade: 0,
+  curve: 0.6
+});
+
+/**
+ * The 1200m oval from the original turn-based sketch: a 200m straight, then a corner
+ * before each of the next four stretches (300 / 300 / 300 / 100).
+ */
+const OVAL = customTrack(1200, [
+  straight(200 / 1200),
+  corner(300 / 1200),
+  corner(300 / 1200),
+  corner(300 / 1200),
+  corner(100 / 1200)
+]);
+const FLAT = customTrack(1200, [straight(1)]);
+
 const runner = (
   id: string,
-  stats: { speed: number; stamina: number; power: number; wit: number }
+  stats: { speed: number; stamina: number; power: number; wit: number },
+  skills: RaceSkill[] = []
 ): RaceRunnerInput => ({
   id,
   name: id,
   isPlayer: false,
   runningStyle: "pace",
-  skills: [],
+  skills,
   ...stats
 });
+
+const skill = (slug: string): RaceSkill => {
+  const found = SKILL_CATALOG.find((candidate) => candidate.slug === slug);
+  if (!found) throw new Error(`Skill ${slug} not found`);
+  return found;
+};
+
+const finishOf = (race: ReturnType<typeof simulateRace>, id: string) =>
+  race.results.find((result) => result.id === id)!;
 
 let failures = 0;
 
@@ -36,82 +82,186 @@ const check = (label: string, passed: boolean, detail = "") => {
   if (!passed) failures += 1;
 };
 
+/**
+ * Independent re-implementation of the rules in section 4.1 of the task, without
+ * skills or noise, so the engine is checked against the paper version.
+ */
+const paperRace = (
+  stats: { speed: number; stamina: number; power: number; wit: number },
+  distance: number,
+  corners: number[]
+) => {
+  let speed = stats.power / 2;
+  let stamina = stats.stamina;
+  let covered = 0;
+  for (let turn = 1; turn < 300; turn += 1) {
+    const tired = stamina <= 0;
+    const power = tired ? stats.power / 3 : stats.power;
+    const ceiling = tired ? stats.speed / 2 : stats.speed;
+    if (turn > 1) speed = Math.min(ceiling, speed + power / 6);
+    const pressure = [1, 1.25, 1.5][Math.min(2, Math.floor((covered / distance) * 3))];
+    stamina -= ((speed * speed) / 1800) * pressure * (1 - stats.wit / 500);
+    if (covered + speed >= distance) return turn - 1 + (distance - covered) / speed;
+    const before = covered;
+    covered += speed;
+    for (const mark of corners) if (before < mark && covered >= mark) speed /= 1.2;
+  }
+  return 300;
+};
+
 // --- determinism -------------------------------------------------------------
 {
-  const kokura = track("kokura-climb");
   const field = [
-    runner("a", { speed: 120, stamina: 140, power: 190, wit: 100 }),
-    runner("b", { speed: 150, stamina: 120, power: 120, wit: 110 })
+    runner("a", { speed: 120, stamina: 140, power: 110, wit: 100 }),
+    runner("b", { speed: 130, stamina: 110, power: 100, wit: 110 })
   ];
-  const first = simulateRace({ track: kokura, runners: field, seed: 42 });
-  const second = simulateRace({ track: kokura, runners: field, seed: 42 });
+  const first = simulateRace({ track: track("tokyo-classic"), runners: field, seed: 42 });
+  const second = simulateRace({ track: track("tokyo-classic"), runners: field, seed: 42 });
   check(
     "same seed gives the same result",
-    JSON.stringify(first.results) === JSON.stringify(second.results)
+    JSON.stringify(first) === JSON.stringify(second)
   );
-  const other = simulateRace({ track: kokura, runners: field, seed: 99 });
+  const other = simulateRace({ track: track("tokyo-classic"), runners: field, seed: 99 });
   check(
     "a different seed produces a different race",
     JSON.stringify(other.frames) !== JSON.stringify(first.frames)
   );
 }
 
-// --- power wins the climb, speed wins the sprint -----------------------------
+// --- the engine matches the rules on paper ------------------------------------
 {
-  // Same stat budget, distributed differently.
-  const powerhouse = runner("power", { speed: 95, stamina: 130, power: 215, wit: 90 });
-  const sprinter = runner("speed", { speed: 175, stamina: 130, power: 135, wit: 90 });
-
-  const climbWins = { power: 0, speed: 0 };
-  const sprintWins = { power: 0, speed: 0 };
-
-  for (let seed = 1; seed <= 25; seed += 1) {
-    const climb = simulateRace({
-      track: track("kokura-climb"),
-      runners: [powerhouse, sprinter],
-      seed
-    });
-    climbWins[climb.results[0].id as "power" | "speed"] += 1;
-
-    const sprint = simulateRace({
-      track: track("sapporo-sprint"),
-      runners: [powerhouse, sprinter],
-      seed
-    });
-    sprintWins[sprint.results[0].id as "power" | "speed"] += 1;
+  const profiles = {
+    balanced: { speed: 110, stamina: 140, power: 96, wit: 105 },
+    sketch: { speed: 120, stamina: 108, power: 96, wit: 105 },
+    glass: { speed: 140, stamina: 70, power: 96, wit: 105 }
+  };
+  for (const [id, stats] of Object.entries(profiles)) {
+    const expected = paperRace(stats, 1200, [200, 500, 800, 1100]);
+    const actual = simulateRace({ track: OVAL, runners: [runner(id, stats)], seed: 1 }).results[0];
+    check(
+      `${id} on the sketch oval matches the paper rules`,
+      Math.abs(actual.finishTime - expected) / expected < 0.03,
+      `engine ${actual.finishTime.toFixed(2)} x paper ${expected.toFixed(2)} turns`
+    );
   }
-
-  check(
-    "Power beats Speed on the Kokura climb",
-    climbWins.power > climbWins.speed,
-    `power ${climbWins.power} x ${climbWins.speed} speed`
-  );
-  check(
-    "Speed beats Power on the Sapporo sprint",
-    sprintWins.speed > sprintWins.power,
-    `speed ${sprintWins.speed} x ${sprintWins.power} power`
-  );
 }
 
-// --- stamina actually matters ------------------------------------------------
+// --- each stat does its job ------------------------------------------------------
 {
-  const tokyo = track("tokyo-classic");
-  const stayer = runner("stayer", { speed: 130, stamina: 180, power: 130, wit: 110 });
-  const glassCannon = runner("glass", { speed: 150, stamina: 70, power: 130, wit: 110 });
+  const base = { speed: 110, stamina: 200, power: 90, wit: 90 };
+  let fasterWins = 0;
+  let strongerWins = 0;
+  for (let seed = 1; seed <= 20; seed += 1) {
+    const speedRace = simulateRace({
+      track: FLAT,
+      runners: [runner("fast", { ...base, speed: 130 }), runner("base", base)],
+      seed
+    });
+    if (speedRace.results[0].id === "fast") fasterWins += 1;
 
-  const race = simulateRace({ track: tokyo, runners: [stayer, glassCannon], seed: 7 });
-  const glassResult = race.results.find((result) => result.id === "glass")!;
-  const stayerResult = race.results.find((result) => result.id === "stayer")!;
+    const powerRace = simulateRace({
+      track: OVAL,
+      runners: [runner("strong", { ...base, power: 130 }), runner("base", base)],
+      seed
+    });
+    if (powerRace.results[0].id === "strong") strongerWins += 1;
+  }
+  check("more Speed wins when stamina is not an issue", fasterWins === 20, `${fasterWins}/20`);
+  check("more Power wins on a track full of corners", strongerWins === 20, `${strongerWins}/20`);
 
-  check("a thin stamina bar runs dry at Tokyo", glassResult.exhausted);
-  check("the stayer wins at 2400m", stayerResult.placement === 1);
+  // At 1200m a sprinter can afford to run dry near the line; at 2400m she cannot.
+  const race = simulateRace({
+    track: track("tokyo-classic"),
+    runners: [
+      runner("balanced", { speed: 110, stamina: 150, power: 115, wit: 100 }),
+      runner("glass", { speed: 140, stamina: 100, power: 115, wit: 100 })
+    ],
+    seed: 7
+  });
+  check("a thin stamina bar runs dry at 2400m", finishOf(race, "glass").exhausted);
   check(
-    "the shortfall is reported",
-    race.shortfalls.glass?.some((entry) => entry.stat === "stamina") === true
+    "the balanced runner beats the glass cannon at 2400m",
+    finishOf(race, "balanced").placement === 1,
+    `${finishOf(race, "balanced").finishTime} x ${finishOf(race, "glass").finishTime} turns`
+  );
+
+  const thrifty = simulateRace({
+    track: track("tokyo-classic"),
+    runners: [
+      runner("wise", { speed: 110, stamina: 150, power: 115, wit: 200 }),
+      runner("plain", { speed: 110, stamina: 150, power: 115, wit: 20 })
+    ],
+    seed: 5
+  });
+  check(
+    "Wit saves stamina",
+    finishOf(thrifty, "wise").staminaLeft > finishOf(thrifty, "plain").staminaLeft ||
+      (finishOf(thrifty, "plain").exhausted && !finishOf(thrifty, "wise").exhausted)
   );
 }
 
-// --- replay sanity ------------------------------------------------------------
+// --- corners and segment boundaries ---------------------------------------------
+{
+  const stats = { speed: 120, stamina: 300, power: 96, wit: 100 };
+  const onFlat = simulateRace({ track: FLAT, runners: [runner("r", stats)], seed: 3 }).results[0];
+  const onOval = simulateRace({ track: OVAL, runners: [runner("r", stats)], seed: 3 }).results[0];
+  check(
+    "corners cost speed",
+    onOval.finishTime > onFlat.finishTime,
+    `oval ${onOval.finishTime} x flat ${onFlat.finishTime} turns`
+  );
+
+  const cut = customTrack(1200, [straight(0.2), straight(0.3), straight(0.3), straight(0.2)]);
+  const onCut = simulateRace({ track: cut, runners: [runner("r", stats)], seed: 3 }).results[0];
+  check(
+    "straight segment boundaries lose no metres",
+    onCut.finishTime === onFlat.finishTime,
+    `${onCut.finishTime} x ${onFlat.finishTime} turns`
+  );
+}
+
+// --- photo finishes -----------------------------------------------------------------
+{
+  const twins = Array.from({ length: 8 }, (_, index) =>
+    runner(`twin-${index}`, { speed: 100, stamina: 120, power: 90, wit: 90 })
+  );
+  const race = simulateRace({ track: track("niigata-mile"), runners: twins, seed: 21 });
+  const times = race.results.map((result) => result.finishTime);
+  const sameTurn = new Set(times.map(Math.ceil)).size < times.length;
+  check("identical runners never tie", new Set(times).size === times.length, times.join(" · "));
+  check("some of them finish in the same turn, so the fraction decides", sameTurn);
+}
+
+// --- skills -------------------------------------------------------------------------
+{
+  let fired = 0;
+  let helped = 0;
+  const stats = { speed: 100, stamina: 150, power: 80, wit: 80 };
+  for (let seed = 1; seed <= 20; seed += 1) {
+    const race = simulateRace({
+      track: FLAT,
+      runners: [runner("dash", stats, [skill("concentration")]), runner("plain", stats)],
+      seed
+    });
+    if (finishOf(race, "dash").skillsActivated.includes("Concentração")) fired += 1;
+    if (finishOf(race, "dash").placement === 1) helped += 1;
+  }
+  check("an opening skill fires in most races", fired >= 16, `${fired}/20`);
+  check("the skill usually decides a race between twins", helped >= 14, `${helped}/20`);
+
+  const passive = simulateRace({
+    track: track("sapporo-sprint"),
+    runners: [runner("p", { speed: 70, stamina: 30, power: 60, wit: 40 }, [skill("iron-lungs")])],
+    seed: 1
+  });
+  check(
+    "passive stat skills are folded in before the race",
+    passive.shortfalls.p === undefined,
+    "30 + 25 Stamina clears the 35 requirement"
+  );
+}
+
+// --- replay sanity -------------------------------------------------------------------
 {
   const race = simulateRace({
     track: track("niigata-mile"),
@@ -123,35 +273,37 @@ const check = (label: string, passed: boolean, detail = "") => {
   });
 
   const monotonic = race.frames.every((frame, index) =>
-    index === 0 ? true : frame.positions.every((pos, lane) => pos >= race.frames[index - 1].positions[lane])
+    index === 0
+      ? true
+      : frame.positions.every((pos, lane) => pos >= race.frames[index - 1].positions[lane])
   );
   check("runners never move backwards in the replay", monotonic);
+  check("the replay starts at the gates", race.frames[0].t === 0);
   check(
     "everyone reaches the finish line",
     race.frames[race.frames.length - 1].positions.every((pos) => pos >= race.distance)
   );
-  check(
-    "a mile at the reference level lands in a believable time",
-    race.results[0].finishTime > 85 && race.results[0].finishTime < 115,
-    `${race.results[0].finishTime}s`
-  );
 }
 
-// --- every track finishes in a plausible time ---------------------------------
+// --- every track is winnable on the requirements ---------------------------------------
 for (const seed of TRACK_CATALOG) {
-  const contender = runner("test", {
-    speed: seed.requirements.speed,
-    stamina: seed.requirements.stamina,
-    power: seed.requirements.power,
-    wit: seed.requirements.wit
+  const onRequirements = runner("req", seed.requirements);
+  const shortOfStamina = runner("short", {
+    ...seed.requirements,
+    stamina: Math.round(seed.requirements.stamina * 0.7)
   });
-  const race = simulateRace({ track: seed, runners: [contender], seed: 11 });
-  const seconds = race.results[0].finishTime;
-  const pace = seed.distance / seconds;
+  const race = simulateRace({ track: seed, runners: [onRequirements, shortOfStamina], seed: 11 });
+  const req = finishOf(race, "req");
+  const short = finishOf(race, "short");
   check(
-    `${seed.name}: a runner on the requirements holds a sane pace`,
-    pace > 12 && pace < 19,
-    `${seconds}s (${pace.toFixed(1)} m/s)`
+    `${seed.name}: a runner on the requirements finishes in 15–35 turns`,
+    req.finishTime > 15 && req.finishTime < 35,
+    `${req.finishTime} turns, ${Math.round(req.staminaLeft * 100)}% stamina left`
+  );
+  check(
+    `${seed.name}: 30% less Stamina runs dry and loses`,
+    short.exhausted && short.placement === 2,
+    `${short.finishTime} turns`
   );
 }
 

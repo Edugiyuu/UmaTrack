@@ -9,16 +9,43 @@ import type {
   SkillActivation,
   StatBlock
 } from "../types/race";
-import type { RunningStyle } from "../models/user";
 
-/** Simulation step, in seconds. */
-const TICK = 0.1;
-/** One replay frame every N ticks, to keep the payload small. */
-const FRAME_EVERY = 5;
-/** Pace a runner that exactly meets every requirement settles into. */
-const REFERENCE_SPEED = 16;
-/** Safety net so a hopeless runner still crosses the line. */
-const MAX_RACE_SECONDS = 400;
+/*
+ * Turn-based race engine. Every rule is simple enough to redo on paper; see
+ * docs/tasks/14-race-turn-engine.md for the reasoning behind each one.
+ *
+ * Units: distance in metres, speed in metres per turn, time in turns. The stat values
+ * are used as-is: a Speed of 120 is a ceiling of 120 m/turn.
+ */
+
+/** Turn 1 starts at Power / START_DIVISOR. */
+const START_DIVISOR = 2;
+/** Every later turn adds Power / ACCEL_DIVISOR, up to the Speed ceiling. */
+const ACCEL_DIVISOR = 6;
+/** Entering a corner divides the current speed by this. */
+const CURVE_DIVISOR = 1.2;
+/** A segment whose `curve` reaches this counts as a corner. */
+const CORNER_THRESHOLD = 0.4;
+/** Stamina spent per turn is speed² / STAMINA_DIVISOR, before pressure and Wit. */
+const STAMINA_DIVISOR = 1800;
+/** Wit cuts the stamina cost by Wit / WIT_RELIEF_DIVISOR. */
+const WIT_RELIEF_DIVISOR = 500;
+/** Wit relief and staminaSave skills together never cut more than this. */
+const MAX_STAMINA_SAVE = 0.6;
+/** Stamina cost multiplier in the first, second and last third of the race. */
+const PRESSURE = [1, 1.25, 1.5] as const;
+/** Out of stamina: Power is divided by this... */
+const TIRED_POWER_DIVISOR = 3;
+/** ...and the Speed ceiling by this. */
+const TIRED_SPEED_DIVISOR = 2;
+/** Each turn's advance varies by up to ±NOISE so identical runners do not lockstep. */
+const NOISE = 0.02;
+/** Chance added to a skill's per-turn activation chance for each point of Wit. */
+const SKILL_CHANCE_PER_WIT = 0.002;
+/** Replay samples per turn. Motion inside a turn is uniform, so these are exact. */
+const FRAME_SUBSTEPS = 4;
+/** Safety net so a hopeless runner still ends the race. */
+const MAX_TURNS = 300;
 
 const STATS = ["speed", "stamina", "power", "wit"] as const;
 
@@ -37,28 +64,7 @@ const createRng = (seed: number) => {
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 
-/**
- * Where a runner stands relative to what the track asks for, shaped by how much the
- * track cares about that stat. A ratio of 1 means "exactly meets the requirement", so
- * the whole engine is calibrated around 1.0 and behaves the same at 1200m and 2400m.
- */
-const statRatio = (value: number, requirement: number, weight: number) =>
-  Math.pow(clamp(value / Math.max(requirement, 1), 0.3, 2.2), weight);
-
-const PHASE_SPEED: Record<RacePhase, number> = {
-  opening: 0.93,
-  middle: 0.97,
-  final: 1.02,
-  spurt: 1.07
-};
-
-const STYLE_SPEED: Record<RunningStyle, Record<RacePhase, number>> = {
-  front: { opening: 1.07, middle: 1.03, final: 0.98, spurt: 0.97 },
-  pace: { opening: 1.02, middle: 1.01, final: 1.0, spurt: 1.02 },
-  late: { opening: 0.97, middle: 0.99, final: 1.04, spurt: 1.06 },
-  end: { opening: 0.92, middle: 0.97, final: 1.06, spurt: 1.11 }
-};
-
+/** Skill trigger windows. Pressure uses thirds instead (see `pressureAt`). */
 const phaseAt = (progress: number): RacePhase => {
   if (progress >= 0.8) return "spurt";
   if (progress >= 0.66) return "final";
@@ -66,11 +72,14 @@ const phaseAt = (progress: number): RacePhase => {
   return "opening";
 };
 
+const pressureAt = (progress: number) => PRESSURE[Math.min(2, Math.floor(progress * 3))];
+
 interface ResolvedSegment {
   start: number;
   end: number;
   grade: number;
   curve: number;
+  isCorner: boolean;
 }
 
 /** Turns the ratio-based segments into absolute metre ranges. */
@@ -81,18 +90,22 @@ const resolveSegments = (track: RaceTrackInput): ResolvedSegment[] => {
   track.segments.forEach((segment, index) => {
     const isLast = index === track.segments.length - 1;
     const end = isLast ? track.distance : cursor + segment.lengthRatio * track.distance;
-    segments.push({ start: cursor, end, grade: segment.grade, curve: segment.curve });
+    segments.push({
+      start: cursor,
+      end,
+      grade: segment.grade,
+      curve: segment.curve,
+      isCorner: segment.curve >= CORNER_THRESHOLD
+    });
     cursor = end;
   });
 
   return segments;
 };
 
-const segmentAt = (segments: ResolvedSegment[], distance: number) => {
-  for (const segment of segments) {
-    if (distance < segment.end) return segment;
-  }
-  return segments[segments.length - 1];
+const segmentIndexAt = (segments: ResolvedSegment[], distance: number) => {
+  const index = segments.findIndex((segment) => distance < segment.end);
+  return index === -1 ? segments.length - 1 : index;
 };
 
 const matchesTerrain = (skill: RaceSkill, segment: ResolvedSegment) => {
@@ -102,9 +115,9 @@ const matchesTerrain = (skill: RaceSkill, segment: ResolvedSegment) => {
     case "downhill":
       return segment.grade < -0.8;
     case "corner":
-      return segment.curve >= 0.4;
+      return segment.isCorner;
     case "straight":
-      return segment.curve < 0.2 && Math.abs(segment.grade) < 1;
+      return !segment.isCorner && Math.abs(segment.grade) < 1;
     default:
       return true;
   }
@@ -113,20 +126,18 @@ const matchesTerrain = (skill: RaceSkill, segment: ResolvedSegment) => {
 interface ActiveEffect {
   kind: RaceSkill["effect"]["kind"];
   value: number;
+  /** First turn in which the effect no longer applies. */
   expiresAt: number;
 }
 
 interface RunnerState {
   input: RaceRunnerInput;
   stats: StatBlock;
-  ratios: StatBlock;
   maxStamina: number;
   stamina: number;
-  baseDrain: number;
-  accel: number;
-  witSave: number;
   distance: number;
-  velocity: number;
+  /** Base speed carried from turn to turn, in m/turn. Skill bonuses sit on top of it. */
+  speed: number;
   topSpeed: number;
   finishTime: number | null;
   exhausted: boolean;
@@ -135,7 +146,7 @@ interface RunnerState {
   activated: string[];
 }
 
-const buildRunnerState = (runner: RaceRunnerInput, track: RaceTrackInput): RunnerState => {
+const buildRunnerState = (runner: RaceRunnerInput): RunnerState => {
   // `flatStat` skills are passive, so they are folded into the stats up front.
   const stats: StatBlock = {
     speed: runner.speed,
@@ -153,28 +164,13 @@ const buildRunnerState = (runner: RaceRunnerInput, track: RaceTrackInput): Runne
     }
   }
 
-  const ratios: StatBlock = {
-    speed: statRatio(stats.speed, track.requirements.speed, track.statWeights.speed),
-    stamina: statRatio(stats.stamina, track.requirements.stamina, track.statWeights.stamina),
-    power: statRatio(stats.power, track.requirements.power, track.statWeights.power),
-    wit: statRatio(stats.wit, track.requirements.wit, track.statWeights.wit)
-  };
-
-  // 100 stamina units is exactly enough to hold the reference pace to the line.
-  const maxStamina = 100 * (0.45 + 0.55 * ratios.stamina);
-  const referenceTime = track.distance / REFERENCE_SPEED;
-
   return {
     input: runner,
     stats,
-    ratios,
-    maxStamina,
-    stamina: maxStamina,
-    baseDrain: 100 / referenceTime,
-    accel: 0.6 + 1.4 * ratios.power,
-    witSave: Math.min(0.25, 0.1 * ratios.wit),
+    maxStamina: stats.stamina,
+    stamina: stats.stamina,
     distance: 0,
-    velocity: 0,
+    speed: 0,
     topSpeed: 0,
     finishTime: null,
     exhausted: false,
@@ -190,11 +186,8 @@ const sumEffects = (state: RunnerState, kinds: ActiveEffect["kind"][]) =>
     0
   );
 
-const maxEffect = (state: RunnerState, kind: ActiveEffect["kind"]) =>
-  state.effects.reduce(
-    (best, effect) => (effect.kind === kind ? Math.max(best, effect.value) : best),
-    0
-  );
+const staminaRatio = (state: RunnerState) =>
+  state.maxStamina > 0 ? clamp(state.stamina / state.maxStamina, 0, 1) : 0;
 
 export interface SimulateRaceOptions {
   track: RaceTrackInput;
@@ -203,50 +196,58 @@ export interface SimulateRaceOptions {
 }
 
 /**
- * Runs the whole race. The result is fully determined by the seed, so the same input
- * always produces the same replay and the client can be handed the frames to animate
- * without ever being able to influence the outcome.
+ * Runs the whole race turn by turn. The result is fully determined by the seed, so the
+ * same input always produces the same replay and the client can be handed the frames
+ * to animate without ever being able to influence the outcome.
  */
 export const simulateRace = ({ track, runners, seed }: SimulateRaceOptions): RaceSimulation => {
   const rng = createRng(seed);
   const segments = resolveSegments(track);
-  const states = runners.map((runner) => buildRunnerState(runner, track));
+  const states = runners.map(buildRunnerState);
 
-  const frames: RaceFrame[] = [];
+  const frames: RaceFrame[] = [
+    { t: 0, positions: states.map(() => 0), stamina: states.map(() => 1) }
+  ];
   const activations: SkillActivation[] = [];
 
-  let time = 0;
-  let tickIndex = 0;
+  let turn = 0;
 
-  while (states.some((state) => state.finishTime === null) && time < MAX_RACE_SECONDS) {
+  while (states.some((state) => state.finishTime === null) && turn < MAX_TURNS) {
+    turn += 1;
+
     // Placement is read before anyone moves, so every runner sees the same snapshot.
     const standings = [...states].sort((a, b) => b.distance - a.distance);
     const placementOf = new Map(standings.map((state, index) => [state.input.id, index + 1]));
 
-    for (const state of states) {
-      if (state.finishTime !== null) continue;
+    const startDistances = states.map((state) => state.distance);
+    const startStamina = states.map(staminaRatio);
+    const advances = states.map(() => 0);
 
-      const segment = segmentAt(segments, state.distance);
+    states.forEach((state, lane) => {
+      if (state.finishTime !== null) return;
+
+      const segment = segments[segmentIndexAt(segments, state.distance)];
       const progress = state.distance / track.distance;
-      const phase = phaseAt(progress);
-      const staminaRatio = state.stamina / state.maxStamina;
 
-      state.effects = state.effects.filter((effect) => effect.expiresAt > time);
+      state.effects = state.effects.filter((effect) => effect.expiresAt > turn);
 
+      // --- skills ------------------------------------------------------------
       for (let index = state.pendingSkills.length - 1; index >= 0; index -= 1) {
         const skill = state.pendingSkills[index];
         const { trigger } = skill;
 
-        if (trigger.phase !== "any" && trigger.phase !== phase) continue;
+        if (trigger.phase !== "any" && trigger.phase !== phaseAt(progress)) continue;
         if (!matchesTerrain(skill, segment)) continue;
-        if (trigger.maxStaminaRatio !== undefined && staminaRatio > trigger.maxStaminaRatio) continue;
+        if (trigger.maxStaminaRatio !== undefined && staminaRatio(state) > trigger.maxStaminaRatio) {
+          continue;
+        }
         if (trigger.minPosition !== undefined) {
           const placement = placementOf.get(state.input.id) ?? 1;
           if (placement < trigger.minPosition) continue;
         }
 
-        const chancePerSecond = trigger.baseChance + state.stats.wit * 0.0004;
-        if (rng() > Math.min(1, chancePerSecond) * TICK) continue;
+        const chance = trigger.baseChance + state.stats.wit * SKILL_CHANCE_PER_WIT;
+        if (rng() > Math.min(1, chance)) continue;
 
         state.pendingSkills.splice(index, 1);
         state.activated.push(skill.name);
@@ -255,118 +256,95 @@ export const simulateRace = ({ track, runners, seed }: SimulateRaceOptions): Rac
           runnerName: state.input.name,
           skillSlug: skill.slug,
           skillName: skill.name,
-          time: Number(time.toFixed(1)),
+          time: turn - 1,
           distance: Math.round(state.distance)
         });
 
         if (skill.effect.kind === "staminaRecover") {
           state.stamina = Math.min(
             state.maxStamina,
-            state.stamina + skill.effect.value * state.maxStamina
+            Math.max(0, state.stamina) + skill.effect.value * state.maxStamina
           );
         } else {
           state.effects.push({
             kind: skill.effect.kind,
             value: skill.effect.value,
-            expiresAt: time + skill.effect.duration
+            expiresAt: turn + Math.max(1, skill.effect.duration)
           });
         }
       }
 
-      // --- target speed ---------------------------------------------------
-      const inclineRelief = Math.min(0.9, maxEffect(state, "inclineBoost"));
-      const powerRatio = clamp(state.stats.power / Math.max(track.requirements.power, 1), 0, 1.8);
+      // --- speed ---------------------------------------------------------------
+      const tired = state.stamina <= 0;
+      if (tired) state.exhausted = true;
 
-      // Uphill costs speed, and how much of it you keep is down to Power.
-      const gradeSpeedFactor =
-        segment.grade > 0
-          ? 1 - (segment.grade / 100) * (3.2 - 1.6 * powerRatio) * (1 - inclineRelief)
-          : 1 + (-segment.grade / 100) * 0.9;
+      const power = tired ? state.stats.power / TIRED_POWER_DIVISOR : state.stats.power;
+      const ceiling = tired ? state.stats.speed / TIRED_SPEED_DIVISOR : state.stats.speed;
 
-      const curvePenalty = segment.curve * 0.05 * (1 - 0.3 * Math.min(state.ratios.wit, 1.5));
-      const speedBonus = sumEffects(state, ["speedBoost", "startDash", "cornerBoost"]);
-
-      let targetSpeed =
-        REFERENCE_SPEED *
-          (0.84 + 0.16 * state.ratios.speed) *
-          PHASE_SPEED[phase] *
-          STYLE_SPEED[state.input.runningStyle][phase] *
-          Math.max(0.55, gradeSpeedFactor) *
-          (1 - curvePenalty) +
-        speedBonus;
-
-      if (state.stamina <= 0) {
-        state.exhausted = true;
-        targetSpeed *= 0.62;
+      if (turn === 1) {
+        state.speed = Math.min(ceiling, power / START_DIVISOR);
+      } else {
+        const accel = (power / ACCEL_DIVISOR) * (1 + sumEffects(state, ["accelBoost"]));
+        state.speed = Math.min(ceiling, state.speed + accel);
       }
+      // Nobody stands still: even a zero-stat runner eventually reaches the line.
+      state.speed = Math.max(1, state.speed);
 
-      // --- acceleration ----------------------------------------------------
-      const accel =
-        state.accel * (1 + sumEffects(state, ["accelBoost"])) * (state.stamina <= 0 ? 0.5 : 1);
-      const delta = targetSpeed - state.velocity;
-      const step = delta > 0 ? Math.min(delta, accel * TICK) : Math.max(delta, -accel * 2 * TICK);
-      state.velocity = Math.max(0, state.velocity + step);
-      state.topSpeed = Math.max(state.topSpeed, state.velocity);
+      const runSpeed = state.speed + sumEffects(state, ["speedBoost", "startDash", "cornerBoost"]);
+      state.topSpeed = Math.max(state.topSpeed, runSpeed);
 
-      // --- stamina ---------------------------------------------------------
-      const gradeDrain =
-        segment.grade > 0
-          ? 1 + (segment.grade * 0.09) / Math.max(powerRatio, 0.4)
-          : 1 - Math.min(0.25, -segment.grade * 0.04);
-      const save = Math.min(0.55, state.witSave + sumEffects(state, ["staminaSave"]));
-      const surfaceDrain = track.surface === "dirt" ? 1.08 : 1;
+      // --- stamina ---------------------------------------------------------------
+      const save = Math.min(
+        MAX_STAMINA_SAVE,
+        state.stats.wit / WIT_RELIEF_DIVISOR + sumEffects(state, ["staminaSave"])
+      );
+      state.stamina -= ((runSpeed * runSpeed) / STAMINA_DIVISOR) * pressureAt(progress) * (1 - save);
 
-      state.stamina -=
-        state.baseDrain *
-        Math.pow(state.velocity / REFERENCE_SPEED, 2.4) *
-        gradeDrain *
-        surfaceDrain *
-        (1 - save) *
-        TICK;
+      // --- movement --------------------------------------------------------------
+      const advance = runSpeed * (1 - NOISE + rng() * NOISE * 2);
+      const remaining = track.distance - state.distance;
+      advances[lane] = advance;
 
-      // A touch of noise keeps two identical runners from finishing in lockstep.
-      const advance = state.velocity * TICK * (0.997 + rng() * 0.006);
-      state.distance += advance;
-
-      if (state.distance >= track.distance) {
-        // Interpolate inside the tick so photo finishes are decided by the runners
-        // rather than by their order in the array.
-        const overshoot = state.distance - track.distance;
-        const fraction = advance > 0 ? 1 - overshoot / advance : 1;
+      if (advance >= remaining) {
+        // Crossed the line inside this turn: the fraction of the turn it took decides
+        // photo finishes, so two runners finishing in the same turn never tie.
         state.distance = track.distance;
-        state.finishTime = Number((time + TICK * fraction).toFixed(4));
+        state.finishTime = Number((turn - 1 + remaining / advance).toFixed(4));
+        return;
       }
-    }
 
-    time += TICK;
-    tickIndex += 1;
+      const before = segmentIndexAt(segments, state.distance);
+      state.distance += advance;
+      const after = segmentIndexAt(segments, state.distance);
 
-    if (tickIndex % FRAME_EVERY === 0) {
+      // The leftover metres carry into the next segment; every corner entered on the
+      // way costs speed for the next turn.
+      for (let index = before + 1; index <= after; index += 1) {
+        if (segments[index].isCorner) state.speed /= CURVE_DIVISOR;
+      }
+    });
+
+    for (let step = 1; step <= FRAME_SUBSTEPS; step += 1) {
+      const fraction = step / FRAME_SUBSTEPS;
       frames.push({
-        t: Number(time.toFixed(1)),
-        positions: states.map((state) => Math.round(state.distance)),
-        stamina: states.map((state) =>
-          Number(clamp(state.stamina / state.maxStamina, 0, 1).toFixed(3))
+        t: Number((turn - 1 + fraction).toFixed(2)),
+        positions: states.map((state, lane) =>
+          Math.round(Math.min(state.distance, startDistances[lane] + advances[lane] * fraction))
+        ),
+        stamina: states.map((state, lane) =>
+          Number((startStamina[lane] + (staminaRatio(state) - startStamina[lane]) * fraction).toFixed(3))
         )
       });
     }
   }
 
-  // Anyone still running when the clock ran out is timed out at the cap.
+  // Anyone still running when the turns ran out is timed out at the cap.
   for (const state of states) {
     if (state.finishTime === null) {
-      state.finishTime = MAX_RACE_SECONDS;
+      state.finishTime = MAX_TURNS;
       state.exhausted = true;
     }
   }
-
-  frames.push({
-    t: Number(time.toFixed(1)),
-    positions: states.map((state) => Math.round(state.distance)),
-    stamina: states.map((state) =>
-      Number(clamp(state.stamina / state.maxStamina, 0, 1).toFixed(3))
-    )
-  });
 
   const results: RaceRunnerResult[] = [...states]
     .sort((a, b) => (a.finishTime ?? 0) - (b.finishTime ?? 0))
@@ -376,9 +354,9 @@ export const simulateRace = ({ track, runners, seed }: SimulateRaceOptions): Rac
       isPlayer: state.input.isPlayer,
       runningStyle: state.input.runningStyle,
       placement: index + 1,
-      finishTime: state.finishTime ?? MAX_RACE_SECONDS,
-      topSpeed: Number(state.topSpeed.toFixed(2)),
-      staminaLeft: Number(clamp(state.stamina / state.maxStamina, 0, 1).toFixed(3)),
+      finishTime: state.finishTime ?? MAX_TURNS,
+      topSpeed: Number(state.topSpeed.toFixed(1)),
+      staminaLeft: Number(staminaRatio(state).toFixed(3)),
       exhausted: state.exhausted,
       skillsActivated: state.activated
     }));

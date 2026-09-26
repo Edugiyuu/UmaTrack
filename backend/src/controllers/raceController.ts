@@ -185,6 +185,7 @@ export const runRace = async (req: AuthenticatedRequest, res: Response) => {
       placement: playerResult.placement,
       fieldSize: simulation.results.length,
       finishTime: playerResult.finishTime,
+      timeUnit: 'turns',
       exhausted: playerResult.exhausted,
       skillsActivated: playerResult.skillsActivated,
       statsSnapshot: {

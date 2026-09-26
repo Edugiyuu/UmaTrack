@@ -24,10 +24,11 @@ export interface SkillSeed {
 
 /**
  * Skill catalogue. `effect.value` is read by the race engine and its unit depends on
- * `effect.kind`: m/s for speedBoost / startDash / cornerBoost, a multiplier for
- * accelBoost, a fraction of the stamina bar for staminaRecover / staminaSave, a
- * fraction of the slope penalty cancelled for inclineBoost, and raw stat points
- * for flatStat.
+ * `effect.kind`: m/turn added on top of the runner's speed for speedBoost / startDash /
+ * cornerBoost, a multiplier for accelBoost, a fraction of the stamina bar for
+ * staminaRecover / staminaSave, a fraction of the slope penalty cancelled for
+ * inclineBoost (no effect while the turn engine ignores slopes), and raw stat points
+ * for flatStat. `duration` is in turns and `trigger.baseChance` is per turn.
  */
 export const SKILL_CATALOG: SkillSeed[] = [
   // --- Largada ---
@@ -37,7 +38,7 @@ export const SKILL_CATALOG: SkillSeed[] = [
     description: "Largada limpa: ganha impulso nos primeiros metros da corrida.",
     rarity: "common",
     cost: 60,
-    effect: { kind: "startDash", value: 1.1, duration: 3 },
+    effect: { kind: "startDash", value: 7, duration: 1 },
     trigger: { phase: "opening", terrain: "any", baseChance: 0.75 },
     requirements: { speed: 0, stamina: 0, power: 40, wit: 30 }
   },
@@ -47,7 +48,7 @@ export const SKILL_CATALOG: SkillSeed[] = [
     description: "Aceleração brutal logo após o portão abrir.",
     rarity: "rare",
     cost: 130,
-    effect: { kind: "accelBoost", value: 0.45, duration: 5 },
+    effect: { kind: "accelBoost", value: 0.45, duration: 1 },
     trigger: { phase: "opening", terrain: "any", baseChance: 0.6 },
     requirements: { speed: 60, stamina: 0, power: 110, wit: 40 }
   },
@@ -59,8 +60,8 @@ export const SKILL_CATALOG: SkillSeed[] = [
     description: "Um salto de velocidade quando a reta final aparece.",
     rarity: "common",
     cost: 90,
-    effect: { kind: "speedBoost", value: 0.9, duration: 5 },
-    trigger: { phase: "final", terrain: "any", baseChance: 0.06 },
+    effect: { kind: "speedBoost", value: 5, duration: 1 },
+    trigger: { phase: "final", terrain: "any", baseChance: 0.25 },
     requirements: { speed: 90, stamina: 0, power: 0, wit: 50 }
   },
   {
@@ -69,8 +70,8 @@ export const SKILL_CATALOG: SkillSeed[] = [
     description: "Cadência perfeita na reta: velocidade extra em piso plano.",
     rarity: "rare",
     cost: 160,
-    effect: { kind: "speedBoost", value: 1.3, duration: 4 },
-    trigger: { phase: "middle", terrain: "straight", baseChance: 0.05 },
+    effect: { kind: "speedBoost", value: 8, duration: 1 },
+    trigger: { phase: "middle", terrain: "straight", baseChance: 0.2 },
     requirements: { speed: 130, stamina: 0, power: 60, wit: 70 }
   },
   {
@@ -79,8 +80,8 @@ export const SKILL_CATALOG: SkillSeed[] = [
     description: "Tudo o que sobrou nos metros finais.",
     rarity: "unique",
     cost: 240,
-    effect: { kind: "speedBoost", value: 1.8, duration: 6 },
-    trigger: { phase: "spurt", terrain: "any", baseChance: 0.12 },
+    effect: { kind: "speedBoost", value: 11, duration: 1 },
+    trigger: { phase: "spurt", terrain: "any", baseChance: 0.4 },
     requirements: { speed: 150, stamina: 120, power: 90, wit: 90 }
   },
 
@@ -91,8 +92,8 @@ export const SKILL_CATALOG: SkillSeed[] = [
     description: "Economiza fôlego durante o meio da prova.",
     rarity: "common",
     cost: 80,
-    effect: { kind: "staminaSave", value: 0.2, duration: 12 },
-    trigger: { phase: "middle", terrain: "any", baseChance: 0.05 },
+    effect: { kind: "staminaSave", value: 0.2, duration: 2 },
+    trigger: { phase: "middle", terrain: "any", baseChance: 0.2 },
     requirements: { speed: 0, stamina: 80, power: 0, wit: 60 }
   },
   {
@@ -102,7 +103,7 @@ export const SKILL_CATALOG: SkillSeed[] = [
     rarity: "rare",
     cost: 170,
     effect: { kind: "staminaRecover", value: 0.18, duration: 0 },
-    trigger: { phase: "any", terrain: "any", baseChance: 0.08, maxStaminaRatio: 0.3 },
+    trigger: { phase: "any", terrain: "any", baseChance: 0.3, maxStaminaRatio: 0.3 },
     requirements: { speed: 0, stamina: 130, power: 0, wit: 100 }
   },
   {
@@ -123,8 +124,8 @@ export const SKILL_CATALOG: SkillSeed[] = [
     description: "Reduz boa parte da perda de velocidade nas subidas.",
     rarity: "common",
     cost: 120,
-    effect: { kind: "inclineBoost", value: 0.35, duration: 6 },
-    trigger: { phase: "any", terrain: "uphill", baseChance: 0.1 },
+    effect: { kind: "inclineBoost", value: 0.35, duration: 1 },
+    trigger: { phase: "any", terrain: "uphill", baseChance: 0.35 },
     requirements: { speed: 0, stamina: 60, power: 110, wit: 40 }
   },
   {
@@ -133,8 +134,8 @@ export const SKILL_CATALOG: SkillSeed[] = [
     description: "Quase ignora a inclinação nas rampas mais duras.",
     rarity: "unique",
     cost: 260,
-    effect: { kind: "inclineBoost", value: 0.7, duration: 8 },
-    trigger: { phase: "any", terrain: "uphill", baseChance: 0.14 },
+    effect: { kind: "inclineBoost", value: 0.7, duration: 2 },
+    trigger: { phase: "any", terrain: "uphill", baseChance: 0.45 },
     requirements: { speed: 60, stamina: 120, power: 180, wit: 60 }
   },
   {
@@ -143,8 +144,8 @@ export const SKILL_CATALOG: SkillSeed[] = [
     description: "Aproveita cada descida para ganhar embalo.",
     rarity: "common",
     cost: 95,
-    effect: { kind: "speedBoost", value: 1, duration: 4 },
-    trigger: { phase: "any", terrain: "downhill", baseChance: 0.12 },
+    effect: { kind: "speedBoost", value: 6, duration: 1 },
+    trigger: { phase: "any", terrain: "downhill", baseChance: 0.4 },
     requirements: { speed: 70, stamina: 0, power: 0, wit: 90 }
   },
   {
@@ -165,8 +166,8 @@ export const SKILL_CATALOG: SkillSeed[] = [
     description: "Traça a curva por dentro e perde menos velocidade.",
     rarity: "common",
     cost: 100,
-    effect: { kind: "cornerBoost", value: 0.8, duration: 4 },
-    trigger: { phase: "any", terrain: "corner", baseChance: 0.1 },
+    effect: { kind: "cornerBoost", value: 5, duration: 1 },
+    trigger: { phase: "any", terrain: "corner", baseChance: 0.35 },
     requirements: { speed: 60, stamina: 0, power: 70, wit: 90 }
   },
   {
@@ -175,8 +176,8 @@ export const SKILL_CATALOG: SkillSeed[] = [
     description: "Lê o pelotão e escolhe a hora certa de atacar quando está atrás.",
     rarity: "rare",
     cost: 150,
-    effect: { kind: "speedBoost", value: 1.1, duration: 5 },
-    trigger: { phase: "final", terrain: "any", baseChance: 0.09, minPosition: 4 },
+    effect: { kind: "speedBoost", value: 7, duration: 1 },
+    trigger: { phase: "final", terrain: "any", baseChance: 0.3, minPosition: 4 },
     requirements: { speed: 80, stamina: 80, power: 0, wit: 140 }
   },
   {
@@ -185,8 +186,8 @@ export const SKILL_CATALOG: SkillSeed[] = [
     description: "Mantém o ritmo ideal e gasta menos fôlego a prova inteira.",
     rarity: "rare",
     cost: 180,
-    effect: { kind: "staminaSave", value: 0.15, duration: 20 },
-    trigger: { phase: "any", terrain: "any", baseChance: 0.06 },
+    effect: { kind: "staminaSave", value: 0.15, duration: 4 },
+    trigger: { phase: "any", terrain: "any", baseChance: 0.2 },
     requirements: { speed: 0, stamina: 110, power: 0, wit: 130 }
   },
   {
