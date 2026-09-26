@@ -11,6 +11,7 @@ import {
   trackImage
 } from "../../constants/trackVisuals";
 import type { RunningStyle, TrackResponse } from "../../types/race";
+import { formatTurns } from "../../utils/raceTime";
 import confetti from "canvas-confetti";
 import "./RaceRunner.css";
 
@@ -22,11 +23,9 @@ const RIVAL_COLORS = [
 
 const PLAYBACK_SPEEDS = [1, 2, 4];
 
-const formatTime = (seconds: number) => {
-  const minutes = Math.floor(seconds / 60);
-  const rest = seconds - minutes * 60;
-  return minutes > 0 ? `${minutes}:${rest.toFixed(2).padStart(5, "0")}` : `${rest.toFixed(2)}s`;
-};
+/** The replay clock runs in turns; show the one being played. */
+const formatClock = (time: number, lastTurn: number) =>
+  `Turno ${Math.min(lastTurn, Math.max(1, Math.ceil(time)))}`;
 
 const ordinal = (placement: number) => `${placement}º`;
 
@@ -125,7 +124,7 @@ const RaceRunner = () => {
           </p>
         </div>
         <div className="RaceRunner__clock">
-          <span>{formatTime(playback.time)}</span>
+          <span>{formatClock(playback.time, Math.ceil(simulation.frames.at(-1)?.t ?? 1))}</span>
           <div className="RaceRunner__speeds">
             {PLAYBACK_SPEEDS.map((option) => (
               <button
@@ -229,7 +228,7 @@ const RaceRunner = () => {
           <div className="RaceRunner__results">
             <h2>{race.rewards.placement === 1 ? "Vitória! 🏆" : `${ordinal(race.rewards.placement)} lugar`}</h2>
             <p className="RaceRunner__results-time">
-              {formatTime(playerResult.finishTime)} · vel. máx {playerResult.topSpeed} m/s
+              {formatTurns(playerResult.finishTime)} · vel. máx {playerResult.topSpeed} m/turno
               {playerResult.exhausted && " · ficou sem fôlego"}
             </p>
 
@@ -261,7 +260,7 @@ const RaceRunner = () => {
                 <li key={result.id} className={result.isPlayer ? "is-player" : ""}>
                   <span>{ordinal(result.placement)}</span>
                   <span>{result.name}</span>
-                  <span>{formatTime(result.finishTime)}</span>
+                  <span>{formatTurns(result.finishTime)}</span>
                 </li>
               ))}
             </ol>

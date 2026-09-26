@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { RaceSimulation, SkillActivation } from "../../types/race";
 
 export interface RacePlaybackState {
-  /** Race time currently being shown, in seconds. */
+  /** Race time currently being shown, in turns. */
   time: number;
   /** Metres covered by each runner, interpolated between replay frames. */
   positions: number[];
@@ -18,9 +18,10 @@ export interface RacePlaybackState {
 const EMPTY: number[] = [];
 
 /**
- * Plays a simulation back frame by frame. The replay is sampled every 0.5s of race
- * time, so positions are interpolated to keep the runners moving smoothly, and the
- * playback speed can be changed or skipped without touching the underlying data.
+ * Plays a simulation back frame by frame. At 1x one turn lasts one second; the replay
+ * is sampled a few times per turn, so positions are interpolated to keep the runners
+ * moving smoothly, and the playback speed can be changed or skipped without touching
+ * the underlying data.
  */
 export const useRacePlayback = (
   simulation: RaceSimulation | null,
