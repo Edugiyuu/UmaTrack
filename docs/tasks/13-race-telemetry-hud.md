@@ -4,52 +4,58 @@
 |---|---|
 | **ID** | `13` |
 | **Branch** | `feat/race-telemetry-hud` |
-| **Base** | `feat/race-ui-redesign` |
+| **Base** | `feat/race-ui-redesign` (depois de atualizada com o motor por turnos) |
 | **Status** | 🔲 Não iniciada |
 | **Tamanho** | M |
-| **Depende de** | `11`, `12` |
+| **Depende de** | `11`, `12`, `14` |
 | **Bloqueia** | — |
 | **Área** | frontend |
-| **Criada em** | 2026-09-23 |
+| **Criada em** | 2026-09-23 · reescrita em 2026-09-26 para o motor por turnos |
 
 ---
 
 ## 1. Contexto
-Com a task `12`, o replay passa a carregar a telemetria da égua do jogador frame a frame.
+Com a task `12`, o replay passa a carregar a telemetria da égua do jogador turno a turno.
 Falta mostrá-la. Hoje, durante a corrida, o jogador vê um retângulo andando e uma barra de
-fôlego — ele assiste ao resultado sem entender a causa, e quando perde não sabe o que treinar.
+fôlego: ele assiste ao resultado sem entender a causa, e quando perde não sabe o que treinar.
 
 O jogo é de treino: cada corrida deveria ensinar alguma coisa. A informação que responde
-isso é sempre a mesma — *ela está rápida? está queimando fôlego rápido demais? a subida está
-cobrando caro? o estilo que eu escolhi está ajudando agora ou atrapalhando?*
+isso é sempre a mesma: *ela já chegou no teto? a curva tirou muito? está queimando fôlego
+rápido demais para o que falta?*
+
+O motor por turnos (task `14`) facilita muito: cada número é uma conta curta ("Power ÷ 6",
+"÷ 1,2 na curva", "velocidade² ÷ 1800"), então o HUD pode mostrar a causa em vez de só o
+efeito.
+
+> Esta task foi escrita originalmente para o motor por ticks, com indicadores de subida e
+> de estilo de corrida. Os dois saíram: inclinação e estilo estão fora do motor por turnos.
+> Voltam quando voltarem ao motor.
 
 ## 2. Objetivo
-Durante a corrida o jogador consegue ler, em tempo real, como a égua dele está performando e
-por quê — sem precisar pausar nem abrir outra tela.
+Durante a corrida o jogador consegue ler, turno a turno, como a égua dele está performando
+e por quê — sem precisar pausar nem abrir outra tela.
 
 ## 3. Escopo
 
 ### Dentro do escopo
 - [ ] Componente `RaceHud`, plugado na faixa reservada pela task `11`.
-- [ ] **Velocímetro**: velocidade atual em m/s, com a velocidade-alvo como referência, para
-      ficar claro quando ela está acelerando, cruzando ou segurando.
-- [ ] **Fôlego**: barra com o gasto por segundo e o alcance projetado em metros, desenhado
-      contra o que falta de pista.
+- [ ] **Velocidade**: m/turno atual contra o teto, com o estado em palavras: "acelerando
+      (+16)", "no teto", "perdeu 20 na curva", "cansada".
+- [ ] **Fôlego**: barra com o gasto do último turno e o alcance projetado, desenhado contra
+      o que falta de pista.
+- [ ] **Pressão**: ×1 / ×1,25 / ×1,5, para o jogador entender por que o gasto sobe no fim.
 - [ ] **Indicador de ritmo**: `safe` / `tight` / `rushed`, com cor e rótulo em português
       ("com sobra" / "no limite" / "forçando").
-- [ ] **Terreno**: quando em subida ou descida, quanto a inclinação está custando de
-      velocidade e cobrando de fôlego.
-- [ ] **Estilo**: se o estilo escolhido está somando ou tirando velocidade **na fase atual**,
-      com a fase visível.
-- [ ] **Skills ativas**: os efeitos ativos neste instante (não só o histórico que já existe).
-- [ ] Interpolação da telemetria em `useRacePlayback`, igual ao que já é feito com posição e
-      fôlego, para os números não pularem entre frames.
+- [ ] **Skills ativas**: os efeitos ativos neste turno (não só o histórico que já existe).
+- [ ] **Linha do turno**: uma frase curta por turno, por exemplo
+      "Turno 7 · 116 m/turno · −9 de fôlego · entrou na curva".
 - [ ] Um controle para esconder o HUD, para quem só quer assistir à corrida.
 
 ### Fora do escopo
 - Relatório e gráficos pós-corrida. Fica para uma task própria, se fizer falta.
 - Telemetria das rivais.
-- Mudar o motor. Se faltar um dado, ele entra na task `12` — não se recalcula nada no
+- Indicadores de subida e de estilo (fora do motor por turnos).
+- Mudar o motor. Se faltar um dado, ele entra na task `12`; não se recalcula nada no
   frontend a partir dos stats.
 
 ## 4. Abordagem técnica
@@ -59,22 +65,27 @@ HUD mostra o valor e contra o que ele está sendo medido:
 
 | Indicador | Valor | Referência que dá sentido |
 |---|---|---|
-| Velocidade | `speed` | `targetSpeed` (acelerando, estável, ou caindo) |
-| Fôlego | barra | `staminaRange` contra `remaining` |
+| Velocidade | `runSpeed` | `ceiling` (quanto falta para o teto) e `accel` / `curveLoss` |
+| Fôlego | `stamina` | `staminaRange` contra `remaining` |
+| Pressão | `pressure` | 1 = começo da prova |
 | Ritmo | `pace` | as três faixas, com a do meio sendo a desejável |
-| Subida | `gradeSpeedFactor`, `gradeDrainFactor` | 1,0 = plano; exibir como ±% |
-| Estilo | `styleFactor` | 1,0 = neutro; exibir como ±% na fase atual |
+| Cansaço | `tired` | quando `true`, teto pela metade: vira o alerta principal |
+
+**Sem interpolação.** A telemetria é por turno e o motor só decide uma vez por turno, então
+o HUD mostra o turno em curso (`Math.ceil(playback.time)`) sem interpolar. Em 1x um turno
+dura 1 segundo; em 4x, 250ms, o que ainda é legível para números inteiros. A posição e a
+barra de fôlego continuam interpoladas como hoje.
 
 Duas regras de leitura para o HUD não virar um painel de avião:
 
 1. **Silêncio é informação.** Indicador em estado neutro fica apagado; só ganha cor e
-   destaque quando sai do normal (subida cobrando caro, ritmo forçado, estilo penalizando).
+   destaque quando sai do normal (curva cobrando caro, ritmo forçado, cansada).
 2. **Uma frase por vez.** No máximo um alerta textual em destaque; os outros ficam como
    ícone ou barra.
 
 O alerta de `rushed` é o mais importante do HUD e merece tratamento próprio: ele aparece
-enquanto ainda dá para o jogador entender a causa (subida? spurt cedo demais? estilo
-`front` com pouca Stamina?), não no momento em que a barra zera.
+enquanto ainda dá para o jogador entender a causa (rápida demais para o tanque? pressão do
+último terço?), não no momento em que a barra zera.
 
 **Arquivos afetados**
 
@@ -82,44 +93,44 @@ enquanto ainda dá para o jogador entender a causa (subida? spurt cedo demais? e
 |---|---|---|
 | `frontend/src/components/RaceRunner/RaceHud.tsx` | criar | O HUD |
 | `frontend/src/components/RaceRunner/RaceHud.css` | criar | Estilo, sobre os tokens da task `11` |
-| `frontend/src/components/RaceRunner/useRacePlayback.ts` | editar | Interpola e devolve a telemetria |
+| `frontend/src/components/RaceRunner/useRacePlayback.ts` | editar | Devolve a telemetria do turno em curso |
 | `frontend/src/components/RaceRunner/RaceRunner.tsx` | editar | Monta o HUD na faixa reservada |
 | `frontend/src/constants/raceTelemetry.ts` | criar | Rótulos, limiares de cor e textos em pt-BR |
 | `frontend/src/types/race.ts` | editar | Já espelhado na task `12`; conferir |
 
 **Contratos**
 
-`useRacePlayback` ganha `telemetry: RunnerTelemetry | null` em `RacePlaybackState`.
-Valores contínuos (velocidade, gasto, alcance) são interpolados entre frames; valores
-discretos (fase, veredito, efeitos ativos) usam o frame anterior, sem interpolar — um
-veredito piscando entre dois estados é pior do que um veredito meio segundo atrasado.
+`useRacePlayback` ganha `telemetry: RunnerTelemetry | null` em `RacePlaybackState`: o item
+de `simulation.telemetry` cujo `turn` é o turno em curso (ou o último, depois da chegada).
 
 ## 5. Plano de execução
-1. [ ] Estender `useRacePlayback` com a telemetria interpolada.
-2. [ ] Montar o esqueleto do `RaceHud` mostrando os valores crus, para conferir os dados.
-3. [ ] Velocímetro e fôlego com as referências.
-4. [ ] Indicador de ritmo e o alerta de `rushed`.
-5. [ ] Indicadores de terreno, estilo e skills ativas.
-6. [ ] Regra do silêncio: apagar o que está neutro; aplicar cor só no que está fora do normal.
-7. [ ] Botão de esconder o HUD e responsividade.
-8. [ ] Atualizar o guia do jogador com a leitura do HUD.
+1. [ ] Atualizar `feat/race-ui-redesign` com o motor por turnos (merge de `main` depois da
+       `14`) e resolver o relógio e os tempos, que passam a ser em turnos.
+2. [ ] Estender `useRacePlayback` com a telemetria do turno em curso.
+3. [ ] Montar o esqueleto do `RaceHud` mostrando os valores crus, para conferir os dados.
+4. [ ] Velocidade e fôlego com as referências.
+5. [ ] Indicador de ritmo, pressão e o alerta de `rushed` / cansada.
+6. [ ] Skills ativas e a linha do turno.
+7. [ ] Regra do silêncio: apagar o que está neutro; aplicar cor só no que está fora do normal.
+8. [ ] Botão de esconder o HUD e responsividade.
+9. [ ] Atualizar o guia do jogador com a leitura do HUD.
 
 ## 6. Critérios de aceite
 - [ ] **Dado** uma corrida em andamento, **quando** o jogador olha o HUD, **então** vê
-      velocidade atual, gasto de fôlego, ritmo, fase e estilo sem pausar nada.
-- [ ] **Dado** uma égua com Stamina baixa correndo em estilo `front`, **quando** ela chega ao
-      meio da prova, **então** o HUD mostra "forçando" **antes** de a barra zerar.
-- [ ] **Dado** um trecho de subida, **quando** a égua entra nele, **então** o HUD mostra
-      quanto a subida está tirando de velocidade e somando no gasto; ao sair, o indicador
-      volta ao neutro.
-- [ ] **Dado** o estilo `end` na abertura, **quando** o jogador olha o indicador de estilo,
-      **então** ele mostra penalidade; no spurt, mostra bônus.
+      velocidade contra o teto, fôlego, pressão e ritmo sem pausar nada.
+- [ ] **Dado** uma égua com Stamina baixa numa pista longa, **quando** ela passa do
+      primeiro terço, **então** o HUD mostra "forçando" **antes** de ela ficar cansada.
+- [ ] **Dado** um turno em que ela entra numa curva, **quando** o turno aparece no HUD,
+      **então** ele mostra quanto de velocidade a curva tirou; nos turnos seguintes mostra
+      a reaceleração até voltar ao teto.
+- [ ] **Dado** a égua cansada, **quando** o jogador olha o HUD, **então** o alerta
+      principal é o cansaço, com o teto pela metade visível.
 - [ ] **Dado** o playback em 4x, **quando** a corrida roda, **então** os números continuam
-      legíveis e não piscam entre estados.
+      legíveis e não piscam entre estados dentro de um turno.
 - [ ] **Dado** o botão de esconder, **quando** o jogador o usa, **então** a corrida segue
       normalmente e a escolha vale até o fim da prova.
-- [ ] **Dado** um celular (375px), **quando** a corrida roda, **então** o HUD continua legível
-      (pode reduzir para os três indicadores principais: velocidade, fôlego, ritmo).
+- [ ] **Dado** um celular (375px), **quando** a corrida roda, **então** o HUD continua
+      legível (pode reduzir para os três indicadores principais: velocidade, fôlego, ritmo).
 
 ## 7. Como verificar
 
@@ -135,9 +146,9 @@ Cenários de teste, todos alcançáveis com as éguas do seed:
 
 | Cenário | Como montar | O que deve aparecer |
 |---|---|---|
-| Ritmo forçado | Égua com Stamina baixa em pista longa, estilo `front` | "forçando" antes do fim, seguido de queda de velocidade |
-| Subida cara | Pista `incline` com Power abaixo do requisito | Perda de velocidade e gasto extra no trecho íngreme |
-| Estilo certo | Estilo `end` numa prova em que ela vence no spurt | Penalidade na abertura, bônus no spurt |
+| Ritmo forçado | Égua com Stamina baixa em Tokyo | "forçando" no meio da prova, depois "cansada" e o teto pela metade |
+| Curvas | Kyoto (duas curvas seguidas antes da reta final) | Perda na entrada de cada curva e reaceleração nos turnos seguintes |
+| Velocista | Silence Suzuka em Sapporo | Chega no teto cedo, fôlego acaba perto da linha, ainda vence |
 | Corrida limpa | Égua bem treinada para a pista | Tudo neutro, HUD apagado — o silêncio também é resposta |
 
 - Regressão a observar: a animação continua fluida em 4x com o HUD ligado (sem re-render de
@@ -152,10 +163,11 @@ Cenários de teste, todos alcançáveis com as éguas do seed:
 ## 9. Riscos e questões em aberto
 | Risco / dúvida | Impacto | Mitigação / quem decide |
 |---|---|---|
-| HUD vira poluição visual e atrapalha assistir à corrida | alto | Regra do silêncio + botão de esconder; validar com o Eduardo depois do passo 5 |
-| Re-render a cada frame derruba o FPS | médio | O HUD lê a telemetria já interpolada; memoizar as raias para não re-renderizarem junto |
-| Jogador novo não entende "m/s" nem "±%" | médio | Rótulos em linguagem de jogo e uma seção no guia; números crus ficam como detalhe secundário |
-| Qual desses indicadores realmente ajuda? | médio | Começar pelos três principais (velocidade, fôlego, ritmo) e só então avaliar se terreno e estilo ficam ou saem |
+| HUD vira poluição visual e atrapalha assistir à corrida | alto | Regra do silêncio + botão de esconder; validar com o Eduardo depois do passo 6 |
+| `feat/race-ui-redesign` foi feita sobre o motor por ticks | médio | Passo 1: trazer o motor por turnos antes de começar o HUD |
+| Re-render a cada frame derruba o FPS | médio | O HUD só muda uma vez por turno; memoizar as raias para não re-renderizarem junto |
+| Jogador novo não entende "m/turno" | médio | Rótulos em linguagem de jogo e uma seção no guia; números crus ficam como detalhe secundário |
+| Qual desses indicadores realmente ajuda? | médio | Começar pelos três principais (velocidade, fôlego, ritmo) e só então avaliar pressão e linha do turno |
 
 ## 10. Definition of Done
 - [ ] Critérios de aceite (seção 6) todos marcados
@@ -170,4 +182,5 @@ Cenários de teste, todos alcançáveis com as éguas do seed:
 
 | Data | Nota |
 |---|---|
-| 2026-09-23 | Task escrita. |
+| 2026-09-23 | Task escrita para o motor por ticks. |
+| 2026-09-26 | Reescrita para o motor por turnos da task `14`: saem os indicadores de subida e de estilo e a interpolação da telemetria; entram teto, aceleração, perda na curva, pressão, cansaço e a linha do turno. |
