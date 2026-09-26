@@ -5,11 +5,11 @@
 | **ID** | `14` |
 | **Branch** | `feat/race-turn-engine` |
 | **Base** | `main` |
-| **Status** | 🔲 Não iniciada |
+| **Status** | 🔍 Em revisão |
 | **Tamanho** | G |
 | **Depende de** | — |
 | **Bloqueia** | revisão de `12` e `13` (ver seção 9) |
-| **Área** | backend |
+| **Área** | fullstack |
 | **Criada em** | 2026-09-26 |
 
 ---
@@ -74,22 +74,25 @@ de corrida segue funcionando.
 ## 3. Escopo
 
 ### Dentro do escopo
-- [ ] Reescrever o laço de `simulateRace` como um laço por turno, com as regras de 4.1.
-- [ ] Ativação de skills avaliada uma vez por turno, com chance que cresce com Wisdom.
-- [ ] Desempate pelo turno fracionado.
-- [ ] Ruído com seed no avanço, sem perder o determinismo.
-- [ ] Um `RaceFrame` por turno (`t` = número do turno).
-- [ ] Constantes nomeadas no topo do arquivo (`ACCEL_DIVISOR`, `STAMINA_DIVISOR`,
+- [x] Reescrever o laço de `simulateRace` como um laço por turno, com as regras de 4.1.
+- [x] Ativação de skills avaliada uma vez por turno, com chance que cresce com Wisdom.
+- [x] Desempate pelo turno fracionado.
+- [x] Ruído com seed no avanço, sem perder o determinismo.
+- [x] `RaceFrame` amostrado 4 vezes por turno (`t` em turnos), para a chegada aparecer
+      na fração certa do turno no replay.
+- [x] Constantes nomeadas no topo do arquivo (`ACCEL_DIVISOR`, `STAMINA_DIVISOR`,
       `CURVE_DIVISOR`, `PRESSURE`, `WISDOM_RELIEF`...) para balancear sem caçar números.
-- [ ] Atualizar `backend/src/scripts/raceEngineCheck.ts` com os casos da seção 6.
-- [ ] Ajustar o replay no frontend se ele assumir `t` em segundos (interpolar entre turnos).
+- [x] Atualizar `backend/src/scripts/raceEngineCheck.ts` com os casos da seção 6.
+- [x] Ajustar o replay no frontend se ele assumir `t` em segundos (interpolar entre turnos).
 
 ### Fora do escopo
 - **Estilos de corrida** (front / pace / late / end). Nesta versão todas as umas correm
   do mesmo jeito. Os estilos voltam numa task própria, por exemplo como variação de
   pressão ou de ritmo por terço de corrida.
-- **Stamina em distâncias longas.** Hoje 2400m é quase impossível sem stats muito altos.
-  Escalar `STAMINA_DIVISOR` pela distância fica para a conversa de pistas.
+- **Stamina em distâncias longas.** Continua para a conversa de pistas, mas ficou menos
+  urgente: os `requirements` das pistas já crescem com a distância, e com
+  `STAMINA_DIVISOR = 1800` quem está nos requisitos de Tokyo (2400m) chega na linha
+  (ver 4.2).
 - **Sistema de pistas:** inclinação (`grade`), superfície, `statWeights`, requisitos e o
   formato/tamanho das curvas. Nesta task uma pista é só uma lista de retas e curvas.
 - **"Arrancar de novo":** a Força dar chance de voltar a acelerar depois de cansada. Está
@@ -108,7 +111,7 @@ entrar em curva:  v = v / CURVE_DIVISOR                              CURVE_DIVIS
 avanço:           distância += v   (a sobra continua no trecho seguinte)
 pressão:          1,0 no 1º terço · 1,25 no 2º · 1,5 no último
 stamina:          stamina -= (v² / STAMINA_DIVISOR) × pressão × (1 − Wisdom / 500)
-                                                                     STAMINA_DIVISOR ≈ 900
+                                                                     STAMINA_DIVISOR = 1800
 stamina ≤ 0:      cansada → Força efetiva = Força / 3, teto = Velocidade / 2
 cruzar a linha:   tempo = turno − 1 + (metros que faltavam / v)
 ```
@@ -128,21 +131,42 @@ resultado é o mesmo de "quem sobrou mais metros". Só muda quando uma estava be
 da linha, mas mais lenta; nesse caso o turno fracionado é o justo, porque ela de fato
 cruza primeiro. O motor atual já interpola o cruzamento assim, e dá para reaproveitar.
 
-### 4.2 Simulação de referência
-Pista de 1200m (retas de 200 / 300 / 300 / 300 / 100), `ACCEL_DIVISOR = 6`,
-`STAMINA_DIVISOR = 900`:
+### 4.2 Calibração e simulação de referência
+`STAMINA_DIVISOR` foi calibrado com os dados reais do jogo, e não com o exemplo do
+diagrama. Para cada pista, este é o menor divisor com que uma corredora exatamente nos
+`requirements` chega sem cansar:
 
-| Perfil (Vel/For/Wis/Sta) | O que acontece | Final |
-|---|---|---|
-| Equilibrada 110/96/105/140 | chega com a stamina zerada no último turno | **12,47 turnos** |
-| Diagrama 120/96/105/108 | se cansa no turno 11 | 12,94 |
-| Rápida sem fôlego 140/96/105/70 | se cansa no turno 8 e desaba | 14,64 |
+| Pista | Distância | Requisitos (Vel/Sta/Pow/Wit) | Divisor mínimo |
+|---|---:|---|---:|
+| Sapporo | 1200 | 60/35/50/30 | 2250 |
+| Niigata | 1600 | 75/65/60/70 | 1900 |
+| Hakodate | 1800 | 80/90/95/70 | 1700 |
+| Kyoto | 2200 | 95/110/90/110 | 1800 |
+| Tokyo | 2400 | 110/150/115/100 | 1650 |
+| Kokura | 2000 | 95/130/175/90 | 1500 |
 
-A história é a mesma do diagrama original: acelera, perde nas curvas, se cansa no fim.
-Também existe um trade-off: Velocidade alta sem Stamina não compensa. O número absoluto
-de turnos (12 contra os 19 do original) é só calibragem de `ACCEL_DIVISOR` e da escala.
+Com **1800**, quem está nos requisitos chega no limite do fôlego em todas as pistas
+(Sapporo e Niigata cansam nos últimos metros, as outras sobram 0–14%), e 30% a menos de
+Stamina cansa e perde em todas elas.
 
-Protótipo usado para gerar a tabela (sem skills e sem ruído):
+Simulação na pista de 1200m do diagrama (retas de 200 / 300 / 300 / 300 / 100),
+`ACCEL_DIVISOR = 6`, `STAMINA_DIVISOR = 1800`:
+
+| Perfil (Vel/For/Wis/Sta) | Final |
+|---|---|
+| Rápida sem fôlego 140/96/105/70 | **11,62 turnos** |
+| Diagrama 120/96/105/108 | 11,93 |
+| Equilibrada 110/96/105/140 | 12,47 |
+
+Com o divisor calibrado, a velocista vence os 1200m, porque só fica sem fôlego perto da
+linha. O trade-off aparece nas distâncias longas: em Tokyo, uma 140/100/115/100 cansa e
+perde para uma 110/150/115/100 (22,8 contra 24,5 turnos). Na primeira versão desta
+tabela (divisor 900) a equilibrada vencia os 1200m, mas com 900 todo mundo cansaria em
+todas as pistas do jogo.
+
+Protótipo usado para gerar a tabela (sem skills e sem ruído; `K` é o `STAMINA_DIVISOR`).
+A mesma conta está em `raceEngineCheck.ts` como `paperRace`, e o motor tem que bater
+com ela com uma margem de 3%:
 
 ```js
 function run(S, F, W, ST, K) {
@@ -171,7 +195,14 @@ function run(S, F, W, ST, K) {
 - A montagem de `results`.
 
 Sai desta versão: `statRatio`, `PHASE_SPEED`, `STYLE_SPEED`, a inclinação, a superfície e
-o `REFERENCE_SPEED`.
+o `REFERENCE_SPEED`. Uma pista continua sendo a lista de `segments`: um trecho com
+`curve >= 0,4` conta como curva (o mesmo limite que já valia para as skills de curva), e
+cada curva em que ela entra divide a velocidade por 1,2.
+
+**Skills em turnos:** os valores de velocidade foram multiplicados por ~6 (m/s → m/turno;
+16 m/s de referência ≈ 100 m/turno), as durações divididas por ~5 (mínimo 1 turno) e a
+`baseChance` passou a ser por turno (≈ 3,5× a antiga por segundo). Como o seed das skills
+roda a cada boot com `$set`, o banco se atualiza sozinho ao subir o backend desta branch.
 
 **Arquivos afetados**
 
@@ -181,8 +212,15 @@ o `REFERENCE_SPEED`.
 | `backend/src/types/race.ts` | editar | Doc de `RaceFrame.t` (turno); unidade da `duration` das skills |
 | `backend/src/scripts/raceEngineCheck.ts` | editar | Casos de sanidade da seção 6 |
 | `backend/src/data/skills.ts` | editar | `duration` e valores dos efeitos convertidos para turnos |
-| `frontend/src/types/race.ts` | editar | Espelhar o doc de `t` |
-| componente de replay no frontend | editar (se preciso) | Interpolar posições entre turnos |
+| `backend/src/models/skill.ts` | editar | Comentários das unidades (turnos) |
+| `backend/src/models/raceResult.ts` | editar | Campo `timeUnit` (`seconds` para o histórico antigo, `turns` daqui para frente) |
+| `backend/src/controllers/raceController.ts` | editar | Grava `timeUnit: 'turns'` |
+| `frontend/src/types/race.ts` | editar | Espelhar o doc de `t` e o `timeUnit` do histórico |
+| `frontend/src/utils/raceTime.ts` | criar | `formatTurns` / `formatRaceTime` |
+| `frontend/src/components/RaceRunner/*` | editar | Relógio "Turno N", tempo em turnos, velocidade em m/turno |
+| `frontend/src/components/RaceHistory/RaceHistory.tsx` | editar | Formata pelo `timeUnit` |
+| `frontend/src/components/SkillCatalog/SkillCatalog.tsx` | editar | Durações em turnos, m/turno |
+| `frontend/src/components/GuideContent/GuideContent.tsx` | editar | Texto dos atributos, estratégias em pausa |
 
 **Contratos**
 
@@ -200,31 +238,35 @@ export interface RaceFrame {
 ```
 
 ## 5. Plano de execução
-1. [ ] Declarar as constantes e reescrever o laço de `simulateRace` por turno (sem skills).
-2. [ ] Religar as skills: um teste de ativação por turno, com chance que cresce com Wisdom;
+1. [x] Declarar as constantes e reescrever o laço de `simulateRace` por turno (sem skills).
+2. [x] Religar as skills: um teste de ativação por turno, com chance que cresce com Wisdom;
        converter `duration` para turnos.
-3. [ ] Ruído com seed no avanço e desempate pelo turno fracionado.
-4. [ ] Atualizar `raceEngineCheck.ts` e calibrar `ACCEL_DIVISOR` / `STAMINA_DIVISOR`.
-5. [ ] Ajustar o replay e a tela de resultado no frontend (tempo em turnos).
-6. [ ] Atualizar a documentação afetada (ver seção 8).
+3. [x] Ruído com seed no avanço e desempate pelo turno fracionado.
+4. [x] Atualizar `raceEngineCheck.ts` e calibrar `ACCEL_DIVISOR` / `STAMINA_DIVISOR`.
+5. [x] Ajustar o replay e a tela de resultado no frontend (tempo em turnos).
+6. [x] Atualizar a documentação afetada (ver seção 8).
 
 ## 6. Critérios de aceite
-- [ ] **Dado** as mesmas corredoras e a mesma seed, **quando** a corrida roda duas vezes,
+- [x] **Dado** as mesmas corredoras e a mesma seed, **quando** a corrida roda duas vezes,
       **então** o resultado é idêntico.
-- [ ] **Dado** duas umas iguais exceto pela Velocidade, e com Stamina de sobra, **quando**
+- [x] **Dado** duas umas iguais exceto pela Velocidade, e com Stamina de sobra, **quando**
       correm, **então** a mais rápida vence.
-- [ ] **Dado** o perfil "Rápida sem fôlego" da seção 4.2, **quando** corre contra a
-      "Equilibrada", **então** fica cansada antes do fim e perde.
-- [ ] **Dado** uma uma entrando numa curva, **quando** o turno é processado, **então** a
+- [x] **Dado** uma velocista com pouca Stamina (140/100/115/100), **quando** corre
+      contra uma equilibrada (110/150/115/100) em Tokyo, **então** fica cansada antes do
+      fim e perde. *(Mudou de "na pista de 1200m" depois da calibração; ver 4.2.)*
+- [x] **Dado** qualquer pista do catálogo, **quando** uma corredora exatamente nos
+      requisitos corre contra outra com 30% a menos de Stamina, **então** a primeira
+      termina em 15–35 turnos e a segunda cansa e perde.
+- [x] **Dado** uma uma entrando numa curva, **quando** o turno é processado, **então** a
       velocidade dela cai para v / 1,2.
-- [ ] **Dado** uma uma com mais Força, **quando** corre, **então** chega ao teto em menos
+- [x] **Dado** uma uma com mais Força, **quando** corre, **então** chega ao teto em menos
       turnos.
-- [ ] **Dado** um trecho que termina no meio de um turno, **quando** ela o atravessa,
+- [x] **Dado** um trecho que termina no meio de um turno, **quando** ela o atravessa,
       **então** os metros que sobram contam no trecho seguinte (distância total = soma
       dos avanços).
-- [ ] **Dado** duas umas que terminam no mesmo turno, **quando** sai o resultado, **então**
+- [x] **Dado** duas umas que terminam no mesmo turno, **quando** sai o resultado, **então**
       os tempos fracionados são diferentes e decidem a colocação.
-- [ ] **Dado** o protótipo da seção 4.2, **quando** se roda a mesma pista sem skills e sem
+- [x] **Dado** o protótipo da seção 4.2, **quando** se roda a mesma pista sem skills e sem
       ruído, **então** os finais batem com a tabela.
 
 ## 7. Como verificar
@@ -241,26 +283,29 @@ npm run race:check --prefix backend
 
 ## 8. Impacto em documentação
 - [ ] `README.md` — sem mudança (arquivo em UTF-16, editar com cuidado se precisar)
-- [ ] `docs/race-system-design.md` — trocar a seção do motor pelas regras por turno
-- [ ] `docs/guia-do-jogador.md` — explicar o que cada stat faz na corrida
+- [x] `docs/race-system-design.md` — trocar a seção do motor pelas regras por turno
+- [x] `docs/guia-do-jogador.md` — explicar o que cada stat faz na corrida
 - [x] `docs/tasks/README.md` (linha da tabela + status)
 
 ## 9. Riscos e questões em aberto
 | Risco / dúvida | Impacto | Mitigação / quem decide |
 |---|---|---|
-| As tasks `12` e `13` (telemetria e HUD) foram escritas para o motor por ticks (`targetSpeed`, `gradeSpeedFactor`, `styleFactor`...) | alto | Revisar as duas depois desta task. A telemetria por turno fica mais simples (v, custo do turno, pressão, cansada?) |
+| As tasks `12` e `13` (telemetria e HUD) foram escritas para o motor por ticks (`targetSpeed`, `gradeSpeedFactor`, `styleFactor`...) | alto | ✅ Reescritas para o motor por turnos junto com esta task |
 | Sem estilos de corrida, as rivais ficam muito parecidas entre si | médio | Aceitável nesta versão; os estilos entram em task própria |
-| 2400m quase impossível sem stats altos | médio | Escalar `STAMINA_DIVISOR` pela distância na conversa de pistas |
-| As skills atuais foram calibradas em m/s e segundos | médio | Converter valores e durações no passo 2 e revisar o balanceamento |
+| 2400m quase impossível sem stats altos | médio | ✅ Resolvido pela calibração com os requisitos das pistas (4.2); revisitar na conversa de pistas |
+| `inclineBoost` (Escaladora, Coração de Montanha) fica sem efeito, porque o motor ignora a inclinação | médio | Avisado no catálogo e no guia; volta com o sistema de pistas |
+| A tela ainda deixa escolher estilo de corrida, que não muda nada | baixo | Avisado no guia; a task de estilos decide se a escolha some ou volta a valer |
+| Rodar o backend desta branch e depois o de outra branch regrava o catálogo de skills no banco com as unidades de cada uma | baixo | O seed roda no boot, então cada branch se corrige sozinha ao subir |
+| As skills atuais foram calibradas em m/s e segundos | médio | ✅ Convertidas (ver 4.3); o balanceamento fino fica para quando houver partidas reais |
 | O histórico gravado tem `finishTime` em segundos; o novo é em turnos | baixo | Mostrar a unidade junto ou marcar os resultados antigos |
 | "Arrancar de novo": a Força dá chance de voltar a acelerar depois de cansada? | — | Usuário decide; se sim, vira regra extra na fase cansada |
 
 ## 10. Definition of Done
-- [ ] Critérios de aceite (seção 6) todos marcados
-- [ ] `npx tsc --noEmit` passa no backend e `npm run build --prefix frontend` passa
-- [ ] Sem `console.log` / código morto deixado para trás
-- [ ] Documentação da seção 8 atualizada
-- [ ] Commit e push em `feat/race-turn-engine`; tabela em `docs/tasks/README.md` atualizada
+- [x] Critérios de aceite (seção 6) todos marcados
+- [x] `npx tsc --noEmit` passa no backend e `npm run build --prefix frontend` passa
+- [x] Sem `console.log` / código morto deixado para trás
+- [x] Documentação da seção 8 atualizada
+- [x] Commit e push em `feat/race-turn-engine`; tabela em `docs/tasks/README.md` atualizada
 
 ---
 
@@ -269,3 +314,6 @@ npm run race:check --prefix backend
 | Data | Nota |
 |---|---|
 | 2026-09-26 | Task escrita a partir da análise do modelo por turnos original. Estilos de corrida e pistas ficam para depois. |
+| 2026-09-26 | Motor por turnos implementado. `STAMINA_DIVISOR` calibrado em 1800 com os requisitos das pistas (4.2); o teste da velocista contra a equilibrada passou de 1200m para Tokyo. `npm run race:check`: todos os casos passam. |
+| 2026-09-26 | Frontend em turnos (relógio, tempos, skills, guia) e histórico antigo preservado com `timeUnit`. A tela de corrida não foi testada no navegador: subir o backend regrava o catálogo de skills no banco compartilhado e a corrida exige login. |
+| 2026-09-26 | Tasks `12` e `13` reescritas para o motor por turnos. |
