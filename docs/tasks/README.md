@@ -46,6 +46,7 @@ O design do sistema de corridas está em [`docs/race-system-design.md`](../race-
 | 11 | [Refazer o frontend da tela de corrida](11-race-ui-redesign.md) | `feat/race-ui-redesign` | G | 🔲 |
 | 12 | [Telemetria da corrida no motor](12-race-telemetry-engine.md) | `feat/race-telemetry-engine` | M | 🔲 |
 | 13 | [HUD de desempenho durante a corrida](13-race-telemetry-hud.md) | `feat/race-telemetry-hud` | M | 🔲 |
+| 14 | [Motor de corrida por turnos](14-race-turn-engine.md) | `feat/race-turn-engine` | G | 🔲 |
 
 ### Ordem sugerida para 11–13
 
