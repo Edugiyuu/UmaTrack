@@ -6,14 +6,13 @@ import RaceResult from '../models/raceResult';
 import { MAX_ENERGY, MAX_MOOD, RUNNING_STYLES, type RunningStyle } from '../models/user';
 import type { AuthenticatedRequest } from '../middleware/authMiddleware';
 import { findOwnedHorse, serializeOwnedHorse } from '../services/ownedHorse';
+import { applyCareerResult, isCareerRaceDue, isRetired, nextCareerRace, type CareerOutcome } from '../services/career';
 import { simulateRace } from '../services/raceEngine';
 import { generateRivals } from '../services/rivalGenerator';
 import type { RaceSkill, RaceTrackInput } from '../types/race';
 
 /** Energy a single race burns. */
 const RACE_ENERGY_COST = 35;
-/** Training turns handed back once a race is over, i.e. the next season. */
-const TURNS_PER_SEASON = 5;
 
 /** Share of the track rewards handed out for each finishing position. */
 const placementFactor = (placement: number) => {
@@ -76,6 +75,21 @@ export const runRace = async (req: AuthenticatedRequest, res: Response) => {
 
     const { horse, ownedHorse, user } = owned;
 
+    if (isRetired(ownedHorse)) {
+      return res.status(409).json({ msg: 'A carreira dela terminou. Comece uma nova carreira para correr.' });
+    }
+
+    // At zero turns the career race is due and nothing else may be run (task 17).
+    const careerRace = isCareerRaceDue(ownedHorse) ? nextCareerRace(ownedHorse) : null;
+    if (careerRace && careerRace.trackSlug !== track.slug) {
+      return res.status(409).json({
+        msg: `Os turnos acabaram: agora é a prova da carreira, ${careerRace.trackName}.`,
+        trackSlug: careerRace.trackSlug
+      });
+    }
+    // The career race has no entry fee: a mandatory race cannot be priced out of reach.
+    const entryFee = careerRace ? 0 : track.entryFee;
+
     if (ownedHorse.energy < RACE_ENERGY_COST) {
       return res.status(409).json({
         msg: 'Energia insuficiente para correr. Descanse antes da prova.',
@@ -84,10 +98,10 @@ export const runRace = async (req: AuthenticatedRequest, res: Response) => {
       });
     }
 
-    if (user.monies < track.entryFee) {
+    if (user.monies < entryFee) {
       return res.status(400).json({
         msg: 'Dinheiro insuficiente para a inscrição',
-        required: track.entryFee,
+        required: entryFee,
         available: user.monies
       });
     }
@@ -156,7 +170,7 @@ export const runRace = async (req: AuthenticatedRequest, res: Response) => {
     const skillPointsEarned = Math.round(track.skillPointReward * factor);
     const fansEarned = Math.round(track.fansReward * factor);
 
-    user.monies = Math.max(0, user.monies - track.entryFee + prizeMoney);
+    user.monies = Math.max(0, user.monies - entryFee + prizeMoney);
     ownedHorse.skillPoints += skillPointsEarned;
     ownedHorse.fans += fansEarned;
     ownedHorse.energy = Math.max(0, ownedHorse.energy - RACE_ENERGY_COST);
@@ -167,8 +181,14 @@ export const runRace = async (req: AuthenticatedRequest, res: Response) => {
     } else if (playerResult.placement > Math.ceil(track.fieldSize / 2)) {
       ownedHorse.mood = Math.max(1, ownedHorse.mood - 1);
     }
-    // A finished race opens the next season, so the training turns come back.
-    ownedHorse.turnsLeft = Math.max(ownedHorse.turnsLeft, TURNS_PER_SEASON);
+    // A career race moves the calendar on (or ends the career); an optional race costs
+    // a turn of the countdown, like training does.
+    let career: CareerOutcome | null = null;
+    if (careerRace) {
+      career = applyCareerResult(ownedHorse, playerResult.placement, simulation.results.length);
+    } else {
+      ownedHorse.turnsLeft = Math.max(0, ownedHorse.turnsLeft - 1);
+    }
 
     await user.save();
 
@@ -197,7 +217,7 @@ export const runRace = async (req: AuthenticatedRequest, res: Response) => {
       prizeMoney,
       skillPointsEarned,
       fansEarned,
-      entryFee: track.entryFee
+      entryFee
     });
 
     return res.status(200).json({
@@ -206,11 +226,12 @@ export const runRace = async (req: AuthenticatedRequest, res: Response) => {
       rewards: {
         placement: playerResult.placement,
         prizeMoney,
-        entryFee: track.entryFee,
+        entryFee,
         skillPointsEarned,
         fansEarned,
         energySpent: RACE_ENERGY_COST,
-        turnsLeft: ownedHorse.turnsLeft
+        turnsLeft: ownedHorse.turnsLeft,
+        career
       },
       horse: serializeOwnedHorse(horse, ownedHorse),
       monies: user.monies
@@ -242,4 +263,4 @@ export const getRaceHistory = async (req: AuthenticatedRequest, res: Response) =
   }
 };
 
-export const RACE_CONSTANTS = { RACE_ENERGY_COST, TURNS_PER_SEASON, MAX_ENERGY };
+export const RACE_CONSTANTS = { RACE_ENERGY_COST, MAX_ENERGY };

@@ -7,6 +7,7 @@ import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import type { AuthenticatedRequest } from '../middleware/authMiddleware';
 import { findOwnedHorse, serializeOwnedHorse } from '../services/ownedHorse';
+import { careerView, freshOwnedHorse, isRetired } from '../services/career';
 import {
   TRAINING_ENERGY_COST,
   TRAIN_TYPES,
@@ -42,17 +43,7 @@ export const create = async (req: Request, res: Response) => {
     username: normalizedUsername,
     email: normalizedEmail,
     password,
-    horses: [{
-      sourceHorseId: randomHorse._id,
-      name: randomHorse.name,
-      passiveBuff: randomHorse.passiveBuff,
-      stamina: randomHorse.stamina,
-      power: randomHorse.power,
-      speed: randomHorse.speed,
-      wit: randomHorse.wit,
-      cost: randomHorse.cost,
-      turnsLeft: 5
-    }]
+    horses: [freshOwnedHorse(randomHorse)]
   });
 
   try {
@@ -148,7 +139,13 @@ export const getUser = async (req: AuthenticatedRequest, res: Response) => {
 
     const { password, ...userWithoutPassword } = user.toObject();
 
-    return res.json(userWithoutPassword);
+    // Same career shape as the career screen, so the profile can list retired horses.
+    const horses = user.horses.map((ownedHorse) => ({
+      ...ownedHorse.toObject(),
+      career: ownedHorse.career?.status ? careerView(ownedHorse) : undefined
+    }));
+
+    return res.json({ ...userWithoutPassword, horses });
   } catch {
     return res.status(500).json({ msg: 'USER_MESSAGES.ERROR_GETTING_USER' });
   }
@@ -199,19 +196,7 @@ export const purchaseHorse = async (req: AuthenticatedRequest, res: Response) =>
       },
       {
         $inc: { monies: -horse.cost },
-        $push: {
-          horses: {
-            sourceHorseId: horse._id,
-            name: horse.name,
-            passiveBuff: horse.passiveBuff,
-            stamina: horse.stamina,
-            power: horse.power,
-            speed: horse.speed,
-            wit: horse.wit,
-            cost: horse.cost,
-            turnsLeft: 5
-          }
-        }
+        $push: { horses: freshOwnedHorse(horse) }
       },
       { new: true, runValidators: true }
     );
@@ -307,8 +292,11 @@ export const trainHorse = async (req: AuthenticatedRequest, res: Response) => {
 
     const { horse, ownedHorse, user } = result;
 
+    if (isRetired(ownedHorse)) {
+      return res.status(409).json({ msg: 'A carreira dela terminou.' });
+    }
     if (ownedHorse.turnsLeft <= 0) {
-      return res.status(409).json({ msg: 'Não há turnos restantes' });
+      return res.status(409).json({ msg: 'Os turnos acabaram: agora é a prova da carreira.' });
     }
 
     const outcome = resolveTraining({
@@ -358,6 +346,9 @@ export const restHorse = async (req: AuthenticatedRequest, res: Response) => {
 
     const { horse, ownedHorse, user } = result;
 
+    if (isRetired(ownedHorse)) {
+      return res.status(409).json({ msg: 'A carreira dela terminou.' });
+    }
     if (ownedHorse.energy >= MAX_ENERGY) {
       return res.status(409).json({ msg: 'Ela já está descansada' });
     }
@@ -389,6 +380,42 @@ export const restHorse = async (req: AuthenticatedRequest, res: Response) => {
     });
   } catch {
     return res.status(500).json({ msg: 'Erro ao descansar' });
+  }
+};
+
+/**
+ * Starts a new career with a horse girl whose last one is over (task 17). The retired
+ * copy stays in the save as a record; the new one starts from her catalogue stats.
+ * Free: she was already bought.
+ */
+export const startNewCareer = async (req: AuthenticatedRequest, res: Response) => {
+  const userId = req.user?.id;
+  const { horseId } = req.params;
+
+  if (!userId) {
+    return res.status(401).json({ msg: 'Usuário não autenticado' });
+  }
+
+  try {
+    const result = await findOwnedHorse(userId, horseId);
+    if (!result) {
+      return res.status(404).json({ msg: 'Cavalo não pertence ao usuário' });
+    }
+
+    const { horse, ownedHorse, user } = result;
+
+    // findOwnedHorse prefers the running copy, so a running one here means there is one.
+    if (!isRetired(ownedHorse)) {
+      return res.status(409).json({ msg: 'Ela já está numa carreira.' });
+    }
+
+    user.horses.push(freshOwnedHorse(horse));
+    await user.save();
+
+    const fresh = user.horses[user.horses.length - 1];
+    return res.status(201).json({ horse: serializeOwnedHorse(horse, fresh) });
+  } catch {
+    return res.status(500).json({ msg: 'Erro ao começar nova carreira' });
   }
 };
 

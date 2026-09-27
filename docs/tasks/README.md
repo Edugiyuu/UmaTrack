@@ -50,6 +50,7 @@ O design do sistema de corridas está em [`docs/race-system-design.md`](../race-
 | 14 | [Motor de corrida por turnos](14-race-turn-engine.md) | `feat/race-turn-engine` | G | ✅ |
 | 15 | [Telas v2 de treino e de corrida (Figma)](15-ui-v2-train-race.md) | `feat/ui-v2-train-race` | M | 🔍 |
 | 16 | [Skills custam só skill points](16-skills-points-only.md) | `feat/skills-points-only` | P | 🔍 |
+| 17 | [Carreira por égua](17-horse-career.md) | `feat/horse-career` | G | 🔍 |
 
 ### Ordem sugerida para 11–14
 

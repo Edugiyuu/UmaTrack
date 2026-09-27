@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import Skill from '../models/skill';
 import type { AuthenticatedRequest } from '../middleware/authMiddleware';
 import { findOwnedHorse, serializeOwnedHorse } from '../services/ownedHorse';
+import { isRetired } from '../services/career';
 
 export const getAllSkills = async (_req: Request, res: Response) => {
   try {
@@ -41,6 +42,9 @@ export const learnSkill = async (req: AuthenticatedRequest, res: Response) => {
 
     const { horse, ownedHorse, user } = result;
 
+    if (isRetired(ownedHorse)) {
+      return res.status(409).json({ msg: 'A carreira dela terminou.' });
+    }
     if (ownedHorse.skills.some((learned) => learned.slug === skill.slug)) {
       return res.status(409).json({ msg: 'Skill já aprendida' });
     }

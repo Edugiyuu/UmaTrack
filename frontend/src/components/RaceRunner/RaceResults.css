@@ -184,3 +184,26 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* What the race did to the career (task 17). */
+.RaceResults__career {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius-md);
+  background-color: var(--accent-soft);
+  font-size: var(--text-sm);
+}
+
+.RaceResults__career.is-completed {
+  border-left-color: var(--brand-gold);
+  background-color: var(--highlight-soft);
+}
+
+.RaceResults__career.is-failed {
+  border-left-color: var(--danger);
+  background-color: var(--danger-soft);
+}

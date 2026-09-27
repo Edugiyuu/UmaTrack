@@ -4,6 +4,7 @@ import TrackCard, { checkRequirements } from "../TrackCard/TrackCard";
 import { getTracks } from "../../services/Race";
 import { getCurrentUser, getOwnedHorse } from "../../services/User";
 import { horseColors } from "../../constants/horseColors";
+import { goalLabel } from "../../constants/career";
 import { RUNNING_STYLE_HINT, RUNNING_STYLE_LABEL } from "../../constants/trackVisuals";
 import type { HorseResponseProfile } from "../../types/horse";
 import type { RunningStyle, TrackResponse } from "../../types/race";
@@ -44,7 +45,9 @@ const RaceTrackSelect = () => {
         setTracks(trackList);
         setMonies(user.monies);
         setStyle(ownedHorse.runningStyle ?? "pace");
-        setSelectedSlug((current) => current ?? trackList[0]?.slug ?? null);
+        // When the career race is due it is the only track on offer.
+        const due = ownedHorse.career?.raceDue ? ownedHorse.career.nextRace?.trackSlug : null;
+        setSelectedSlug((current) => due ?? current ?? trackList[0]?.slug ?? null);
         setError(null);
       } catch (loadError) {
         if (controller.signal.aborted) return;
@@ -63,17 +66,26 @@ const RaceTrackSelect = () => {
     [tracks, selectedSlug]
   );
 
+  const career = horse?.career;
+  const careerRace = career?.raceDue ? career.nextRace : null;
+  const retired = career !== undefined && career.status !== "active";
+
   const blockers = useMemo(() => {
     if (!selectedTrack || !horse) return [];
     const reasons: string[] = [];
-    if (monies < selectedTrack.entryFee) {
-      reasons.push(`Faltam ${selectedTrack.entryFee - monies} para a inscrição.`);
+    if (retired) {
+      reasons.push("A carreira dela terminou. Comece uma nova carreira no treino.");
+    }
+    // The career race has no entry fee.
+    const entryFee = careerRace ? 0 : selectedTrack.entryFee;
+    if (monies < entryFee) {
+      reasons.push(`Faltam ${entryFee - monies} para a inscrição.`);
     }
     if ((horse.energy ?? 0) < RACE_ENERGY_COST) {
       reasons.push(`Energia insuficiente: precisa de ${RACE_ENERGY_COST}. Descanse no treino.`);
     }
     return reasons;
-  }, [selectedTrack, horse, monies]);
+  }, [selectedTrack, horse, monies, careerRace, retired]);
 
   const startRace = useCallback(() => {
     if (!horseId || !selectedTrack || blockers.length) return;
@@ -143,7 +155,11 @@ const RaceTrackSelect = () => {
           disabled={!selectedTrack || blockers.length > 0}
           onClick={startRace}
         >
-          {selectedTrack ? `Correr em ${selectedTrack.name}` : "Escolha uma pista"}
+          {careerRace
+            ? `Correr a prova da carreira`
+            : selectedTrack
+              ? `Correr em ${selectedTrack.name}`
+              : "Escolha uma pista"}
         </button>
 
         {blockers.map((reason) => (
@@ -162,13 +178,28 @@ const RaceTrackSelect = () => {
       </aside>
 
       <section className="RaceTrackSelect__tracks">
-        <h1>Escolha a pista</h1>
+        <h1>{careerRace ? "Prova da carreira" : "Escolha a pista"}</h1>
+        {careerRace ? (
+          <p className="RaceTrackSelect__career is-due">
+            Os turnos acabaram: hoje é <strong>{careerRace.trackName}</strong>, meta{" "}
+            <strong>{goalLabel(careerRace.goal)}</strong>. Sem inscrição. Se não bater a meta, a
+            carreira termina aqui.
+          </p>
+        ) : career?.nextRace ? (
+          <p className="RaceTrackSelect__career">
+            Prova avulsa: gasta <strong>1 turno</strong> e energia, e rende fãs e skill points.
+            A próxima prova da carreira é <strong>{career.nextRace.trackName}</strong> em{" "}
+            {horse.turnsLeft ?? 0} turnos (meta {goalLabel(career.nextRace.goal)}).
+          </p>
+        ) : null}
         <p className="RaceTrackSelect__intro">
           Cada pista cobra um atributo diferente. Subidas pedem POWER, provas longas pedem
           STAMINA e curvas fechadas pedem WIT.
         </p>
         <div className="RaceTrackSelect__grid">
-          {tracks.map((track) => (
+          {tracks
+            .filter((track) => !careerRace || track.slug === careerRace.trackSlug)
+            .map((track) => (
             <TrackCard
               key={track._id}
               track={track}

@@ -3,6 +3,7 @@ import { getCurrentUser, getToken } from "../../services/User";
 import type { UserResponseProfile } from "../../types/user";
 import CustomLink from "../../utils/CustomLink";
 import RaceHistory from "../RaceHistory/RaceHistory";
+import RetiredHorses from "../RetiredHorses/RetiredHorses";
 import "./UserProfileMain.css";
 
 const UserProfileMain = () => {
@@ -65,6 +66,7 @@ const UserProfileMain = () => {
         <h3>Monies: {data.monies}</h3>
       </div>
       <RaceHistory />
+      <RetiredHorses horses={data.horses} />
     </div>
   );
 };

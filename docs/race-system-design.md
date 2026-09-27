@@ -158,7 +158,8 @@ SP    = round(ganho * 0.4) + bônus de acerto perfeito
 ```
 - `energia` cai a cada treino; com energia baixa há risco de ganho reduzido.
 - Ação **Rest** gasta um turno e devolve energia + humor.
-- Turnos são reabastecidos ao terminar uma corrida (nova "temporada").
+- Turnos contam até a próxima prova da carreira; a prova da carreira entrega os turnos da
+  seguinte (ver `docs/tasks/17-horse-career.md`). Provas avulsas gastam 1 turno.
 
 ## 7. Rotas da API
 
@@ -167,9 +168,10 @@ SP    = round(ganho * 0.4) + bônus de acerto perfeito
 | GET | `/track` | catálogo de pistas |
 | GET | `/track/:id` | detalhe de uma pista |
 | GET | `/skill` | catálogo de skills |
-| GET | `/user/me/horses/:horseId` | Uma do usuário (inclui SP, energia, skills) |
+| GET | `/user/me/horses/:horseId` | Uma do usuário (inclui SP, energia, skills e a carreira) |
 | POST | `/user/me/horses/:horseId/train` | treino dinâmico |
 | POST | `/user/me/horses/:horseId/rest` | descansar |
 | POST | `/user/me/horses/:horseId/skills` | aprender skill gastando SP |
-| POST | `/race/run` | correr numa pista com uma Uma |
+| POST | `/user/me/horses/:horseId/new-career` | nova carreira com uma Uma aposentada (task 17) |
+| POST | `/race/run` | correr numa pista com uma Uma (no turno 0, só a prova da carreira) |
 | GET | `/user/me/races` | histórico de corridas |

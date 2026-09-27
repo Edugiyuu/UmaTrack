@@ -1,3 +1,5 @@
+import type { CareerRace } from "./horse";
+
 export type TrackSurface = "turf" | "dirt";
 export type TrackTerrain = "flat" | "incline" | "rolling" | "technical";
 export type TrackCategory = "sprint" | "mile" | "medium" | "long";
@@ -166,6 +168,11 @@ export interface RaceRewards {
   fansEarned: number;
   energySpent: number;
   turnsLeft: number;
+  /** Set when this was a career race: what it did to the career. */
+  career:
+    | { kind: "passed"; goal: number; placement: number; next: CareerRace }
+    | { kind: "completed" | "failed"; goal: number; placement: number }
+    | null;
 }
 
 export interface RaceHistoryEntry {

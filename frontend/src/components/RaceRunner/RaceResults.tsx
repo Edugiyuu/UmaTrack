@@ -4,6 +4,7 @@ import Pill from "../ui/Pill/Pill";
 import { money, ordinal } from "./format";
 import { formatTurns } from "../../utils/raceTime";
 import { STAT_LABEL } from "../../constants/trackVisuals";
+import { goalLabel } from "../../constants/career";
 import type { RaceRewards, RaceRunnerResult, StatName } from "../../types/race";
 import "./RaceResults.css";
 
@@ -48,8 +49,17 @@ const RaceResults = ({
     { label: "Skill points", value: `+${rewards.skillPointsEarned}`, tone: "gain" },
     { label: "Fãs", value: `+${money(rewards.fansEarned)}`, tone: "gain" },
     { label: "Energia", value: `-${rewards.energySpent}`, tone: "cost" },
-    { label: "Turnos de treino", value: `${rewards.turnsLeft}` }
+    { label: "Turnos restantes", value: `${rewards.turnsLeft}` }
   ];
+
+  const career = rewards.career;
+  const careerLine = !career
+    ? null
+    : career.kind === "passed"
+      ? `Meta batida (${goalLabel(career.goal)})! Próxima prova: ${career.next.trackName} em ${career.next.turnsBefore} turnos, meta ${goalLabel(career.next.goal)}.`
+      : career.kind === "completed"
+        ? "Carreira completa! Ela se aposenta com honra e fica guardada no seu perfil."
+        : `Meta não batida: precisava ${goalLabel(career.goal)} e chegou em ${ordinal(career.placement)}. A carreira terminou; ela fica guardada no seu perfil.`;
 
   return (
     <div className="RaceResults__backdrop">
@@ -73,6 +83,13 @@ const RaceResults = ({
             <Pill tone="danger">Ficou sem fôlego antes da linha</Pill>
           )}
         </header>
+
+        {careerLine && (
+          <p className={`RaceResults__career is-${career!.kind}`} role="status">
+            <span className="RaceResults__section-label">Carreira</span>
+            {careerLine}
+          </p>
+        )}
 
         <ul className="RaceResults__rewards">
           {rewardList.map((reward) => (
@@ -114,10 +131,13 @@ const RaceResults = ({
         </div>
 
         <div className="RaceResults__actions">
-          <Button variant="ink" onClick={onAnotherTrack}>
-            Outra pista
-          </Button>
-          <Button variant="ghost" onClick={onBackToTraining}>
+          {/* After a career race the next step is training (or the retirement screen). */}
+          {!career && (
+            <Button variant="ink" onClick={onAnotherTrack}>
+              Outra pista
+            </Button>
+          )}
+          <Button variant={career ? "primary" : "ghost"} onClick={onBackToTraining}>
             Voltar ao treino
           </Button>
         </div>

@@ -182,3 +182,18 @@
   grid-template-columns: 1fr;
   align-content: start;
 }
+
+/* Where the career stands: an optional race, or the career race that is due (task 17). */
+.RaceTrackSelect__career {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-left: 4px solid var(--brand-gold);
+  border-radius: 10px;
+  background-color: var(--highlight-soft);
+  font-size: 0.9rem;
+}
+
+.RaceTrackSelect__career.is-due {
+  border-left-color: var(--accent);
+  background-color: var(--accent-soft);
+}

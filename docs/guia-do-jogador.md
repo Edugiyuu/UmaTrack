@@ -7,7 +7,7 @@ Os números deste guia vêm direto do código (`backend/src/data/` e
 
 - [1. Começando](#1-começando)
 - [2. Os quatro atributos](#2-os-quatro-atributos)
-- [3. A temporada: turnos, energia e humor](#3-a-temporada-turnos-energia-e-humor)
+- [3. A carreira: turnos, energia e humor](#3-a-carreira-turnos-energia-e-humor)
 - [4. Treino](#4-treino)
 - [5. Skills e skill points](#5-skills-e-skill-points)
 - [6. As pistas](#6-as-pistas)
@@ -72,21 +72,57 @@ e o **Start race!** só libera com 35 de energia, dizendo quanto falta.
 
 ---
 
-## 3. A temporada: turnos, energia e humor
+## 3. A carreira: turnos, energia e humor
+
+Cada garota-cavalo tem a **sua carreira**: uma lista de provas, em ordem, com
+uma **meta** de colocação em cada uma. Antes de cada prova ela tem alguns
+**turnos** para se preparar. Quando os turnos acabam, a prova da carreira é
+**obrigatória**: nesse momento não dá para treinar nem escolher outra pista.
+
+- **Bateu a meta** (por exemplo, top 3): a carreira segue, e os turnos da
+  próxima prova já estão contando.
+- **Não bateu**: a carreira termina ali.
+- **Bateu a meta da última prova**: carreira completa.
+
+Carreira terminada, completa ou não, **aposenta** a égua. Ela fica guardada no
+seu perfil, com os atributos finais e o resultado de cada prova, e não treina
+nem corre mais. Na tela de treino dela aparece **Nova carreira**: a mesma égua
+recomeça do zero, com os atributos iniciais, e a aposentada continua no perfil.
+Você passa a ter as duas. A nova carreira não custa nada, porque ela já é sua.
+
+A prova da carreira **não cobra inscrição**. Entre uma prova e outra dá para
+correr **provas avulsas** em qualquer pista: cada uma gasta 1 turno e 35 de
+energia, cobra a inscrição normal e rende prêmio, fãs e skill points. A carreira
+não muda com elas.
 
 | Recurso | Máximo | Como gasta | Como recupera |
 |---|---|---|---|
-| **Turnos** | 5 | 1 por treino ou descanso | Terminar uma corrida devolve para 5 |
+| **Turnos** | os da próxima prova | 1 por treino, descanso ou prova avulsa | A prova da carreira entrega os turnos da seguinte |
 | **Energia** | 100 | 20 por treino, 35 por corrida | Descansar: **+45** |
 | **Humor** | ★★★★★ | Cai ao falhar um treino ou correr mal | Descansar, treinar bem ou vencer |
 
-**Turnos** limitam quanto você treina por temporada. **Energia** limita quantas
-corridas você encaixa. Correr é o que fecha a temporada e devolve os turnos.
-
 > **Descanso quando os turnos acabam**
-> Se você gastar os 5 turnos treinando, a energia zera junto (5 × 20 = 100).
-> Nessa situação o descanso continua disponível e **não cobra turno** — é a
-> válvula que impede a Uma de travar sem conseguir treinar, descansar nem correr.
+> No dia da prova o descanso continua disponível e **não cobra turno**. Se ela
+> chegou sem os 35 de energia da corrida, descanse e corra.
+
+### As carreiras
+
+Os números estão em `backend/src/data/careers.ts`. Cada linha é uma prova:
+turnos de preparo antes dela e a meta.
+
+| Égua | Provas (turnos · meta) |
+|---|---|
+| **Silence Suzuka** | Sapporo (6 · top 3) → Niigata (8 · top 3) → Hakodate (10 · top 3) → Niigata (10 · vencer) → Kyoto (14 · top 3) |
+| **Special Week** | Sapporo (6 · top 5) → Niigata (8 · top 3) → Hakodate (10 · top 3) → Kyoto (16 · top 5) → Tokyo (18 · top 3) |
+| **Oguri Cap** | Sapporo (6 · top 5) → Hakodate (10 · top 5) → Hakodate (10 · top 2) → Kyoto (14 · top 5) → Kokura (18 · top 5) |
+| **Grass Wonder** | Niigata (6 · top 5) → Hakodate (12 · top 5) → Niigata (8 · vencer) → Kyoto (14 · top 5) → Tokyo (16 · top 5) |
+| **Nice Nature** | Sapporo (6 · top 5) → Niigata (8 · top 5) → Hakodate (10 · top 3) → Kyoto (16 · top 5) → Tokyo (18 · top 5) |
+
+As primeiras provas são para aquecer; a última é o desafio de cada uma. Numa
+simulação com um jogador simples (treina o atributo mais longe do requisito,
+compra as passivas, não corre avulsas), de 13% a 52% das carreiras chegam ao
+fim. Quem planeja o treino, corre avulsas para juntar SP e escolhe as skills
+vai melhor. Para rodar a simulação: `npm run career:check --prefix backend`.
 
 ---
 
@@ -365,7 +401,8 @@ Correr custa **35 de energia** e a inscrição da pista. Ao terminar, você rece
 
 Além disso:
 
-- Os **turnos voltam para 5** — é o que abre a próxima temporada
+- Na **prova da carreira**, bater a meta entrega os turnos da próxima prova;
+  não bater encerra a carreira. Uma **avulsa** gasta 1 turno (ver [A carreira](#3-a-carreira-turnos-energia-e-humor))
 - Vencer sobe **+1 estrela** de humor
 - Terminar na metade de baixo do grid **desce 1 estrela**
 - A corrida entra no histórico, visível no seu perfil
@@ -379,8 +416,8 @@ paga nada abaixo do 5º — **não é um jeito sustentável de farmar.**
 
 ## 10. Roteiro de progressão
 
-1. **Sapporo Sprint primeiro.** É grátis e você provavelmente já atende os
-   requisitos. Ganhe algumas vezes para juntar dinheiro e SP.
+1. **Olhe o calendário da carreira** na tela de treino e treine para a próxima
+   prova dele. As avulsas em Sapporo (grátis) ajudam a juntar SP no começo.
 2. **Compre as passivas de 110 SP** do atributo que você quer empurrar.
 3. **Treine mirando o 10/10**, não o volume. O bônus de +8 SP por round
    perfeito é o que financia as skills.
@@ -408,9 +445,9 @@ garota-cavalo que já nasce com o perfil da pista que você quer.
 
 ## 11. Erros comuns
 
-**"Treinei 5 vezes e agora não consigo fazer nada."**
-Os 5 turnos consomem exatamente os 100 de energia. Nessa situação o descanso
-fica disponível de graça: descanse duas vezes e você volta a poder correr.
+**"Os turnos acabaram e não consigo treinar."**
+É o dia da prova da carreira: só ela pode ser corrida. Se a energia não chega
+a 35, o descanso sai de graça nesse dia; descanse e corra.
 
 **"Corri numa pista difícil e fiquei em último."**
 Olhe o aviso no card: os atributos em vermelho estão abaixo do recomendado.

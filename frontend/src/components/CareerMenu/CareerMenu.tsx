@@ -3,15 +3,18 @@ import { useNavigate, useParams } from 'react-router-dom';
 import './CareerMenu.css'
 import TrainMiniGame from '../TrainMiniGame/TrainMiniGame';
 import SkillPanel from '../SkillPanel/SkillPanel';
+import CareerCalendar from './CareerCalendar';
 import {
     getOwnedHorse,
     restHorse,
+    startNewCareer,
     trainHorse,
     type TrainType,
     type TrainingOutcome
 } from '../../services/User';
 import { horseColors } from '../../constants/horseColors';
 import { statRank } from '../../constants/statRank';
+import { goalLabel } from '../../constants/career';
 import type { HorseResponseProfile } from '../../types/horse';
 import { horseFolder, withImageFallback } from '../../utils/horseImage';
 import speedIcon from '../../assets/gameIcons/speedIcon.png';
@@ -43,6 +46,7 @@ const CareerMenu = () => {
     const [loading, setLoading] = useState(true);
     const [resting, setResting] = useState(false);
     const [showSkills, setShowSkills] = useState(false);
+    const [startingCareer, setStartingCareer] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [notice, setNotice] = useState<string | null>(null);
 
@@ -124,11 +128,31 @@ const CareerMenu = () => {
         }
     };
 
+    /** A new career with the same girl: the retired copy stays in the profile. */
+    const handleNewCareer = async () => {
+        if (!horseId || startingCareer) return;
+        try {
+            setStartingCareer(true);
+            setError(null);
+            setHorse(await startNewCareer(horseId));
+            setShowSkills(false);
+            setNotice('Nova carreira! Ela voltou aos atributos iniciais; a anterior ficou no seu perfil.');
+        } catch (error) {
+            setError(error instanceof Error ? error.message : 'Could not start a new career.');
+        } finally {
+            setStartingCareer(false);
+        }
+    };
+
     if (loading) return <p className='Career__state'>Carregando a carreira...</p>;
     if (error && !horse) return <p className='Career__state' role='alert'>{error}</p>;
     if (!horse) return <p className='Career__state'>Cavalo não encontrado.</p>;
 
     const canRace = energy >= RACE_ENERGY_COST;
+    const career = horse.career;
+    const retired = career !== undefined && career.status !== 'active';
+    const nextRace = career?.nextRace ?? null;
+    const raceDue = career?.raceDue ?? false;
     const trainingRisky = energy < TRAINING_RISK_ENERGY;
     const art = withImageFallback(horse.name, [
         `${horseFolder(horse.name)}1.png`,
@@ -158,11 +182,32 @@ const CareerMenu = () => {
                         )}
                     </div>
 
-                    <div className='Career__turns'>
-                        <span className='Career__turns-label'>Turnos restantes</span>
-                        <strong className='Career__turns-value'>{turnsLeft}</strong>
-                        {turnsLeft <= 0 && (
-                            <span className='Career__turns-hint'>descansar sai de graça</span>
+                    <div className={`Career__turns${raceDue ? ' is-due' : ''}${retired ? ' is-retired' : ''}`}>
+                        {retired ? (
+                            <>
+                                <span className='Career__turns-label'>
+                                    {career.status === 'completed' ? 'Carreira completa' : 'Carreira encerrada'}
+                                </span>
+                                <strong className='Career__turns-track'>
+                                    {career.status === 'completed' ? 'Aposentada com honra' : 'Aposentada'}
+                                </strong>
+                                <span className='Career__turns-hint'>{career.results.length} provas da carreira</span>
+                            </>
+                        ) : nextRace ? (
+                            <>
+                                <span className='Career__turns-label'>
+                                    {raceDue ? 'Hoje é dia de corrida' : 'Próxima prova'}
+                                </span>
+                                <strong className='Career__turns-track'>{nextRace.trackName}</strong>
+                                <span className='Career__turns-hint'>
+                                    {raceDue ? '' : `em ${turnsLeft} turnos · `}meta: {goalLabel(nextRace.goal)}
+                                </span>
+                            </>
+                        ) : (
+                            <>
+                                <span className='Career__turns-label'>Turnos restantes</span>
+                                <strong className='Career__turns-value'>{turnsLeft}</strong>
+                            </>
                         )}
                     </div>
                 </header>
@@ -201,6 +246,8 @@ const CareerMenu = () => {
                     </div>
                 </section>
 
+                {career && <CareerCalendar career={career} turnsLeft={turnsLeft} />}
+
                 {notice && <p className='Career__notice' role='status'>{notice}</p>}
                 {error && <p className='Career__error' role='alert'>{error}</p>}
 
@@ -230,54 +277,90 @@ const CareerMenu = () => {
                                         </span>
                                     </div>
                                 </div>
-                                <button
-                                    type='button'
-                                    className='StatCard__train'
-                                    disabled={turnsLeft <= 0}
-                                    onClick={() => startTraining(stat)}
-                                >
-                                    Treinar
-                                    <span className={trainingRisky ? 'is-risky' : undefined}>
-                                        {trainingRisky ? 'risco de falhar' : `−${TRAINING_ENERGY_COST} energia`}
-                                    </span>
-                                </button>
+                                {!retired && (
+                                    <button
+                                        type='button'
+                                        className='StatCard__train'
+                                        disabled={turnsLeft <= 0}
+                                        onClick={() => startTraining(stat)}
+                                    >
+                                        Treinar
+                                        <span className={trainingRisky && turnsLeft > 0 ? 'is-risky' : undefined}>
+                                            {turnsLeft <= 0
+                                                ? 'turnos acabaram'
+                                                : trainingRisky
+                                                    ? 'risco de falhar'
+                                                    : `−${TRAINING_ENERGY_COST} energia`}
+                                        </span>
+                                    </button>
+                                )}
                             </article>
                         );
                     })}
                 </section>
 
                 <div className='Career__actions'>
-                    <button
-                        type='button'
-                        className='Career__ghost'
-                        onClick={handleRest}
-                        disabled={resting || energy >= 100}
-                    >
-                        {resting ? 'Descansando...' : 'Descansar'}
-                        <span>{energy >= 100 ? 'energia cheia' : turnsLeft > 0 ? '+ energia · 1 turno' : '+ energia · grátis'}</span>
-                    </button>
-                    <button
-                        type='button'
-                        className='Career__ghost'
-                        aria-expanded={showSkills}
-                        onClick={() => setShowSkills((open) => !open)}
-                    >
-                        {showSkills ? 'Fechar skills' : 'Ver skills'}
-                        <span>{horse.skillPoints ?? 0} pts disponíveis</span>
-                    </button>
-                    <button
-                        type='button'
-                        className='Career__race'
-                        onClick={() => navigate(`/Race/${horseId}`)}
-                        disabled={!canRace}
-                    >
-                        Start race!
-                        <span>
-                            {canRace
-                                ? `−${RACE_ENERGY_COST} energia`
-                                : `precisa de ${RACE_ENERGY_COST} de energia (faltam ${RACE_ENERGY_COST - energy})`}
-                        </span>
-                    </button>
+                    {retired ? (
+                        <button
+                            type='button'
+                            className='Career__race'
+                            onClick={handleNewCareer}
+                            disabled={startingCareer}
+                        >
+                            {startingCareer ? 'Começando...' : 'Nova carreira'}
+                            <span>ela volta aos atributos iniciais · esta fica no seu perfil</span>
+                        </button>
+                    ) : (
+                        <>
+                            <button
+                                type='button'
+                                className='Career__ghost'
+                                onClick={handleRest}
+                                disabled={resting || energy >= 100}
+                            >
+                                {resting ? 'Descansando...' : 'Descansar'}
+                                <span>{energy >= 100 ? 'energia cheia' : turnsLeft > 0 ? '+ energia · 1 turno' : '+ energia · grátis'}</span>
+                            </button>
+                            <button
+                                type='button'
+                                className='Career__ghost'
+                                aria-expanded={showSkills}
+                                onClick={() => setShowSkills((open) => !open)}
+                            >
+                                {showSkills ? 'Fechar skills' : 'Ver skills'}
+                                <span>{horse.skillPoints ?? 0} pts disponíveis</span>
+                            </button>
+                            {raceDue && nextRace ? (
+                                <button
+                                    type='button'
+                                    className='Career__race'
+                                    onClick={() => navigate(`/Race/${horseId}`)}
+                                    disabled={!canRace}
+                                >
+                                    Correr {nextRace.trackName}!
+                                    <span>
+                                        {canRace
+                                            ? `prova da carreira · sem inscrição · −${RACE_ENERGY_COST} energia`
+                                            : `precisa de ${RACE_ENERGY_COST} de energia: descanse (grátis agora)`}
+                                    </span>
+                                </button>
+                            ) : (
+                                <button
+                                    type='button'
+                                    className='Career__ghost'
+                                    onClick={() => navigate(`/Race/${horseId}`)}
+                                    disabled={!canRace}
+                                >
+                                    Prova avulsa
+                                    <span>
+                                        {canRace
+                                            ? `−${RACE_ENERGY_COST} energia · 1 turno`
+                                            : `precisa de ${RACE_ENERGY_COST} de energia`}
+                                    </span>
+                                </button>
+                            )}
+                        </>
+                    )}
                 </div>
 
                 {showSkills && horseId && (

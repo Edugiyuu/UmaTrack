@@ -8,6 +8,7 @@
     "dev": "nodemon  src/app.ts",
     "race:check": "ts-node --compilerOptions {\\\"module\\\":\\\"CommonJS\\\"} src/scripts/raceEngineCheck.ts",
     "training:check": "ts-node --compilerOptions {\\\"module\\\":\\\"CommonJS\\\"} src/scripts/trainingEngineCheck.ts",
+    "career:check": "ts-node --compilerOptions {\\\"module\\\":\\\"CommonJS\\\"} src/scripts/careerCheck.ts",
     "seed:horses": "ts-node --compilerOptions {\\\"module\\\":\\\"CommonJS\\\"} src/scripts/seedHorses.ts"
   },
   "keywords": [],

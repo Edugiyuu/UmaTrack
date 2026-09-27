@@ -210,3 +210,25 @@ export const restHorse = async (
         throw new Error(apiErrorMessage(error, "Erro ao descansar"));
     }
 };
+
+/**
+ * Starts a new career with a horse girl whose last one is over. The retired copy stays
+ * in the save; the new one starts from her catalogue stats.
+ */
+export const startNewCareer = async (horseId: string): Promise<HorseResponseProfile> => {
+    try {
+        const token = getToken();
+        if (!token) {
+            throw new Error("Token não encontrado");
+        }
+
+        const response = await axios.post<{ horse: HorseResponseProfile }>(
+            `${API_BASE_URL}/user/me/horses/${horseId}/new-career`,
+            {},
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+        return response.data.horse;
+    } catch (error: unknown) {
+        throw new Error(apiErrorMessage(error, "Erro ao começar nova carreira"));
+    }
+};
