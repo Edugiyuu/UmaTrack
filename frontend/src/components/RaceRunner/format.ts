@@ -1,9 +1,6 @@
-/** Race clock: `1:04.35` once past a minute, `52.10s` before it. */
-export const formatTime = (seconds: number) => {
-  const minutes = Math.floor(seconds / 60);
-  const rest = seconds - minutes * 60;
-  return minutes > 0 ? `${minutes}:${rest.toFixed(2).padStart(5, "0")}` : `${rest.toFixed(2)}s`;
-};
+/** The replay clock runs in turns; show the one being played. */
+export const formatClock = (time: number, lastTurn: number) =>
+  `Turno ${Math.min(lastTurn, Math.max(1, Math.ceil(time)))}`;
 
 export const ordinal = (placement: number) => `${placement}º`;
 

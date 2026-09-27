@@ -140,6 +140,7 @@ const RaceRunner = () => {
         track={track}
         style={style}
         time={playback.time}
+        lastTurn={Math.ceil(simulation.frames.at(-1)?.t ?? 1)}
         speed={speed}
         speeds={PLAYBACK_SPEEDS}
         onSpeedChange={setSpeed}

@@ -1,6 +1,6 @@
 import Button from "../ui/Button/Button";
 import Pill from "../ui/Pill/Pill";
-import { formatTime } from "./format";
+import { formatClock } from "./format";
 import {
   RUNNING_STYLE_LABEL,
   SURFACE_LABEL,
@@ -12,8 +12,10 @@ import type { RunningStyle, TrackResponse } from "../../types/race";
 export interface RaceHeaderProps {
   track: TrackResponse;
   style: RunningStyle;
-  /** Race time being shown, in seconds. */
+  /** Race time being shown, in turns. */
   time: number;
+  /** Last turn of the race, so the clock never counts past the finish. */
+  lastTurn: number;
   speed: number;
   speeds: readonly number[];
   onSpeedChange: (speed: number) => void;
@@ -28,6 +30,7 @@ const RaceHeader = ({
   track,
   style,
   time,
+  lastTurn,
   speed,
   speeds,
   onSpeedChange,
@@ -48,8 +51,8 @@ const RaceHeader = ({
     </div>
 
     <div className="RaceRunner__clock">
-      <span className="RaceRunner__time" aria-label="Tempo de prova">
-        {formatTime(time)}
+      <span className="RaceRunner__time" aria-label="Turno em curso">
+        {formatClock(time, lastTurn)}
       </span>
       <div className="RaceRunner__controls">
         <div

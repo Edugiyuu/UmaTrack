@@ -27,6 +27,7 @@ O design do sistema de corridas está em [`docs/race-system-design.md`](../race-
 | 🚧 | Em andamento |
 | 🔍 | Em revisão |
 | ✅ | Concluída |
+| ⏸️ | Pausada |
 
 ## Status
 
@@ -44,17 +45,20 @@ O design do sistema de corridas está em [`docs/race-system-design.md`](../race-
 | 09 | [Integração final do loop de jogo](09-race-loop-integration.md) | `feat/race-loop-integration` | M | ✅ |
 | 10 | [Documentação e template de tasks](10-task-template.md) | `docs/task-template` | P | 🚧 |
 | 11 | [Refazer o frontend da tela de corrida](11-race-ui-redesign.md) | `feat/race-ui-redesign` | G | 🔍 |
-| 12 | [Telemetria da corrida no motor](12-race-telemetry-engine.md) | `feat/race-telemetry-engine` | M | 🔲 |
+| 12 | [Telemetria da corrida no motor](12-race-telemetry-engine.md) | `feat/race-telemetry-engine` | P | 🔲 |
 | 13 | [HUD de desempenho durante a corrida](13-race-telemetry-hud.md) | `feat/race-telemetry-hud` | M | 🔲 |
+| 14 | [Motor de corrida por turnos](14-race-turn-engine.md) | `feat/race-turn-engine` | G | 🔍 |
 
-### Ordem sugerida para 11–13
+### Ordem sugerida para 11–14
 
-`11` e `12` são independentes e podem ser feitas em paralelo — uma é só frontend, a outra só
-backend. `13` precisa das duas: dos dados que `12` expõe e do layout que `11` prepara, por
-isso sai de `feat/race-ui-redesign`.
+A `14` trocou o motor por ticks por um motor por turnos, e as tasks `12` e `13` foram
+reescritas em cima dele. A `12` sai da `14`. A `11` foi feita sobre o motor antigo e já
+recebeu o motor por turnos (merge de `main`). A `13` precisa das duas, dos
+dados que a `12` expõe e do layout que a `11` prepara, por isso sai de
+`feat/race-ui-redesign`.
 
 ```
-11 (UI) ──┐
-          ├──> 13 (HUD)
-12 (motor)┘
+14 (motor por turnos) ──> 12 (telemetria) ──┐
+          │                                 ├──> 13 (HUD)
+          └──> 11 (UI, retomar com o motor) ┘
 ```

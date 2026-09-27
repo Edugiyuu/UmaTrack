@@ -67,6 +67,7 @@ export interface SkillResponse {
 }
 
 export interface RaceFrame {
+  /** Turns since the gates opened, sampled several times per turn. */
   t: number;
   positions: number[];
   stamina: number[];
@@ -78,7 +79,9 @@ export interface RaceRunnerResult {
   isPlayer: boolean;
   runningStyle: RunningStyle;
   placement: number;
+  /** Turns taken to cross the line. */
   finishTime: number;
+  /** Fastest speed reached, in m/turn. */
   topSpeed: number;
   staminaLeft: number;
   exhausted: boolean;
@@ -90,6 +93,7 @@ export interface SkillActivation {
   runnerName: string;
   skillSlug: string;
   skillName: string;
+  /** Turn in which the skill fired, counted from 0 at the gates. */
   time: number;
   distance: number;
 }
@@ -124,6 +128,8 @@ export interface RaceHistoryEntry {
   placement: number;
   fieldSize: number;
   finishTime: number;
+  /** Races run before the turn engine were timed in seconds. */
+  timeUnit: "seconds" | "turns";
   prizeMoney: number;
   skillPointsEarned: number;
   fansEarned: number;

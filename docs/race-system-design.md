@@ -24,10 +24,10 @@ restante e de retornos decrescentes conforme o atributo cresce.
 
 | Atributo | Efeito na corrida |
 |---|---|
-| **Speed** | Velocidade-alvo em cada fase; peso maior em retas e pistas planas. |
-| **Stamina** | Tamanho do "tanque" de fôlego; evita o colapso (*exhaustion*) no final. |
-| **Power** | Aceleração, largada e **subidas íngremes**; peso maior em pistas com inclinação. |
-| **Wit** | Reduz consumo de fôlego, melhora posicionamento e aumenta a chance de ativar skills. |
+| **Speed** | O teto: velocidade máxima, em metros por turno. |
+| **Stamina** | Tamanho do "tanque" de fôlego; se zerar, ela fica cansada até o fim. |
+| **Power** | A arrancada: velocidade de largada e quanto ela acelera por turno até o teto. |
+| **Wit** | Reduz o gasto de fôlego e aumenta a chance de ativar skills. |
 
 ## 3. Pistas (tracks)
 
@@ -40,8 +40,13 @@ Cada pista é um documento próprio com:
   `curve` (0–1) e `lengthRatio`. A soma dos `lengthRatio` é 1.
 - `statWeights`: quanto cada atributo pesa no desempenho naquela pista.
 - `requirements`: mínimos **recomendados** por atributo. Ficar abaixo não bloqueia a
-  inscrição, mas aplica penalidade proporcional (ver 4.4).
+  inscrição; quem está exatamente neles chega no limite do fôlego (ver 4.3).
 - `entryFee`, `prizeMoney[]` (por colocação), `fans`, `skillPointReward`.
+
+> **Motor por turnos (task 14):** por enquanto o motor só usa `distance`, os
+> `segments` (`lengthRatio` e `curve`, para saber onde há curva) e os `requirements`
+> (só como aviso). `grade`, `surface` e `statWeights` continuam nos dados, mas ficam
+> sem efeito até a conversa sobre pistas. O exemplo abaixo descreve o design original.
 
 ### Exemplo: pista íngreme
 
@@ -52,39 +57,56 @@ do que uma com Power alto. Por isso a pista declara `requirements.power` alto.
 
 ## 4. Motor de corrida
 
-Simulação determinística por *seed*, em ticks de `0.1s`, rodando **no backend**
-(o cliente só anima o replay devolvido, para não ser possível forjar resultados).
+Simulação determinística por *seed*, **por turnos**, rodando **no backend** (o cliente
+só anima o replay devolvido, para não ser possível forjar resultados). Código em
+`backend/src/services/raceEngine.ts`; a análise que levou a estas regras está na
+[task 14](./tasks/14-race-turn-engine.md).
 
-### 4.1 Estratégias (running style)
-`front` (fugitiva), `pace` (ponta-de-lança), `late` (closer), `end` (fechadora).
-Cada estratégia tem um multiplicador de velocidade-alvo por fase da corrida.
+Unidades: distância em metros, velocidade em **metros por turno**, tempo em **turnos**.
+Os atributos entram como estão: Speed 120 é um teto de 120 m/turno.
 
-### 4.2 Fases
-`opening` (0–16%), `middle` (16–66%), `final` (66–100%), com *last spurt* nos últimos 20%.
+### 4.1 Velocidade
+```
+turno 1:          v = Power / 2
+demais turnos:    v = min(Speed, v + Power / 6)
+entrar em curva:  v = v / 1,2          (trecho com curve >= 0,4)
+avanço:           distância += v       (a sobra passa para o trecho seguinte)
+```
+As skills de velocidade somam metros por turno em cima de `v` enquanto estão ativas, e as
+de aceleração multiplicam o ganho do turno (no turno 1, a própria largada). O
+avanço de cada turno varia até ±2% (ruído com seed), então duas corredoras idênticas
+não andam grudadas.
 
-### 4.3 Fôlego (HP)
-```
-HP = 0.8 * stamina * distanceFactor + baseHP
-custo/tick = k * v^2 * gradeMultiplier * (1 - witSaving)
-```
-Quando o HP zera a Uma entra em *exhaustion* e a velocidade-alvo despenca.
+### 4.2 Fases e pressão
+- **Pressão** (gasto de fôlego): ×1,0 no primeiro terço, ×1,25 no segundo, ×1,5 no último.
+- **Fases** (gatilho de skills): `opening` (0–16%), `middle` (16–66%), `final` (66–80%)
+  e `spurt` (80–100%).
 
-### 4.4 Inclinação e requisitos
+### 4.3 Fôlego
 ```
-gradeSpeedFactor = 1 - grade * (0.9 - powerRatio * 0.6)
-powerRatio       = clamp(power / requirements.power, 0, 1.5)
+fôlego inicial = Stamina
+custo/turno    = v² / 1800 × pressão × (1 − min(0,6; Wit / 500 + staminaSave))
+fôlego <= 0    → cansada até o fim: Power / 3 e teto = Speed / 2
 ```
-Um atributo abaixo do requisito da pista gera `shortfallPenalty` sobre a velocidade-alvo,
-proporcional ao quanto falta.
+O custo é proporcional a v², então o custo **por metro** sobe com a velocidade: correr
+mais rápido gasta mais, e um trecho mais longo também. O divisor 1800 foi calibrado para
+que uma corredora exatamente nos `requirements` de cada pista chegue no limite do fôlego,
+inclusive em Tokyo (2400m).
+
+### 4.4 Estratégias (running style)
+`front`, `pace`, `late` e `end` continuam no cadastro e na tela, mas **não têm efeito**
+no motor por turnos. Voltam numa task própria.
 
 ### 4.5 Skills
-Skills são checadas a cada tick. Cada skill tem gatilho (fase, posição, HP restante,
-tipo de terreno). A chance de ativação é `baseChance + wit * 0.0008`. O efeito dura
-`duration` segundos.
+Checadas uma vez por turno. Cada skill tem gatilho (fase, terreno, fôlego restante,
+posição) e chance por turno de `baseChance + Wit × 0,002`. O efeito dura `duration`
+turnos. Skills `flatStat` são passivas e somam no atributo antes da largada.
+`inclineBoost` fica sem efeito enquanto o motor ignorar a inclinação.
 
 ### 4.6 Resultado
-O motor devolve: classificação, tempos, `replay` (posição de cada corredora por tick),
-log de skills ativadas e os prêmios.
+O motor devolve: classificação, tempo em turnos (com fração, que desempata quem termina
+no mesmo turno), velocidade máxima, fôlego restante, `frames` do replay (4 amostras por
+turno), log de skills ativadas e os avisos de atributo abaixo do recomendado.
 
 ## 5. Skills e skill points
 

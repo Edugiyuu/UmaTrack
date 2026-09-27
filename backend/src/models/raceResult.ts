@@ -21,6 +21,8 @@ const RaceResultSchema = new mongoose.Schema({
   placement: { type: Number, required: true, min: 1 },
   fieldSize: { type: Number, required: true, min: 1 },
   finishTime: { type: Number, required: true },
+  /** Races run before the turn engine were timed in seconds. */
+  timeUnit: { type: String, required: true, enum: ["seconds", "turns"], default: "seconds" },
   exhausted: { type: Boolean, required: true, default: false },
   skillsActivated: { type: [String], required: true, default: [] },
 

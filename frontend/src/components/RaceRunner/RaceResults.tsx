@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
 import Button from "../ui/Button/Button";
 import Pill from "../ui/Pill/Pill";
-import { formatTime, money, ordinal } from "./format";
+import { money, ordinal } from "./format";
+import { formatTurns } from "../../utils/raceTime";
 import { STAT_LABEL } from "../../constants/trackVisuals";
 import type { RaceRewards, RaceRunnerResult, StatName } from "../../types/race";
 import "./RaceResults.css";
@@ -66,7 +67,7 @@ const RaceResults = ({
             {won ? "Vitória!" : `${ordinal(rewards.placement)} lugar`}
           </h2>
           <p className="RaceResults__summary">
-            {formatTime(playerResult.finishTime)} · velocidade máxima {playerResult.topSpeed} m/s
+            {formatTurns(playerResult.finishTime)} · velocidade máxima {playerResult.topSpeed} m/turno
           </p>
           {playerResult.exhausted && (
             <Pill tone="danger">Ficou sem fôlego antes da linha</Pill>
@@ -105,7 +106,7 @@ const RaceResults = ({
                 <span className="RaceResults__standing-place">{ordinal(result.placement)}</span>
                 <span className="RaceResults__standing-name">{result.name}</span>
                 <span className="RaceResults__standing-time">
-                  {formatTime(result.finishTime)}
+                  {formatTurns(result.finishTime)}
                 </span>
               </li>
             ))}

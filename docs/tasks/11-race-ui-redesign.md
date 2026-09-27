@@ -170,6 +170,7 @@ npm run dev --prefix frontend
 |---|---|
 | 2026-09-23 | Task escrita. |
 | 2026-09-23 | Implementada. Notas abaixo. |
+| 2026-09-27 | Recebeu o motor por turnos da task `14` (merge de `main`): relógio em "Turno N", tempos em turnos e velocidade em m/turno no `RaceHeader` e no `RaceResults`; `formatTime` saiu de `format.ts`. |
 
 **Identidade visual.** Os tokens foram lidos das telas que já existem — Home, header, cards
 de égua — e não inventados: Tilt Warp para títulos e controles, Inder itálico para rótulos,
