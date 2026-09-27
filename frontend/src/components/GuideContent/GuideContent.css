@@ -1,4 +1,5 @@
 .GuideContent {
+  font-family: var(--font-body);
   padding: 28px 24px 56px;
   background: #f4f6f5;
   min-height: calc(100vh - 72px);
@@ -10,6 +11,7 @@
 }
 
 .GuideContent__intro h1 {
+  font-family: var(--font-ui);
   margin: 0 0 8px;
 }
 
@@ -56,6 +58,7 @@
 }
 
 .GuideContent__section h2 {
+  font-family: var(--font-ui);
   margin: 0 0 12px;
   font-size: 1.25rem;
 }
@@ -96,6 +99,7 @@
 
 .GuideContent__attributes h3,
 .GuideContent__styles h3 {
+  font-family: var(--font-ui);
   margin: 8px 0 6px;
   font-size: 1rem;
 }
@@ -130,6 +134,7 @@
 }
 
 .GuideContent__tracks h3 {
+  font-family: var(--font-ui);
   margin: 0;
   font-size: 1rem;
 }
