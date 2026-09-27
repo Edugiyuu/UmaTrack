@@ -5,7 +5,7 @@
 | **ID** | `13` |
 | **Branch** | `feat/race-telemetry-hud` |
 | **Base** | `feat/race-ui-redesign` (depois de atualizada com o motor por turnos) |
-| **Status** | 🔲 Não iniciada |
+| **Status** | 🔍 Em revisão |
 | **Tamanho** | M |
 | **Depende de** | `11`, `12`, `14` |
 | **Bloqueia** | — |
@@ -38,18 +38,18 @@ e por quê — sem precisar pausar nem abrir outra tela.
 ## 3. Escopo
 
 ### Dentro do escopo
-- [ ] Componente `RaceHud`, plugado na faixa reservada pela task `11`.
-- [ ] **Velocidade**: m/turno atual contra o teto, com o estado em palavras: "acelerando
+- [x] Componente `RaceHud`, plugado na faixa reservada pela task `11`.
+- [x] **Velocidade**: m/turno atual contra o teto, com o estado em palavras: "acelerando
       (+16)", "no teto", "perdeu 20 na curva", "cansada".
-- [ ] **Fôlego**: barra com o gasto do último turno e o alcance projetado, desenhado contra
+- [x] **Fôlego**: barra com o gasto do último turno e o alcance projetado, desenhado contra
       o que falta de pista.
-- [ ] **Pressão**: ×1 / ×1,25 / ×1,5, para o jogador entender por que o gasto sobe no fim.
-- [ ] **Indicador de ritmo**: `safe` / `tight` / `rushed`, com cor e rótulo em português
+- [x] **Pressão**: ×1 / ×1,25 / ×1,5, para o jogador entender por que o gasto sobe no fim.
+- [x] **Indicador de ritmo**: `safe` / `tight` / `rushed`, com cor e rótulo em português
       ("com sobra" / "no limite" / "forçando").
-- [ ] **Skills ativas**: os efeitos ativos neste turno (não só o histórico que já existe).
-- [ ] **Linha do turno**: uma frase curta por turno, por exemplo
+- [x] **Skills ativas**: os efeitos ativos neste turno (não só o histórico que já existe).
+- [x] **Linha do turno**: uma frase curta por turno, por exemplo
       "Turno 7 · 116 m/turno · −9 de fôlego · entrou na curva".
-- [ ] Um controle para esconder o HUD, para quem só quer assistir à corrida.
+- [x] Um controle para esconder o HUD, para quem só quer assistir à corrida.
 
 ### Fora do escopo
 - Relatório e gráficos pós-corrida. Fica para uma task própria, se fizer falta.
@@ -97,6 +97,8 @@ enquanto ainda dá para o jogador entender a causa (rápida demais para o tanque
 | `frontend/src/components/RaceRunner/RaceRunner.tsx` | editar | Monta o HUD na faixa reservada |
 | `frontend/src/constants/raceTelemetry.ts` | criar | Rótulos, limiares de cor e textos em pt-BR |
 | `frontend/src/types/race.ts` | editar | Já espelhado na task `12`; conferir |
+| `frontend/src/components/ui/Meter/` | editar | `marker` (linha de referência, para o teto pela metade) e tom `curve` |
+| `frontend/src/styles/tokens.css` | editar | `--danger-soft` e `--curve-soft`, nos dois temas |
 
 **Contratos**
 
@@ -104,32 +106,32 @@ enquanto ainda dá para o jogador entender a causa (rápida demais para o tanque
 de `simulation.telemetry` cujo `turn` é o turno em curso (ou o último, depois da chegada).
 
 ## 5. Plano de execução
-1. [ ] Atualizar `feat/race-ui-redesign` com o motor por turnos (merge de `main` depois da
+1. [x] Atualizar `feat/race-ui-redesign` com o motor por turnos (merge de `main` depois da
        `14`) e resolver o relógio e os tempos, que passam a ser em turnos.
-2. [ ] Estender `useRacePlayback` com a telemetria do turno em curso.
-3. [ ] Montar o esqueleto do `RaceHud` mostrando os valores crus, para conferir os dados.
-4. [ ] Velocidade e fôlego com as referências.
-5. [ ] Indicador de ritmo, pressão e o alerta de `rushed` / cansada.
-6. [ ] Skills ativas e a linha do turno.
-7. [ ] Regra do silêncio: apagar o que está neutro; aplicar cor só no que está fora do normal.
-8. [ ] Botão de esconder o HUD e responsividade.
-9. [ ] Atualizar o guia do jogador com a leitura do HUD.
+2. [x] Estender `useRacePlayback` com a telemetria do turno em curso.
+3. [x] Montar o esqueleto do `RaceHud` mostrando os valores crus, para conferir os dados.
+4. [x] Velocidade e fôlego com as referências.
+5. [x] Indicador de ritmo, pressão e o alerta de `rushed` / cansada.
+6. [x] Skills ativas e a linha do turno.
+7. [x] Regra do silêncio: apagar o que está neutro; aplicar cor só no que está fora do normal.
+8. [x] Botão de esconder o HUD e responsividade.
+9. [x] Atualizar o guia do jogador com a leitura do HUD.
 
 ## 6. Critérios de aceite
-- [ ] **Dado** uma corrida em andamento, **quando** o jogador olha o HUD, **então** vê
+- [x] **Dado** uma corrida em andamento, **quando** o jogador olha o HUD, **então** vê
       velocidade contra o teto, fôlego, pressão e ritmo sem pausar nada.
-- [ ] **Dado** uma égua com Stamina baixa numa pista longa, **quando** ela passa do
+- [x] **Dado** uma égua com Stamina baixa numa pista longa, **quando** ela passa do
       primeiro terço, **então** o HUD mostra "forçando" **antes** de ela ficar cansada.
-- [ ] **Dado** um turno em que ela entra numa curva, **quando** o turno aparece no HUD,
+- [x] **Dado** um turno em que ela entra numa curva, **quando** o turno aparece no HUD,
       **então** ele mostra quanto de velocidade a curva tirou; nos turnos seguintes mostra
       a reaceleração até voltar ao teto.
-- [ ] **Dado** a égua cansada, **quando** o jogador olha o HUD, **então** o alerta
+- [x] **Dado** a égua cansada, **quando** o jogador olha o HUD, **então** o alerta
       principal é o cansaço, com o teto pela metade visível.
-- [ ] **Dado** o playback em 4x, **quando** a corrida roda, **então** os números continuam
+- [x] **Dado** o playback em 4x, **quando** a corrida roda, **então** os números continuam
       legíveis e não piscam entre estados dentro de um turno.
-- [ ] **Dado** o botão de esconder, **quando** o jogador o usa, **então** a corrida segue
+- [x] **Dado** o botão de esconder, **quando** o jogador o usa, **então** a corrida segue
       normalmente e a escolha vale até o fim da prova.
-- [ ] **Dado** um celular (375px), **quando** a corrida roda, **então** o HUD continua
+- [x] **Dado** um celular (375px), **quando** a corrida roda, **então** o HUD continua
       legível (pode reduzir para os três indicadores principais: velocidade, fôlego, ritmo).
 
 ## 7. Como verificar
@@ -155,8 +157,8 @@ Cenários de teste, todos alcançáveis com as éguas do seed:
   todas as raias a cada frame).
 
 ## 8. Impacto em documentação
-- [ ] `README.md` — mencionar o HUD na descrição da corrida
-- [ ] `docs/race-system-design.md` — referenciar a seção de telemetria da task `12`
+- [x] `README.md` — mencionar o HUD na descrição da corrida
+- [x] `docs/race-system-design.md` — referenciar a seção de telemetria da task `12`
 - [x] `docs/guia-do-jogador.md` — seção "Lendo o HUD da corrida"
 - [x] `docs/tasks/README.md`
 
@@ -170,11 +172,11 @@ Cenários de teste, todos alcançáveis com as éguas do seed:
 | Qual desses indicadores realmente ajuda? | médio | Começar pelos três principais (velocidade, fôlego, ritmo) e só então avaliar pressão e linha do turno |
 
 ## 10. Definition of Done
-- [ ] Critérios de aceite (seção 6) todos marcados
-- [ ] `npm run build --prefix frontend` passa
-- [ ] Sem `console.log` deixado para trás
-- [ ] Documentação da seção 8 atualizada
-- [ ] Commit e push em `feat/race-telemetry-hud`; tabela de status atualizada
+- [x] Critérios de aceite (seção 6) todos marcados
+- [x] `npm run build --prefix frontend` passa
+- [x] Sem `console.log` deixado para trás
+- [x] Documentação da seção 8 atualizada
+- [x] Commit e push em `feat/race-telemetry-hud`; tabela de status atualizada
 
 ---
 
@@ -184,3 +186,42 @@ Cenários de teste, todos alcançáveis com as éguas do seed:
 |---|---|
 | 2026-09-23 | Task escrita para o motor por ticks. |
 | 2026-09-26 | Reescrita para o motor por turnos da task `14`: saem os indicadores de subida e de estilo e a interpolação da telemetria; entram teto, aceleração, perda na curva, pressão, cansaço e a linha do turno. |
+| 2026-09-27 | Implementada. Base: `feat/race-ui-redesign` com `main` mergeada (passo 1) e `feat/race-telemetry-engine` mergeada por cima. Notas abaixo. |
+
+**Como foi verificado.** O backend local aponta para o banco real e uma corrida gasta
+energia e turnos do save, então a tela foi conferida com um mock temporário da API
+(`GET /track` e `POST /race/run` servindo `simulateRace` de verdade, com rivais do
+`generateRivals`), já apagado. Os quatro cenários da seção 7 foram rodados; o texto do HUD
+foi amostrado a cada 20–50ms durante o playback:
+
+| Cenário | Resultado |
+|---|---|
+| Ritmo forçado (Tokyo, 70% da Stamina) | "forçando" desde o turno 1; "cansada" no 19, alerta trocado, barra de velocidade com o teto caindo de 116 para 58 |
+| Curvas (Kyoto) | Turno 14 "perdeu 17 na curva" (tom de curva) → 15 "acelerando (+16)" → 16 "(+1)" → 17 "no teto" |
+| Velocista (Silence Suzuka em Sapporo) | No teto no turno 7, "forçando" desde a largada, cansada no 16, segue em 1º |
+| Corrida limpa (Hakodate, bem treinada) | Todos os cartões apagados; só a pressão ×1,25 em tom normal |
+
+- 4x e 2x: 700 amostras, **um único estado por turno** — nada pisca dentro de um turno.
+- 375px: só velocidade, fôlego e ritmo; `scrollWidth === clientWidth`.
+- Esconder HUD: cartões e alerta somem, a corrida segue, o botão vira "Mostrar HUD"
+  (`aria-expanded`), e a escolha fica até o resultado.
+- Console sem erros; `npm run build --prefix frontend` e `eslint` limpos.
+
+**Decisões.**
+- O cartão de Fôlego mostra o tanque (%) e a barra de **alcance contra a pista que falta**;
+  o veredito concreto ("seca ~575 m antes da linha") fica no cartão de Ritmo. Numa primeira
+  versão o valor e a barra mediam coisas diferentes no mesmo cartão.
+- Em `rushed`, só o cartão de Ritmo e o alerta ficam vermelhos; o de Fôlego só avermelha
+  quando zera. Três blocos vermelhos para um problema só quebravam a regra da frase única.
+- `tight` com alguns metros negativos lê "chega na linha no limite", não "seca": está
+  dentro da margem da projeção.
+- As referências do HUD (teto antes de cansar e fôlego na largada) saem da própria
+  telemetria (`max(ceiling)` e `stamina + staminaCost` do turno 1), sem recalcular nada a
+  partir dos atributos.
+- A escolha de esconder é estado do `RaceRunner`, não `localStorage`: a task pede que valha
+  até o fim da prova.
+
+**Fora do escopo, encontrado no caminho.** A pílula da corredora que cruza a linha
+(`left: 100%`) alargava a página: o `clip-path` da pista esconde, mas não corta o overflow.
+Corrigido com `overflow: hidden` em `.RaceRunner__course` (layout da task `11`). O README
+ainda descrevia a corrida "em ticks de 0,1s"; atualizado junto com a menção ao HUD.

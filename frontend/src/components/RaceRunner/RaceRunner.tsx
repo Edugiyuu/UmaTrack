@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import confetti from "canvas-confetti";
 import TrackProfile from "../TrackProfile/TrackProfile";
@@ -6,6 +6,7 @@ import Button from "../ui/Button/Button";
 import Panel from "../ui/Panel/Panel";
 import Pill from "../ui/Pill/Pill";
 import RaceHeader from "./RaceHeader";
+import RaceHud from "./RaceHud";
 import RaceLane from "./RaceLane";
 import RaceResults from "./RaceResults";
 import { useRacePlayback } from "./useRacePlayback";
@@ -33,6 +34,9 @@ const RaceRunner = () => {
   const [error, setError] = useState<string | null>(null);
   const [speed, setSpeed] = useState<number>(1);
   const [showResults, setShowResults] = useState(false);
+  /** The player's call; it holds until the race ends. */
+  const [hudHidden, setHudHidden] = useState(false);
+  const toggleHud = useCallback(() => setHudHidden((hidden) => !hidden), []);
 
   const style = (searchParams.get("style") ?? "pace") as RunningStyle;
 
@@ -69,6 +73,19 @@ const RaceRunner = () => {
     () => simulation?.runners.findIndex((runner) => runner.isPlayer) ?? -1,
     [simulation]
   );
+
+  /**
+   * The references the HUD measures against, read once from the telemetry: her ceiling
+   * before tiring, and the stamina she left the gates with (turn 1's leftover plus its cost).
+   */
+  const hudScale = useMemo(() => {
+    const turns = simulation?.telemetry ?? [];
+    if (!turns.length) return null;
+    return {
+      topCeiling: Math.max(...turns.map((turn) => turn.ceiling)),
+      maxStamina: turns[0].stamina + turns[0].staminaCost
+    };
+  }, [simulation]);
 
   /** Placement by lane, so a lane does not have to search the standings itself. */
   const placements = useMemo(() => {
@@ -171,10 +188,15 @@ const RaceRunner = () => {
         </div>
       </section>
 
-      {/*
-        The telemetry HUD mounts here, in `.RaceRunner__telemetry` (task 13). The grid
-        row already exists, so adding it will not move anything else around.
-      */}
+      {playback.telemetry && hudScale && (
+        <RaceHud
+          telemetry={playback.telemetry}
+          topCeiling={hudScale.topCeiling}
+          maxStamina={hudScale.maxStamina}
+          hidden={hudHidden}
+          onToggle={toggleHud}
+        />
+      )}
 
       <section className="RaceRunner__panels">
         <Panel

@@ -154,6 +154,8 @@
   background-position: center;
   /* The hero's cut, so the track reads as the same kind of block. */
   clip-path: var(--clip-hero);
+  /* clip-path hides a runner's pill past the finish but still lets it widen the page. */
+  overflow: hidden;
 }
 
 /* The art stays as atmosphere; the runners have to win every contrast fight with it. */

@@ -49,6 +49,7 @@
 .Meter__track--speed { --meter-color: var(--speed); }
 .Meter__track--power { --meter-color: var(--power); }
 .Meter__track--wit { --meter-color: var(--wit); }
+.Meter__track--curve { --meter-color: var(--curve); }
 .Meter__track--danger { --meter-color: var(--danger); }
 
 .Meter__fill {
@@ -58,4 +59,14 @@
   /* The race drives this every frame, so the transition only smooths the gap
      between replay frames — anything longer would lag behind the runners. */
   transition: width var(--duration-fast) linear;
+}
+
+/* A reference line across the bar: what the value is being measured against. */
+.Meter__marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+  background-color: var(--text);
 }

@@ -137,6 +137,10 @@ Com isso, quem está exatamente nos `requirements` lê `tight` e quem vai secar 
 vários turnos antes de ficar cansada. As curvas baixam a velocidade e o gasto, então a
 projeção erra para o lado conservador.
 
+O jogador vê essa telemetria no HUD da corrida (`frontend/src/components/RaceRunner/RaceHud.tsx`,
+[task 13](./tasks/13-race-telemetry-hud.md)); a leitura de cada cartão está no
+[guia do jogador](./guia-do-jogador.md#lendo-o-hud-da-corrida).
+
 ## 5. Skills e skill points
 
 - Treinar gera **skill points (SP)** além dos pontos de atributo.

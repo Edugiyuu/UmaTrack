@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { RaceSimulation, SkillActivation } from "../../types/race";
+import type { RaceSimulation, RunnerTelemetry, SkillActivation } from "../../types/race";
 
 export interface RacePlaybackState {
   /** Race time currently being shown, in turns. */
@@ -13,6 +13,12 @@ export interface RacePlaybackState {
   finished: boolean;
   /** Skill activations that have already happened at `time`. */
   activations: SkillActivation[];
+  /**
+   * The player's telemetry for the turn being played, or her last turn once she has
+   * crossed the line. Turn-level on purpose: the engine decides once per turn, so this
+   * only changes identity when the turn does, and the HUD can memoise on it.
+   */
+  telemetry: RunnerTelemetry | null;
 }
 
 const EMPTY: number[] = [];
@@ -61,7 +67,15 @@ export const useRacePlayback = (
 
   return useMemo<RacePlaybackState>(() => {
     if (!simulation || !simulation.frames.length) {
-      return { time: 0, positions: EMPTY, stamina: EMPTY, order: EMPTY, finished: false, activations: [] };
+      return {
+        time: 0,
+        positions: EMPTY,
+        stamina: EMPTY,
+        order: EMPTY,
+        finished: false,
+        activations: [],
+        telemetry: null
+      };
     }
 
     const { frames } = simulation;
@@ -85,13 +99,19 @@ export const useRacePlayback = (
       .sort((a, b) => b.position - a.position)
       .map((entry) => entry.lane);
 
+    // Items are numbered from 1 in order, so the turn is also the index.
+    const turns = simulation.telemetry ?? [];
+    const turn = Math.max(1, Math.ceil(time));
+    const telemetry = turns.length ? turns[Math.min(turn, turns.length) - 1] : null;
+
     return {
       time,
       positions,
       stamina,
       order,
       finished: time >= duration,
-      activations: simulation.activations.filter((activation) => activation.time <= time)
+      activations: simulation.activations.filter((activation) => activation.time <= time),
+      telemetry
     };
   }, [simulation, time, duration]);
 };

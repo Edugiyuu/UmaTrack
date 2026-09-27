@@ -272,6 +272,42 @@ Isso é importante: elas **não** escalam com o seu nível, então treinar melho
 sua colocação de verdade. Cada uma puxa para um atributo diferente e pode vir
 com algumas skills, conforme a dificuldade da pista.
 
+### Lendo o HUD da corrida
+
+Abaixo da pista, o HUD mostra o que o motor decidiu para a **sua** égua no turno
+que está passando. Ele muda uma vez por turno, nunca no meio de um. A primeira
+linha resume o turno:
+
+```
+Turno 7 · 3º · 116 m/turno · −8,1 de fôlego · entrou na curva
+```
+
+Os cartões ficam **apagados enquanto está tudo normal** e só ganham cor quando
+algo pede atenção. Um HUD todo apagado quer dizer uma corrida limpa.
+
+| Cartão | O que mostra | Quando acende |
+|---|---|---|
+| **Velocidade** | m/turno contra o teto (o Speed), e o estado: *largada*, *acelerando (+16)*, *no teto*, *perdeu 20 na curva*, *cansada* | Amarelo no turno em que ela entra numa curva; vermelho quando cansa (a barra mostra o teto caindo pela metade) |
+| **Fôlego** | Quanto sobra do tanque, o gasto do turno e o **alcance**: quantos metros o fôlego ainda aguenta contra os metros que faltam | Vermelho quando zera |
+| **Ritmo** | *com sobra*, *no limite* ou *forçando*, e por quanto | Verde em *no limite*, que é o ideal; vermelho em *forçando* |
+| **Pressão** | ×1, ×1,25 ou ×1,5: o multiplicador do gasto no terço atual | Nunca acende; explica por que o gasto sobe no fim |
+| **Skills ativas** | Os efeitos ligados neste turno | Quando há algum |
+
+**O aviso mais importante é o *forçando*.** O alcance projeta o fôlego até a
+linha na velocidade atual, cobrando cada terço com a pressão dele. Se não chega,
+o HUD avisa **vários turnos antes** de ela cansar, para dar tempo de entender por
+quê: é Stamina curta para a distância nessa velocidade. Mais Stamina resolve, e
+Wit também ajuda, porque baixa o gasto de cada turno.
+
+- **Com sobra:** o alcance passa da linha com folga de 15% ou mais. Ela poderia
+  correr uma pista mais longa com esses atributos.
+- **No limite:** chega na linha com o tanque perto do fim. É o ponto certo.
+- **Forçando:** vai secar antes da linha e terminar com o teto pela metade.
+
+Só um aviso em texto aparece por vez: *cansada* passa na frente de *forçando*.
+Quem só quer assistir pode clicar em **Esconder HUD**; a escolha vale até o fim
+da prova. No celular, o HUD mostra só velocidade, fôlego e ritmo.
+
 ---
 
 ## 9. Prêmios
