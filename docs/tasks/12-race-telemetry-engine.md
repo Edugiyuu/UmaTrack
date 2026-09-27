@@ -4,8 +4,8 @@
 |---|---|
 | **ID** | `12` |
 | **Branch** | `feat/race-telemetry-engine` |
-| **Base** | `feat/race-turn-engine` (ou `main`, depois que a `14` entrar) |
-| **Status** | 🔲 Não iniciada |
+| **Base** | `main` (com a `14` já mergeada) |
+| **Status** | 🔍 Em revisão |
 | **Tamanho** | P |
 | **Depende de** | `14` |
 | **Bloqueia** | `13` |
@@ -37,13 +37,13 @@ nada o resultado da simulação.
 ## 3. Escopo
 
 ### Dentro do escopo
-- [ ] Tipos `RunnerTelemetry` e `PaceVerdict` em `backend/src/types/race.ts`.
-- [ ] Campo `telemetry: RunnerTelemetry[]` em `RaceSimulation`, **um item por turno**, só
+- [x] Tipos `RunnerTelemetry` e `PaceVerdict` em `backend/src/types/race.ts`.
+- [x] Campo `telemetry: RunnerTelemetry[]` em `RaceSimulation`, **um item por turno**, só
       da corredora do jogador (vazio se não houver jogador na prova).
-- [ ] Coleta dos valores já calculados no laço do motor, sem recalcular nada.
-- [ ] Veredito de ritmo (`safe` / `tight` / `rushed`) derivado do alcance de fôlego.
-- [ ] Espelhar os tipos em `frontend/src/types/race.ts` (o frontend tem cópia própria).
-- [ ] Estender `backend/src/scripts/raceEngineCheck.ts` para provar que o resultado não
+- [x] Coleta dos valores já calculados no laço do motor, sem recalcular nada.
+- [x] Veredito de ritmo (`safe` / `tight` / `rushed`) derivado do alcance de fôlego.
+- [x] Espelhar os tipos em `frontend/src/types/race.ts` (o frontend tem cópia própria).
+- [x] Estender `backend/src/scripts/raceEngineCheck.ts` para provar que o resultado não
       mudou e que a telemetria fecha com o replay.
 
 ### Fora do escopo
@@ -83,9 +83,13 @@ Comparado com o que falta de pista, isso responde a pergunta que o jogador realm
 | caso contrário | `rushed` | Vai secar antes da linha |
 
 Como a pressão sobe nos terços seguintes (×1,25 e ×1,5), a projeção com o gasto atual é
-otimista no começo. Para o aviso chegar a tempo, o alcance usa a **pressão do último
-terço** (×1,5) na projeção, não a do turno atual. Isso deixa o veredito conservador, que é
-o lado certo para um aviso.
+otimista no começo. Para o aviso chegar a tempo, o alcance paga **cada terço restante com
+a pressão dele**, e projeta na velocidade em que ela vai correr (o teto, enquanto ainda
+acelera), não na do turno atual.
+
+> A primeira versão projetava tudo com a pressão do último terço (×1,5). Medido com as
+> éguas dos `requirements`, isso dava `rushed` para quem chega com sobra em Tokyo — o
+> risco previsto na seção 9. A projeção por terço resolveu sem perder o aviso antecipado.
 
 Quando ela já está cansada, o veredito é sempre `rushed` e `staminaRange` é 0.
 
@@ -140,6 +144,7 @@ export interface RaceSimulation {
 | Arquivo | Ação | O que muda |
 |---|---|---|
 | `backend/src/types/race.ts` | editar | `RunnerTelemetry`, `PaceVerdict`, campo em `RaceSimulation` |
+| `docs/race-system-design.md` | editar | Seção 4.7 Telemetria |
 | `backend/src/services/raceEngine.ts` | editar | Captura os valores do turno da jogadora |
 | `backend/src/scripts/raceEngineCheck.ts` | editar | Determinismo com e sem telemetria; telemetria fecha com o replay |
 | `frontend/src/types/race.ts` | editar | Espelha os tipos novos |
@@ -155,27 +160,27 @@ export interface RaceSimulation {
   resposta de `POST /races`.
 
 ## 5. Plano de execução
-1. [ ] Declarar os tipos no backend.
-2. [ ] Capturar os valores do turno da jogadora no laço do motor.
-3. [ ] Calcular alcance de fôlego e veredito de ritmo.
-4. [ ] Espelhar os tipos no frontend.
-5. [ ] Estender o script de verificação e rodar antes/depois para provar determinismo.
-6. [ ] Atualizar `docs/race-system-design.md` com a seção de telemetria.
+1. [x] Declarar os tipos no backend.
+2. [x] Capturar os valores do turno da jogadora no laço do motor.
+3. [x] Calcular alcance de fôlego e veredito de ritmo.
+4. [x] Espelhar os tipos no frontend.
+5. [x] Estender o script de verificação e rodar antes/depois para provar determinismo.
+6. [x] Atualizar `docs/race-system-design.md` com a seção de telemetria.
 
 ## 6. Critérios de aceite
-- [ ] **Dado** a mesma seed, **quando** a corrida roda antes e depois da task, **então**
+- [x] **Dado** a mesma seed, **quando** a corrida roda antes e depois da task, **então**
       colocações, tempos, frames e fôlego final são idênticos.
-- [ ] **Dado** uma prova com jogador, **quando** ela termina no turno N, **então**
+- [x] **Dado** uma prova com jogador, **quando** ela termina no turno N, **então**
       `telemetry` tem N itens, com `turn` de 1 a N e todos os campos numéricos (sem `NaN`,
       sem `Infinity`).
-- [ ] **Dado** um turno em que ela entra numa curva, **quando** se lê a telemetria, **então**
+- [x] **Dado** um turno em que ela entra numa curva, **quando** se lê a telemetria, **então**
       `curveLoss > 0` e a `speed` do turno seguinte é a anterior ÷ 1,2 mais a aceleração.
-- [ ] **Dado** a soma de `staminaCost` de todos os turnos, **quando** comparada com
+- [x] **Dado** a soma de `staminaCost` de todos os turnos, **quando** comparada com
       `Stamina − fôlego final`, **então** as duas batem (fora skills de recuperação).
-- [ ] **Dado** uma égua com 30% a menos de Stamina que o requisito de Tokyo, **quando** ela
+- [x] **Dado** uma égua com 30% a menos de Stamina que o requisito de Tokyo, **quando** ela
       passa do primeiro terço, **então** aparece `pace: "rushed"` **antes** de `tired` virar
       `true` — o aviso vem antes do estrago, não junto.
-- [ ] **Dado** o payload da resposta, **quando** se compara com o de antes, **então** ele
+- [x] **Dado** o payload da resposta, **quando** se compara com o de antes, **então** ele
       cresce menos de 30% (uma corredora, ~25 turnos).
 
 ## 7. Como verificar
@@ -201,15 +206,15 @@ npm run race:check --prefix backend
 | Risco / dúvida | Impacto | Mitigação / quem decide |
 |---|---|---|
 | Captura mal posicionada no laço altera a simulação | alto | Só ler variáveis já calculadas, sem `rng()`; provar com o script de determinismo |
-| Projeção de alcance com ×1,5 é pessimista demais no começo e mostra `rushed` para quem vai chegar | médio | Medir com as éguas do seed; se incomodar, projetar com a pressão de cada terço restante |
+| Projeção de alcance com ×1,5 é pessimista demais no começo e mostra `rushed` para quem vai chegar | médio | **Aconteceu** (Tokyo nos requisitos lia `rushed`); resolvido projetando com a pressão de cada terço restante |
 | Estilos e inclinação voltarem ao motor | baixo | Campos novos e opcionais em `RunnerTelemetry`, sem quebrar o contrato |
 
 ## 10. Definition of Done
-- [ ] Critérios de aceite (seção 6) todos marcados
-- [ ] `npx tsc --noEmit` passa no backend (não existe script `build` lá)
-- [ ] Script de verificação rodado e resultado colado no registro de execução
-- [ ] Documentação da seção 8 atualizada
-- [ ] Commit e push em `feat/race-telemetry-engine`; tabela de status atualizada
+- [x] Critérios de aceite (seção 6) todos marcados
+- [x] `npx tsc --noEmit` passa no backend (não existe script `build` lá)
+- [x] Script de verificação rodado e resultado colado no registro de execução
+- [x] Documentação da seção 8 atualizada
+- [x] Commit e push em `feat/race-telemetry-engine`; tabela de status atualizada
 
 ---
 
@@ -219,3 +224,29 @@ npm run race:check --prefix backend
 |---|---|
 | 2026-09-23 | Task escrita para o motor por ticks. |
 | 2026-09-26 | Reescrita para o motor por turnos da task `14`: telemetria por turno em vez de por frame, sem velocidade-alvo, inclinação nem estilo; entram aceleração, perda na curva, pressão e cansaço. Tamanho caiu de M para P. |
+| 2026-09-27 | Implementada. Determinismo: 90 corridas (6 pistas × 15 seeds, campo cheio, com skills) dumpadas antes e depois da mudança deram JSON byte a byte idêntico. `accel` fica negativa no turno em que o cansaço corta o teto, para `speed = anterior − curveLoss + accel` valer sempre. Projeção de alcance trocada para pressão por terço (ver seção 4). |
+
+Saída de `npm run race:check` (trecho da telemetria):
+
+```
+PASS  recording telemetry does not change the race
+PASS  a race without a player has no telemetry
+PASS  one telemetry item per turn, numbered from 1, all numbers finite — 25 items for 25 turns
+PASS  telemetry grows a full-field payload by less than 30% — +20.0% (32214 → 38663 bytes)
+PASS  the stamina spent turn by turn adds up to what left the bar — 144.2 spent x 144.0 dropped
+PASS  a corner shows as speed lost, and the next turn starts from what is left — turn 4 −16 · turn 7 −20 · turn 9 −20
+PASS  30% short of Stamina reads rushed after the first third, before she tires — rushed on turn 1, tired on turn 20
+PASS  Sapporo Sprint: rushed only for runners who tire, and 3+ turns before they do
+PASS  Niigata Mile: rushed only for runners who tire, and 3+ turns before they do
+PASS  Hakodate Rolling: rushed only for runners who tire, and 3+ turns before they do
+PASS  Kyoto Downhill: rushed only for runners who tire, and 3+ turns before they do
+PASS  Tokyo Classic: rushed only for runners who tire, and 3+ turns before they do
+PASS  Kokura Mountain Climb: rushed only for runners who tire, and 3+ turns before they do
+
+All race engine checks passed.
+```
+
+Tokyo, égua nos requisitos (turno · velocidade · fôlego · alcance · restante · ritmo):
+`1 · 57,5 · 148,5 · 2445 · 2400 · tight` … `17 · 110 · 54,4 · 852 · 741 · tight` →
+`18 · 110 · 46,4 · 742 · 630 · safe`. Com 30% menos Stamina: `rushed` do turno 1 ao 19,
+cansada no 20.

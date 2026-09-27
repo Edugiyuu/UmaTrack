@@ -1,18 +1,19 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import TrackProfile from "../TrackProfile/TrackProfile";
+import confetti from "canvas-confetti";
+import Button from "../ui/Button/Button";
+import RaceCam from "./RaceCam";
+import RaceHeader from "./RaceHeader";
+import RaceHud from "./RaceHud";
+import RaceOval from "./RaceOval";
+import RaceResults from "./RaceResults";
+import RaceStandings from "./RaceStandings";
+import TrackStrip from "./TrackStrip";
+import { ordinal } from "./format";
 import { useRacePlayback } from "./useRacePlayback";
 import { getTracks, runRace, type RunRaceResponse } from "../../services/Race";
 import { horseColors } from "../../constants/horseColors";
-import {
-  RUNNING_STYLE_LABEL,
-  SURFACE_LABEL,
-  TERRAIN_LABEL,
-  trackImage
-} from "../../constants/trackVisuals";
 import type { RunningStyle, TrackResponse } from "../../types/race";
-import { formatTurns } from "../../utils/raceTime";
-import confetti from "canvas-confetti";
 import "./RaceRunner.css";
 
 const RIVAL_COLORS = [
@@ -21,13 +22,7 @@ const RIVAL_COLORS = [
   "#00838f", "#9e9d24", "#ad1457"
 ];
 
-const PLAYBACK_SPEEDS = [1, 2, 4];
-
-/** The replay clock runs in turns; show the one being played. */
-const formatClock = (time: number, lastTurn: number) =>
-  `Turno ${Math.min(lastTurn, Math.max(1, Math.ceil(time)))}`;
-
-const ordinal = (placement: number) => `${placement}º`;
+const PLAYBACK_SPEEDS = [1, 2, 4] as const;
 
 const RaceRunner = () => {
   const { horseId, trackSlug } = useParams();
@@ -37,8 +32,12 @@ const RaceRunner = () => {
   const [track, setTrack] = useState<TrackResponse | null>(null);
   const [race, setRace] = useState<RunRaceResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [speed, setSpeed] = useState(1);
+  const [speed, setSpeed] = useState<number>(1);
   const [showResults, setShowResults] = useState(false);
+  const [paused, setPaused] = useState(false);
+  /** The player's call; it holds until the race ends. */
+  const [hudHidden, setHudHidden] = useState(false);
+  const toggleHud = useCallback(() => setHudHidden((hidden) => !hidden), []);
 
   const style = (searchParams.get("style") ?? "pace") as RunningStyle;
 
@@ -69,12 +68,74 @@ const RaceRunner = () => {
   }, [horseId, trackSlug, style]);
 
   const simulation = race?.simulation ?? null;
-  const playback = useRacePlayback(simulation, { speed, playing: !showResults });
+  const playback = useRacePlayback(simulation, { speed, playing: !showResults && !paused });
+
+  // The step handlers read the time through a ref, so they (and the keyboard listener
+  // below) stay stable instead of being rebuilt on every animation frame.
+  const timeRef = useRef(0);
+  timeRef.current = playback.time;
+  const { seek } = playback;
+
+  const togglePause = useCallback(() => setPaused((current) => !current), []);
+  /**
+   * Moves to the end of the turn after (or before) the one on the clock, where the HUD
+   * shows everything that turn decided. The ref moves with it, so several presses
+   * between two renders still count as several turns.
+   */
+  const stepTo = useCallback(
+    (direction: 1 | -1) => {
+      setPaused(true);
+      const turn = timeRef.current < 1e-6 ? 0 : Math.ceil(timeRef.current - 1e-6);
+      timeRef.current = seek(turn + direction);
+    },
+    [seek]
+  );
+  const stepForward = useCallback(() => stepTo(1), [stepTo]);
+  const stepBack = useCallback(() => stepTo(-1), [stepTo]);
+
+  useEffect(() => {
+    if (!simulation || showResults) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey || event.altKey || event.metaKey) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("input, textarea, select, [contenteditable='true']")) return;
+
+      if (event.key === " ") {
+        // A focused button already answers Space with a click of its own.
+        if (target?.closest("button")) return;
+        event.preventDefault();
+        togglePause();
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        stepForward();
+      } else if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        stepBack();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [simulation, showResults, togglePause, stepForward, stepBack]);
 
   const playerLane = useMemo(
     () => simulation?.runners.findIndex((runner) => runner.isPlayer) ?? -1,
     [simulation]
   );
+
+  /**
+   * The references the HUD measures against, read once from the telemetry: her ceiling
+   * before tiring, and the stamina she left the gates with (turn 1's leftover plus its cost).
+   */
+  const hudScale = useMemo(() => {
+    const turns = simulation?.telemetry ?? [];
+    if (!turns.length) return null;
+    return {
+      topCeiling: Math.max(...turns.map((turn) => turn.ceiling)),
+      maxStamina: turns[0].stamina + turns[0].staminaCost
+    };
+  }, [simulation]);
 
   useEffect(() => {
     if (!playback.finished || !race || showResults) return;
@@ -95,184 +156,176 @@ const RaceRunner = () => {
     return track.segments.at(-1) ?? null;
   }, [track, playback.positions, playerLane]);
 
-  const latestActivations = playback.activations.slice(-4).reverse();
-
   if (error) {
     return (
-      <div className="RaceRunner__state">
-        <p role="alert">{error}</p>
-        <button type="button" onClick={() => navigate(`/Race/${horseId}`)}>Voltar às pistas</button>
+      <div className="RaceRunner RaceRunner--state">
+        <div className="RaceRunner__state-card">
+          <h1 className="RaceRunner__state-title">A corrida não aconteceu</h1>
+          <p role="alert">{error}</p>
+          <Button variant="primary" onClick={() => navigate(`/Race/${horseId}`)}>
+            Voltar às pistas
+          </Button>
+        </div>
       </div>
     );
   }
 
   if (!race || !simulation || !track) {
-    return <div className="RaceRunner__state"><p>Preparando os portões...</p></div>;
+    return (
+      <div className="RaceRunner RaceRunner--state">
+        <div className="RaceRunner__state-card">
+          <h1 className="RaceRunner__state-title">Preparando os portões</h1>
+          <div className="RaceRunner__gates" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
+          <p aria-live="polite">Montando o páreo e aquecendo as corredoras...</p>
+        </div>
+      </div>
+    );
   }
 
   const playerResult = simulation.results.find((result) => result.isPlayer)!;
-  const playerProgress = playerLane >= 0 ? (playback.positions[playerLane] ?? 0) / simulation.distance : 0;
+  const playerCovered = playerLane >= 0 ? (playback.positions[playerLane] ?? 0) : 0;
+  const playerProgress = playerCovered / simulation.distance;
+  const playerPlacement = playback.order.indexOf(playerLane) + 1;
+  const latestActivations = playback.activations.slice(-4).reverse();
+
+  const colorOf = (lane: number) => {
+    const runner = simulation.runners[lane];
+    return runner.isPlayer
+      ? horseColors[runner.name] ?? "var(--brand-turf)"
+      : RIVAL_COLORS[lane % RIVAL_COLORS.length];
+  };
+
+  const standings = playback.order.map((lane) => ({
+    ...simulation.runners[lane],
+    color: colorOf(lane),
+    position: playback.positions[lane] ?? 0
+  }));
+  const leader = standings[0];
+  const player = playerLane >= 0 ? simulation.runners[playerLane] : null;
+  const leaderLead = standings.length > 1 ? leader.position - standings[1].position : 0;
+  const playerGap = leader ? leader.position - playerCovered : 0;
 
   return (
     <div className="RaceRunner">
-      <header className="RaceRunner__header">
-        <div>
-          <h1>{track.name}</h1>
-          <p>
-            {track.distance}m · {SURFACE_LABEL[track.surface]} · {TERRAIN_LABEL[track.terrain]} ·
-            {" "}{RUNNING_STYLE_LABEL[style]}
-          </p>
-        </div>
-        <div className="RaceRunner__clock">
-          <span>{formatClock(playback.time, Math.ceil(simulation.frames.at(-1)?.t ?? 1))}</span>
-          <div className="RaceRunner__speeds">
-            {PLAYBACK_SPEEDS.map((option) => (
-              <button
-                key={option}
-                type="button"
-                className={speed === option ? "is-active" : ""}
-                onClick={() => setSpeed(option)}
-              >
-                {option}x
-              </button>
-            ))}
-            <button type="button" onClick={() => setShowResults(true)}>Pular</button>
-          </div>
-        </div>
-      </header>
+      <RaceHeader
+        track={track}
+        style={style}
+        time={playback.time}
+        lastTurn={Math.ceil(simulation.frames.at(-1)?.t ?? 1)}
+        speed={speed}
+        speeds={PLAYBACK_SPEEDS}
+        onSpeedChange={setSpeed}
+        paused={paused}
+        onTogglePause={togglePause}
+        onStepBack={stepBack}
+        onStepForward={stepForward}
+        onSkip={() => setShowResults(true)}
+      />
 
-      <section
-        className="RaceRunner__course"
-        style={{ backgroundImage: trackImage(track.image) ? `url(${trackImage(track.image)})` : undefined }}
-      >
-        <div className="RaceRunner__lanes">
-          {simulation.runners.map((runner, lane) => {
-            const progress = (playback.positions[lane] ?? 0) / simulation.distance;
-            const color = runner.isPlayer
-              ? horseColors[runner.name] ?? "#24bb6d"
-              : RIVAL_COLORS[lane % RIVAL_COLORS.length];
-
-            return (
-              <div
-                key={runner.id}
-                className={`RaceRunner__lane${runner.isPlayer ? " RaceRunner__lane--player" : ""}`}
-              >
-                <span className="RaceRunner__lane-place">
-                  {ordinal(playback.order.indexOf(lane) + 1)}
-                </span>
-                <div className="RaceRunner__track">
-                  <div
-                    className="RaceRunner__runner"
-                    style={{ left: `${Math.min(100, progress * 100)}%`, backgroundColor: color }}
-                    title={runner.name}
-                  >
-                    <span>{runner.name}</span>
-                  </div>
-                </div>
-                {runner.isPlayer && (
-                  <progress
-                    className="RaceRunner__stamina"
-                    max={1}
-                    value={playback.stamina[lane] ?? 0}
-                    title="Fôlego"
-                  />
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="RaceRunner__panels">
-        <div className="RaceRunner__panel">
-          <h2>Perfil da pista</h2>
-          <TrackProfile
-            segments={track.segments}
-            distance={track.distance}
-            progress={playerProgress}
-            height={88}
-            showLabels
+      <div className="RaceRunner__stage">
+        <section className="RaceRunner__course" aria-label="Corrida em andamento">
+          <RaceOval
+            runners={simulation.runners.map((runner, lane) => ({
+              id: runner.id,
+              color: colorOf(lane),
+              isPlayer: runner.isPlayer,
+              progress: (playback.positions[lane] ?? 0) / simulation.distance,
+              lane
+            }))}
+            playerPlacement={playerPlacement}
+            covered={playerCovered}
+            distance={simulation.distance}
+            segmentLabel={currentSegment?.label}
           />
-          {currentSegment && (
-            <p className="RaceRunner__segment">
-              {currentSegment.label}
-              {currentSegment.grade > 0 && <strong className="is-uphill"> ▲ subida {currentSegment.grade}%</strong>}
-              {currentSegment.grade < 0 && <strong className="is-downhill"> ▼ descida {Math.abs(currentSegment.grade)}%</strong>}
-              {currentSegment.curve >= 0.4 && <strong className="is-curve"> ↩ curva</strong>}
-            </p>
-          )}
-        </div>
+        </section>
 
-        <div className="RaceRunner__panel">
-          <h2>Skills</h2>
-          {latestActivations.length === 0 ? (
-            <p className="RaceRunner__muted">Nenhuma skill ativada ainda.</p>
-          ) : (
-            <ul className="RaceRunner__activations">
-              {latestActivations.map((activation, index) => (
-                <li
-                  key={`${activation.runnerId}-${activation.skillSlug}-${index}`}
-                  className={activation.runnerId === "player" ? "is-player" : ""}
-                >
-                  <strong>{activation.skillName}</strong>
-                  <span>{activation.runnerName} · {activation.distance}m</span>
-                </li>
-              ))}
-            </ul>
+        <aside className="RaceRunner__side RaceRunner__side--left">
+          {player && (
+            <RaceCam
+              title="LIVE"
+              tone="live"
+              name={player.name}
+              caption={
+                playerPlacement === 1
+                  ? "1º · liderando"
+                  : `${ordinal(playerPlacement)} · ${Math.round(playerGap)}m do líder`
+              }
+              color={colorOf(playerLane)}
+              hasArt
+            />
           )}
-        </div>
+          <section className="RaceRunner__panel" aria-labelledby="race-standings-title">
+            <header className="RaceRunner__panel-head">
+              <h2 id="race-standings-title">Classificação</h2>
+              <span>{standings.length} corredoras</span>
+            </header>
+            <RaceStandings runners={standings} />
+          </section>
+        </aside>
+
+        <aside className="RaceRunner__side RaceRunner__side--right">
+          {leader && (
+            <RaceCam
+              title="1º LUGAR"
+              tone="leader"
+              name={leader.name}
+              caption={`${Math.round(leaderLead)}m à frente`}
+              color={leader.color}
+              hasArt={leader.isPlayer}
+            />
+          )}
+          <section className="RaceRunner__panel" aria-labelledby="race-skills-title">
+            <header className="RaceRunner__panel-head">
+              <h2 id="race-skills-title">Skills</h2>
+              <span>{playback.activations.length} no páreo</span>
+            </header>
+            {latestActivations.length === 0 ? (
+              <p className="RaceRunner__muted">Nenhuma skill ativada ainda.</p>
+            ) : (
+              <ul className="RaceRunner__activations">
+                {latestActivations.map((activation, index) => (
+                  <li
+                    key={`${activation.runnerId}-${activation.skillSlug}-${index}`}
+                    className={activation.runnerId === "player" ? "is-player" : undefined}
+                  >
+                    <strong>{activation.skillName}</strong>
+                    <span>
+                      {activation.runnerName} · {activation.distance}m
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </aside>
+      </div>
+
+      <section className="RaceRunner__hud">
+        {playback.telemetry && hudScale && (
+          <RaceHud
+            telemetry={playback.telemetry}
+            topCeiling={hudScale.topCeiling}
+            maxStamina={hudScale.maxStamina}
+            hidden={hudHidden}
+            onToggle={toggleHud}
+          />
+        )}
+        <TrackStrip segments={track.segments} progress={playerProgress} />
       </section>
 
       {showResults && (
-        <div className="RaceRunner__results-backdrop">
-          <div className="RaceRunner__results">
-            <h2>{race.rewards.placement === 1 ? "Vitória! 🏆" : `${ordinal(race.rewards.placement)} lugar`}</h2>
-            <p className="RaceRunner__results-time">
-              {formatTurns(playerResult.finishTime)} · vel. máx {playerResult.topSpeed} m/turno
-              {playerResult.exhausted && " · ficou sem fôlego"}
-            </p>
-
-            <ul className="RaceRunner__rewards">
-              <li>Prêmio <strong>+{race.rewards.prizeMoney.toLocaleString("pt-BR")}</strong></li>
-              <li>Inscrição <strong>-{race.rewards.entryFee.toLocaleString("pt-BR")}</strong></li>
-              <li>Skill points <strong>+{race.rewards.skillPointsEarned}</strong></li>
-              <li>Fãs <strong>+{race.rewards.fansEarned.toLocaleString("pt-BR")}</strong></li>
-              <li>Energia <strong>-{race.rewards.energySpent}</strong></li>
-              <li>Turnos de treino <strong>{race.rewards.turnsLeft}</strong></li>
-            </ul>
-
-            {playerResult.skillsActivated.length > 0 && (
-              <p className="RaceRunner__results-skills">
-                Skills ativadas: {playerResult.skillsActivated.join(", ")}
-              </p>
-            )}
-
-            {simulation.shortfalls.player?.length > 0 && (
-              <p className="RaceRunner__results-warning">
-                Ela correu abaixo do recomendado em{" "}
-                {simulation.shortfalls.player.map((entry) => entry.stat).join(", ")}. Treine antes de
-                voltar aqui.
-              </p>
-            )}
-
-            <ol className="RaceRunner__standings">
-              {simulation.results.slice(0, 6).map((result) => (
-                <li key={result.id} className={result.isPlayer ? "is-player" : ""}>
-                  <span>{ordinal(result.placement)}</span>
-                  <span>{result.name}</span>
-                  <span>{formatTurns(result.finishTime)}</span>
-                </li>
-              ))}
-            </ol>
-
-            <div className="RaceRunner__results-actions">
-              <button type="button" onClick={() => navigate(`/Race/${horseId}`)}>Outra pista</button>
-              <button type="button" onClick={() => navigate(`/HorseSelector/Career/${horseId}`)}>
-                Voltar ao treino
-              </button>
-            </div>
-          </div>
-        </div>
+        <RaceResults
+          rewards={race.rewards}
+          playerResult={playerResult}
+          results={simulation.results}
+          shortfalls={simulation.shortfalls.player ?? []}
+          onAnotherTrack={() => navigate(`/Race/${horseId}`)}
+          onBackToTraining={() => navigate(`/HorseSelector/Career/${horseId}`)}
+        />
       )}
     </div>
   );

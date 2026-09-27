@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import Skill from '../models/skill';
 import type { AuthenticatedRequest } from '../middleware/authMiddleware';
 import { findOwnedHorse, serializeOwnedHorse } from '../services/ownedHorse';
+import { isRetired } from '../services/career';
 
 export const getAllSkills = async (_req: Request, res: Response) => {
   try {
@@ -12,8 +13,6 @@ export const getAllSkills = async (_req: Request, res: Response) => {
     return res.status(500).json({ msg: 'Erro ao buscar skills.' });
   }
 };
-
-const STAT_KEYS = ['speed', 'stamina', 'power', 'wit'] as const;
 
 export const learnSkill = async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user?.id;
@@ -43,22 +42,14 @@ export const learnSkill = async (req: AuthenticatedRequest, res: Response) => {
 
     const { horse, ownedHorse, user } = result;
 
+    if (isRetired(ownedHorse)) {
+      return res.status(409).json({ msg: 'A carreira dela terminou.' });
+    }
     if (ownedHorse.skills.some((learned) => learned.slug === skill.slug)) {
       return res.status(409).json({ msg: 'Skill já aprendida' });
     }
 
-    const missing = STAT_KEYS.filter((stat) => ownedHorse[stat] < skill.requirements[stat]);
-    if (missing.length) {
-      return res.status(409).json({
-        msg: 'Atributos insuficientes para aprender esta skill',
-        missing: missing.map((stat) => ({
-          stat,
-          required: skill.requirements[stat],
-          current: ownedHorse[stat]
-        }))
-      });
-    }
-
+    // Skill points are the only price: no stat minimums (task 16).
     if (ownedHorse.skillPoints < skill.cost) {
       return res.status(409).json({
         msg: 'Skill points insuficientes',

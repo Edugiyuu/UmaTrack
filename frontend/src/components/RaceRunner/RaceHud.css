@@ -1,0 +1,198 @@
+/**
+ * The race HUD (task 13). Two reading rules keep it from turning into a cockpit:
+ *   1. Silence is information: a reading in its normal state is dimmed, and only
+ *      gains colour when something is off (a costly corner, a forced pace, tired).
+ *   2. One sentence at a time: a single alert line; everything else is a number,
+ *      a bar or a word.
+ * Every colour comes from src/styles/tokens.css.
+ */
+
+.RaceHud {
+  display: flex;
+  flex-direction: column;
+}
+
+.RaceHud__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.RaceHud__bar:not(:last-child) {
+  margin-bottom: var(--space-3);
+}
+
+.RaceHud__line {
+  flex-shrink: 1;
+  margin: 0;
+  min-width: 0;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- the one alert ---------------------------------------------------------- */
+
+/* The slot stays mounted, even empty, so screen readers announce the alert when it
+   appears. In the bar it takes the room the turn line leaves, as a pill (Race v2). */
+.RaceHud__alert-slot {
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.RaceHud__alert {
+  margin: 0;
+  padding: var(--space-1) var(--space-4);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-pill);
+  background-color: var(--danger-soft);
+  font-size: var(--text-sm);
+  color: var(--text);
+}
+
+.RaceHud__alert strong {
+  margin-right: var(--space-1);
+  font-family: var(--font-ui);
+  font-style: italic;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--danger);
+}
+
+/* --- readings --------------------------------------------------------------- */
+
+.RaceHud__readings {
+  display: grid;
+  grid-template-columns: 1.2fr 1.7fr 1fr 0.9fr 1fr;
+  gap: var(--space-3);
+}
+
+.RaceHud__reading {
+  --reading-color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background-color: var(--surface);
+  box-shadow: var(--hud-card-shadow);
+  transition: opacity var(--duration-base) var(--ease),
+    border-color var(--duration-base) var(--ease);
+}
+
+.RaceHud__label {
+  font-size: var(--text-xs);
+  font-style: italic;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.RaceHud__value {
+  font-family: var(--font-ui);
+  font-size: var(--text-xl);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+  color: var(--reading-color);
+}
+
+.RaceHud__detail {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+/* Fôlego is the reading the player watches most: wider, pink like the stamina bar of
+   the original sketch, and with a thicker bar. Danger still wins over it. */
+.RaceHud__reading--featured:not(.RaceHud__reading--danger) {
+  --reading-color: var(--hud-stamina-ink);
+  --meter-color: var(--hud-stamina);
+}
+
+.RaceHud__reading--featured:not(.RaceHud__reading--danger) .Meter__track {
+  --meter-color: var(--hud-stamina);
+  background-color: var(--hud-stamina-soft);
+}
+
+.RaceHud__reading--featured .Meter__track {
+  height: 14px;
+}
+
+/* Quiet is the normal state: still readable, just not asking for attention. */
+.RaceHud__reading--quiet {
+  opacity: 0.62;
+}
+
+.RaceHud__reading--accent {
+  --reading-color: var(--accent);
+  border-color: var(--accent);
+}
+
+.RaceHud__reading--curve {
+  --reading-color: var(--curve);
+  border-color: var(--curve);
+  background-color: var(--curve-soft);
+}
+
+.RaceHud__reading--danger {
+  --reading-color: var(--danger);
+  border-color: var(--danger);
+  background-color: var(--danger-soft);
+}
+
+.RaceHud__reading--curve .RaceHud__detail,
+.RaceHud__reading--danger .RaceHud__detail {
+  color: var(--reading-color);
+}
+
+/* --- narrow screens --------------------------------------------------------- */
+
+@media (max-width: 860px) {
+  .RaceHud__readings {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .RaceHud__bar {
+    flex-wrap: wrap;
+  }
+
+  .RaceHud__alert-slot {
+    order: 3;
+    flex-basis: 100%;
+    justify-content: flex-start;
+  }
+}
+
+/* On a phone only speed, stamina and pace stay; the turn line says the rest. */
+@media (max-width: 600px) {
+  .RaceHud__readings {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+  }
+
+  .RaceHud__reading--secondary {
+    display: none;
+  }
+
+  .RaceHud__reading {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .RaceHud__readings > .RaceHud__reading:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  .RaceHud__line {
+    font-size: var(--text-xs);
+    white-space: normal;
+  }
+}

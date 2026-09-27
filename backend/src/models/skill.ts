@@ -42,13 +42,6 @@ const SkillTriggerSchema = new mongoose.Schema({
   minPosition: { type: Number, required: false, min: 1 }
 }, { _id: false });
 
-const SkillRequirementSchema = new mongoose.Schema({
-  speed: { type: Number, required: true, min: 0, default: 0 },
-  stamina: { type: Number, required: true, min: 0, default: 0 },
-  power: { type: Number, required: true, min: 0, default: 0 },
-  wit: { type: Number, required: true, min: 0, default: 0 }
-}, { _id: false });
-
 const SkillSchema = new mongoose.Schema({
   slug: { type: String, required: true, trim: true, unique: true },
   name: { type: String, required: true, trim: true },
@@ -57,9 +50,7 @@ const SkillSchema = new mongoose.Schema({
   rarity: { type: String, required: true, enum: SKILL_RARITIES, default: "common" },
   cost: { type: Number, required: true, min: 1 },
   effect: { type: SkillEffectSchema, required: true },
-  trigger: { type: SkillTriggerSchema, required: true },
-  /** Stat minimums the horse girl must reach before she can learn this skill. */
-  requirements: { type: SkillRequirementSchema, required: true }
+  trigger: { type: SkillTriggerSchema, required: true }
 }, { timestamps: true });
 
 export default mongoose.model("Skill", SkillSchema);

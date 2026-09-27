@@ -125,19 +125,3 @@
   color: #333333;
 }
 
-.SkillCatalog__requirements {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin: 2px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.SkillCatalog__requirements li {
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: #f0f0f0;
-  font-size: 0.72rem;
-  color: #5d5d5d;
-}

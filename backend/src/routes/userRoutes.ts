@@ -1,5 +1,5 @@
 import { Router, Response } from 'express';
-import { create, getOwnedHorse, getUser, login, purchaseHorse, restHorse, trainHorse } from '../controllers/userController';
+import { create, getOwnedHorse, getUser, login, purchaseHorse, restHorse, startNewCareer, trainHorse } from '../controllers/userController';
 import { encryptPassword } from '../middleware/encryptPassword';
 import { authMiddleware, type AuthenticatedRequest } from '../middleware/authMiddleware';
 
@@ -15,5 +15,6 @@ router.post('/user/me/purchase-horse', authMiddleware, purchaseHorse);
 router.get('/user/me/horses/:horseId', authMiddleware, getOwnedHorse);
 router.post('/user/me/horses/:horseId/train', authMiddleware, trainHorse);
 router.post('/user/me/horses/:horseId/rest', authMiddleware, restHorse);
+router.post('/user/me/horses/:horseId/new-career', authMiddleware, startNewCareer);
 
 export default router;

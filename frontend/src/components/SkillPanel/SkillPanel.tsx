@@ -1,11 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { getSkills, learnSkill } from "../../services/Race";
-import { STAT_LABEL } from "../../constants/trackVisuals";
 import type { HorseResponseProfile } from "../../types/horse";
-import type { SkillResponse, StatName } from "../../types/race";
+import type { SkillResponse } from "../../types/race";
 import "./SkillPanel.css";
-
-const STATS: StatName[] = ["speed", "stamina", "power", "wit"];
 
 const RARITY_LABEL: Record<SkillResponse["rarity"], string> = {
   common: "Comum",
@@ -19,11 +16,12 @@ interface SkillPanelProps {
   onHorseUpdated: (horse: HorseResponseProfile) => void;
 }
 
-/** What is stopping this skill from being learned right now, if anything. */
+/**
+ * What is stopping this skill from being learned right now, if anything. Skill points
+ * are the only price: there are no stat minimums (task 16).
+ */
 const blockerFor = (skill: SkillResponse, horse: HorseResponseProfile) => {
   if (horse.skills?.some((learned) => learned.slug === skill.slug)) return "learned" as const;
-  const missing = STATS.filter((stat) => horse[stat] < skill.requirements[stat]);
-  if (missing.length) return { missing } as const;
   if ((horse.skillPoints ?? 0) < skill.cost) return "points" as const;
   return null;
 };
@@ -105,14 +103,6 @@ const SkillPanel = ({ horse, horseId, onHorseUpdated }: SkillPanelProps) => {
               </div>
               <p className="SkillPanel__description">{skill.description}</p>
 
-              <ul className="SkillPanel__requirements">
-                {STATS.filter((stat) => skill.requirements[stat] > 0).map((stat) => (
-                  <li key={stat} className={horse[stat] >= skill.requirements[stat] ? "is-met" : "is-missing"}>
-                    {STAT_LABEL[stat]} {skill.requirements[stat]}
-                  </li>
-                ))}
-              </ul>
-
               <div className="SkillPanel__card-foot">
                 <span>{skill.cost} SP</span>
                 {learned ? (
@@ -128,11 +118,9 @@ const SkillPanel = ({ horse, horseId, onHorseUpdated }: SkillPanelProps) => {
                 )}
               </div>
 
-              {blocker !== null && blocker !== "learned" && (
+              {blocker === "points" && (
                 <p className="SkillPanel__blocker">
-                  {blocker === "points"
-                    ? "Skill points insuficientes."
-                    : `Precisa de ${blocker.missing.map((stat) => STAT_LABEL[stat]).join(", ")}.`}
+                  Faltam {skill.cost - (horse.skillPoints ?? 0)} SP.
                 </p>
               )}
             </li>
@@ -141,7 +129,7 @@ const SkillPanel = ({ horse, horseId, onHorseUpdated }: SkillPanelProps) => {
       </ul>
 
       {visible.length === 0 && (
-        <p className="SkillPanel__state">Nenhuma skill disponível ainda. Treine para subir os atributos.</p>
+        <p className="SkillPanel__state">Nenhuma skill disponível ainda. Treine e corra para juntar skill points.</p>
       )}
     </section>
   );

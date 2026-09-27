@@ -7,7 +7,7 @@ Os números deste guia vêm direto do código (`backend/src/data/` e
 
 - [1. Começando](#1-começando)
 - [2. Os quatro atributos](#2-os-quatro-atributos)
-- [3. A temporada: turnos, energia e humor](#3-a-temporada-turnos-energia-e-humor)
+- [3. A carreira: turnos, energia e humor](#3-a-carreira-turnos-energia-e-humor)
 - [4. Treino](#4-treino)
 - [5. Skills e skill points](#5-skills-e-skill-points)
 - [6. As pistas](#6-as-pistas)
@@ -55,23 +55,74 @@ Comprar  ->  Treinar (gasta turnos e energia)  ->  Aprender skills com os SP
 O atributo mais alto define o **tipo** dela — e é nesse tipo que ela treina
 mais rápido (ver [afinidade](#o-que-entra-na-conta)).
 
+### Notas dos atributos
+
+Na tela de treino cada atributo ganha uma **nota**, da G à S, com uma barra do
+quanto falta para a próxima. A nota é só uma leitura rápida do número: a corrida
+usa o valor, nunca a letra. A escala segue os requisitos das pistas: Sapporo pede
+de 30 a 60, e Kokura, a mais dura, chega a 175.
+
+| Nota | G | F | E | D | C | B | A | S |
+|---|---|---|---|---|---|---|---|---|
+| A partir de | 0 | 40 | 60 | 80 | 100 | 125 | 150 | 180 |
+
+Cada botão **Treinar** mostra o custo (−20 de energia). Com energia abaixo de 25
+ele avisa *risco de falhar* (ver [Treinar sem energia é ruim](#treinar-sem-energia-é-ruim)),
+e o **Start race!** só libera com 35 de energia, dizendo quanto falta.
+
 ---
 
-## 3. A temporada: turnos, energia e humor
+## 3. A carreira: turnos, energia e humor
+
+Cada garota-cavalo tem a **sua carreira**: uma lista de provas, em ordem, com
+uma **meta** de colocação em cada uma. Antes de cada prova ela tem alguns
+**turnos** para se preparar. Quando os turnos acabam, a prova da carreira é
+**obrigatória**: nesse momento não dá para treinar nem escolher outra pista.
+
+- **Bateu a meta** (por exemplo, top 3): a carreira segue, e os turnos da
+  próxima prova já estão contando.
+- **Não bateu**: a carreira termina ali.
+- **Bateu a meta da última prova**: carreira completa.
+
+Carreira terminada, completa ou não, **aposenta** a égua. Ela fica guardada no
+seu perfil, com os atributos finais e o resultado de cada prova, e não treina
+nem corre mais. Na tela de treino dela aparece **Nova carreira**: a mesma égua
+recomeça do zero, com os atributos iniciais, e a aposentada continua no perfil.
+Você passa a ter as duas. A nova carreira não custa nada, porque ela já é sua.
+
+A prova da carreira **não cobra inscrição**. Entre uma prova e outra dá para
+correr **provas avulsas** em qualquer pista: cada uma gasta 1 turno e 35 de
+energia, cobra a inscrição normal e rende prêmio, fãs e skill points. A carreira
+não muda com elas.
 
 | Recurso | Máximo | Como gasta | Como recupera |
 |---|---|---|---|
-| **Turnos** | 5 | 1 por treino ou descanso | Terminar uma corrida devolve para 5 |
+| **Turnos** | os da próxima prova | 1 por treino, descanso ou prova avulsa | A prova da carreira entrega os turnos da seguinte |
 | **Energia** | 100 | 20 por treino, 35 por corrida | Descansar: **+45** |
 | **Humor** | ★★★★★ | Cai ao falhar um treino ou correr mal | Descansar, treinar bem ou vencer |
 
-**Turnos** limitam quanto você treina por temporada. **Energia** limita quantas
-corridas você encaixa. Correr é o que fecha a temporada e devolve os turnos.
-
 > **Descanso quando os turnos acabam**
-> Se você gastar os 5 turnos treinando, a energia zera junto (5 × 20 = 100).
-> Nessa situação o descanso continua disponível e **não cobra turno** — é a
-> válvula que impede a Uma de travar sem conseguir treinar, descansar nem correr.
+> No dia da prova o descanso continua disponível e **não cobra turno**. Se ela
+> chegou sem os 35 de energia da corrida, descanse e corra.
+
+### As carreiras
+
+Os números estão em `backend/src/data/careers.ts`. Cada linha é uma prova:
+turnos de preparo antes dela e a meta.
+
+| Égua | Provas (turnos · meta) |
+|---|---|
+| **Silence Suzuka** | Sapporo (6 · top 3) → Niigata (8 · top 3) → Hakodate (10 · top 3) → Niigata (10 · vencer) → Kyoto (14 · top 3) |
+| **Special Week** | Sapporo (6 · top 5) → Niigata (8 · top 3) → Hakodate (10 · top 3) → Kyoto (16 · top 5) → Tokyo (18 · top 3) |
+| **Oguri Cap** | Sapporo (6 · top 5) → Hakodate (10 · top 5) → Hakodate (10 · top 2) → Kyoto (14 · top 5) → Kokura (18 · top 5) |
+| **Grass Wonder** | Niigata (6 · top 5) → Hakodate (12 · top 5) → Niigata (8 · vencer) → Kyoto (14 · top 5) → Tokyo (16 · top 5) |
+| **Nice Nature** | Sapporo (6 · top 5) → Niigata (8 · top 5) → Hakodate (10 · top 3) → Kyoto (16 · top 5) → Tokyo (18 · top 5) |
+
+As primeiras provas são para aquecer; a última é o desafio de cada uma. Numa
+simulação com um jogador simples (treina o atributo mais longe do requisito,
+compra as passivas, não corre avulsas), de 13% a 52% das carreiras chegam ao
+fim. Quem planeja o treino, corre avulsas para juntar SP e escolhe as skills
+vai melhor. Para rodar a simulação: `npm run career:check --prefix backend`.
 
 ---
 
@@ -126,8 +177,9 @@ e **+1** estrela de humor.
 
 ## 5. Skills e skill points
 
-Skills são aprendidas na tela de carreira gastando SP. Cada uma exige
-atributos mínimos e só pode ser aprendida uma vez.
+Skills são aprendidas na tela de carreira gastando SP. O **único preço são os
+skill points**: não há atributo mínimo, então qualquer égua aprende qualquer skill
+assim que juntar os pontos. Cada uma só pode ser aprendida uma vez.
 
 Durante a prova elas disparam **sozinhas**, quando o gatilho acontece. A chance
 por turno é `chance base + Wit × 0,002` — 150 de Wit soma +30 pontos
@@ -135,25 +187,25 @@ percentuais em cada turno da janela elegível.
 
 ### Catálogo completo
 
-| Skill | SP | Raridade | Efeito | Dispara em | Requisitos |
-|---|---:|---|---|---|---|
-| Concentração | 60 | Comum | +7 m/turno por 1 turno | largada | Pow 40 · Wit 30 |
-| Explosão de Portão | 130 | Rara | +45% aceleração por 1 turno | largada | Spd 60 · Pow 110 · Wit 40 |
-| Arrancada Final | 90 | Comum | +5 m/turno por 1 turno | reta final | Spd 90 · Wit 50 |
-| Passo Relâmpago | 160 | Rara | +8 m/turno por 1 turno | meio da prova, em reta | Spd 130 · Pow 60 · Wit 70 |
-| Último Fôlego | 240 | **Única** | +11 m/turno por 1 turno | últimos 20% | Spd 150 · Sta 120 · Pow 90 · Wit 90 |
-| Respiração Constante | 80 | Comum | −20% de gasto de fôlego por 2 turnos | meio da prova | Sta 80 · Wit 60 |
-| Segundo Fôlego | 170 | Rara | recupera 18% do fôlego | fôlego abaixo de 30% | Sta 130 · Wit 100 |
-| Pulmões de Ferro | 110 | Comum | +25 Stamina na prova | passiva | Sta 100 |
-| Escaladora | 120 | Comum | anula 35% da perda em subida por 1 turno *(sem efeito por enquanto)* | subida | Sta 60 · Pow 110 · Wit 40 |
-| Coração de Montanha | 260 | **Única** | anula 70% da perda em subida por 2 turnos *(sem efeito por enquanto)* | subida | Spd 60 · Sta 120 · Pow 180 · Wit 60 |
-| Planagem | 95 | Comum | +6 m/turno por 1 turno | descida | Spd 70 · Wit 90 |
-| Força Bruta | 110 | Comum | +25 Power na prova | passiva | Pow 100 |
-| Especialista em Curva | 100 | Comum | +5 m/turno por 1 turno | curva | Spd 60 · Pow 70 · Wit 90 |
-| Leitura de Prova | 150 | Rara | +7 m/turno por 1 turno | reta final, do 4º para trás | Spd 80 · Sta 80 · Wit 140 |
-| Ritmista | 180 | Rara | −15% de gasto de fôlego por 4 turnos | qualquer momento | Sta 110 · Wit 130 |
-| Olhar Aguçado | 110 | Comum | +25 Wit na prova | passiva | Wit 100 |
-| Marcha de Sprint | 110 | Comum | +25 Speed na prova | passiva | Spd 100 |
+| Skill | SP | Raridade | Efeito | Dispara em |
+|---|---:|---|---|---|
+| Concentração | 60 | Comum | +7 m/turno por 1 turno | largada |
+| Explosão de Portão | 130 | Rara | +45% aceleração por 1 turno | largada |
+| Arrancada Final | 90 | Comum | +5 m/turno por 1 turno | reta final |
+| Passo Relâmpago | 160 | Rara | +8 m/turno por 1 turno | meio da prova, em reta |
+| Último Fôlego | 240 | **Única** | +11 m/turno por 1 turno | últimos 20% |
+| Respiração Constante | 80 | Comum | −20% de gasto de fôlego por 2 turnos | meio da prova |
+| Segundo Fôlego | 170 | Rara | recupera 18% do fôlego | fôlego abaixo de 30% |
+| Pulmões de Ferro | 110 | Comum | +25 Stamina na prova | passiva |
+| Escaladora | 120 | Comum | anula 35% da perda em subida por 1 turno *(sem efeito por enquanto)* | subida |
+| Coração de Montanha | 260 | **Única** | anula 70% da perda em subida por 2 turnos *(sem efeito por enquanto)* | subida |
+| Planagem | 95 | Comum | +6 m/turno por 1 turno | descida |
+| Força Bruta | 110 | Comum | +25 Power na prova | passiva |
+| Especialista em Curva | 100 | Comum | +5 m/turno por 1 turno | curva |
+| Leitura de Prova | 150 | Rara | +7 m/turno por 1 turno | reta final, do 4º para trás |
+| Ritmista | 180 | Rara | −15% de gasto de fôlego por 4 turnos | qualquer momento |
+| Olhar Aguçado | 110 | Comum | +25 Wit na prova | passiva |
+| Marcha de Sprint | 110 | Comum | +25 Speed na prova | passiva |
 
 ### Quais comprar primeiro
 
@@ -228,7 +280,11 @@ turnos trata todas do mesmo jeito. As estratégias voltam numa próxima versão.
 
 A simulação roda **no servidor**, **turno a turno**, a partir de uma semente
 aleatória. O navegador só recebe o replay pronto para animar — não dá para
-influenciar o resultado pelo cliente. No replay, cada turno dura 1 segundo em 1x.
+influenciar o resultado pelo cliente. No replay, cada turno dura 2 segundos em 1x.
+
+Dá para **pausar** a corrida e andar **turno a turno** pelos botões do topo ou
+pelo teclado: **espaço** pausa e continua, **←** e **→** voltam e avançam um
+turno (e já pausam). É o jeito de ler o HUD com calma num momento importante.
 
 ### Velocidade
 
@@ -272,6 +328,63 @@ Isso é importante: elas **não** escalam com o seu nível, então treinar melho
 sua colocação de verdade. Cada uma puxa para um atributo diferente e pode vir
 com algumas skills, conforme a dificuldade da pista.
 
+### A tela da corrida
+
+A pista aparece vista de cima, como um oval: a corrida inteira é **uma volta**,
+seja qual for a distância, com largada e chegada na reta de baixo. As corredoras
+são bolinhas; a sua é a maior, com um halo e o balão **VOCÊ** com a colocação.
+No gramado do meio ficam os metros percorridos, o total e quanto falta.
+
+- **LIVE**, à esquerda, é a câmera da sua égua; embaixo dela, a **classificação**
+  ao vivo com a diferença para a líder em metros. Com o páreo cheio aparecem as
+  cinco primeiras e a sua linha logo abaixo.
+- **1º LUGAR**, à direita, acompanha quem lidera; embaixo, as últimas **skills**
+  que dispararam (as suas em dourado). As rivais não têm arte, então a câmera
+  mostra as cores e as iniciais delas.
+- Embaixo do HUD, a **faixa da pista** mostra os trechos (retas, curvas, subidas
+  e descidas) e onde você está.
+
+### Lendo o HUD da corrida
+
+Abaixo da pista, o HUD mostra o que o motor decidiu para a **sua** égua no turno
+que está passando. Ele muda uma vez por turno, nunca no meio de um. Com a corrida
+pausada, ← e → mostram o turno anterior e o seguinte. A primeira
+linha resume o turno:
+
+```
+Turno 7 · 3º · 116 m/turno · −8,1 de fôlego · entrou na curva
+```
+
+A colocação dessa linha é a do **começo** do turno; a da pista e da
+classificação anda junto com as bolinhas, então num pelotão apertado as duas
+podem diferir por alguns lugares.
+
+Os cartões ficam **apagados enquanto está tudo normal** e só ganham cor quando
+algo pede atenção. Um HUD todo apagado quer dizer uma corrida limpa.
+
+| Cartão | O que mostra | Quando acende |
+|---|---|---|
+| **Velocidade** | m/turno contra o teto (o Speed), e o estado: *largada*, *acelerando (+16)*, *no teto*, *perdeu 20 na curva*, *cansada* | Amarelo no turno em que ela entra numa curva; vermelho quando cansa (a barra mostra o teto caindo pela metade) |
+| **Fôlego** | Quanto sobra do tanque, o gasto do turno e o **alcance**: quantos metros o fôlego ainda aguenta contra os metros que faltam | Vermelho quando zera |
+| **Ritmo** | *com sobra*, *no limite* ou *forçando*, e por quanto | Verde em *no limite*, que é o ideal; vermelho em *forçando* |
+| **Pressão** | ×1, ×1,25 ou ×1,5: o multiplicador do gasto no terço atual | Nunca acende; explica por que o gasto sobe no fim |
+| **Skills ativas** | Os efeitos ligados neste turno | Quando há algum |
+
+**O aviso mais importante é o *forçando*.** O alcance projeta o fôlego até a
+linha na velocidade atual, cobrando cada terço com a pressão dele. Se não chega,
+o HUD avisa **vários turnos antes** de ela cansar, para dar tempo de entender por
+quê: é Stamina curta para a distância nessa velocidade. Mais Stamina resolve, e
+Wit também ajuda, porque baixa o gasto de cada turno.
+
+- **Com sobra:** o alcance passa da linha com folga de 15% ou mais. Ela poderia
+  correr uma pista mais longa com esses atributos.
+- **No limite:** chega na linha com o tanque perto do fim. É o ponto certo.
+- **Forçando:** vai secar antes da linha e terminar com o teto pela metade.
+
+Só um aviso em texto aparece por vez: *cansada* passa na frente de *forçando*.
+Quem só quer assistir pode clicar em **Esconder HUD**; a escolha vale até o fim
+da prova. No celular, o HUD mostra só velocidade, fôlego e ritmo.
+
 ---
 
 ## 9. Prêmios
@@ -288,7 +401,8 @@ Correr custa **35 de energia** e a inscrição da pista. Ao terminar, você rece
 
 Além disso:
 
-- Os **turnos voltam para 5** — é o que abre a próxima temporada
+- Na **prova da carreira**, bater a meta entrega os turnos da próxima prova;
+  não bater encerra a carreira. Uma **avulsa** gasta 1 turno (ver [A carreira](#3-a-carreira-turnos-energia-e-humor))
 - Vencer sobe **+1 estrela** de humor
 - Terminar na metade de baixo do grid **desce 1 estrela**
 - A corrida entra no histórico, visível no seu perfil
@@ -302,8 +416,8 @@ paga nada abaixo do 5º — **não é um jeito sustentável de farmar.**
 
 ## 10. Roteiro de progressão
 
-1. **Sapporo Sprint primeiro.** É grátis e você provavelmente já atende os
-   requisitos. Ganhe algumas vezes para juntar dinheiro e SP.
+1. **Olhe o calendário da carreira** na tela de treino e treine para a próxima
+   prova dele. As avulsas em Sapporo (grátis) ajudam a juntar SP no começo.
 2. **Compre as passivas de 110 SP** do atributo que você quer empurrar.
 3. **Treine mirando o 10/10**, não o volume. O bônus de +8 SP por round
    perfeito é o que financia as skills.
@@ -331,9 +445,9 @@ garota-cavalo que já nasce com o perfil da pista que você quer.
 
 ## 11. Erros comuns
 
-**"Treinei 5 vezes e agora não consigo fazer nada."**
-Os 5 turnos consomem exatamente os 100 de energia. Nessa situação o descanso
-fica disponível de graça: descanse duas vezes e você volta a poder correr.
+**"Os turnos acabaram e não consigo treinar."**
+É o dia da prova da carreira: só ela pode ser corrida. Se a energia não chega
+a 35, o descanso sai de graça nesse dia; descanse e corra.
 
 **"Corri numa pista difícil e fiquei em último."**
 Olhe o aviso no card: os atributos em vermelho estão abaixo do recomendado.

@@ -1,0 +1,107 @@
+/* Retired careers on the profile (task 17). */
+
+.RetiredHorses {
+  flex-basis: 100%;
+  font-family: var(--font-body);
+}
+
+.RetiredHorses h2 {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-ui);
+  font-size: var(--text-xl);
+  font-style: italic;
+  color: var(--text);
+}
+
+.RetiredHorses__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.RetiredHorses__card {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-top: 4px solid var(--accent);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface);
+  box-shadow: var(--shadow-1);
+}
+
+.RetiredHorses__art {
+  width: 96px;
+  height: 120px;
+  object-fit: cover;
+  object-position: center 10%;
+  border-radius: var(--radius-md);
+  background-color: var(--surface-page);
+}
+
+.RetiredHorses__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  font-size: var(--text-sm);
+}
+
+.RetiredHorses__body header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.RetiredHorses__status {
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  background-color: var(--surface-sunken);
+  color: var(--text-muted);
+}
+
+.RetiredHorses__status.is-completed {
+  background-color: var(--highlight-soft);
+  color: var(--highlight);
+}
+
+.RetiredHorses__stats,
+.RetiredHorses__meta {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.RetiredHorses__races {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.RetiredHorses__races li {
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+}
+
+.RetiredHorses__races li span {
+  opacity: 0.75;
+}
+
+.RetiredHorses__races li.is-passed {
+  background-color: var(--accent-soft);
+  color: #1d7a45;
+}
+
+.RetiredHorses__races li.is-failed {
+  background-color: var(--danger-soft);
+  color: var(--danger);
+}

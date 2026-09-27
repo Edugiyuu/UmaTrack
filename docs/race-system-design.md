@@ -108,6 +108,39 @@ O motor devolve: classificação, tempo em turnos (com fração, que desempata q
 no mesmo turno), velocidade máxima, fôlego restante, `frames` do replay (4 amostras por
 turno), log de skills ativadas e os avisos de atributo abaixo do recomendado.
 
+### 4.7 Telemetria
+Além do replay, o motor devolve `telemetry`: **um item por turno**, só da corredora do
+jogador (vazio sem jogador). Cada item traz o que o motor decidiu naquele turno: fase,
+pressão, colocação, velocidade base e corrida, teto, aceleração (negativa quando o cansaço
+corta o teto), velocidade perdida ao entrar numa curva, fôlego gasto, desconto do Wit e das
+skills, fôlego restante, metros que faltam, efeitos de skill ativos e se ela está cansada.
+Tipos em `RunnerTelemetry` (`backend/src/types/race.ts`, espelhado no frontend).
+
+A telemetria é só leitura: é coletada dos valores já calculados, sem sorteio, e o
+`race:check` prova que a mesma corrida com e sem ela é idêntica. Ela vai na resposta de
+`POST /races` e não é gravada no histórico.
+
+**Alcance de fôlego e veredito de ritmo.** Com o fôlego do início do turno, o motor
+projeta quantos metros ela ainda aguenta mantendo a velocidade atual (ou o teto, enquanto
+ainda acelera), pagando cada terço restante com a pressão dele:
+```
+custo por metro = v / 1800 × pressão do terço × (1 − desconto)
+alcance         = metros até o fôlego acabar, terço a terço
+```
+| Condição | `pace` | Leitura |
+|---|---|---|
+| `alcance >= restante × 1,15` | `safe` | Sobra fôlego |
+| `alcance >= restante × 0,95` | `tight` | No limite, do jeito que tem que ser |
+| caso contrário, ou cansada | `rushed` | Vai secar antes da linha |
+
+Com isso, quem está exatamente nos `requirements` lê `tight` e quem vai secar lê `rushed`
+vários turnos antes de ficar cansada. As curvas baixam a velocidade e o gasto, então a
+projeção erra para o lado conservador.
+
+O jogador vê essa telemetria no HUD da corrida (`frontend/src/components/RaceRunner/RaceHud.tsx`,
+[task 13](./tasks/13-race-telemetry-hud.md)); a leitura de cada cartão está no
+[guia do jogador](./guia-do-jogador.md#lendo-o-hud-da-corrida).
+
 ## 5. Skills e skill points
 
 - Treinar gera **skill points (SP)** além dos pontos de atributo.
@@ -125,7 +158,8 @@ SP    = round(ganho * 0.4) + bônus de acerto perfeito
 ```
 - `energia` cai a cada treino; com energia baixa há risco de ganho reduzido.
 - Ação **Rest** gasta um turno e devolve energia + humor.
-- Turnos são reabastecidos ao terminar uma corrida (nova "temporada").
+- Turnos contam até a próxima prova da carreira; a prova da carreira entrega os turnos da
+  seguinte (ver `docs/tasks/17-horse-career.md`). Provas avulsas gastam 1 turno.
 
 ## 7. Rotas da API
 
@@ -134,9 +168,10 @@ SP    = round(ganho * 0.4) + bônus de acerto perfeito
 | GET | `/track` | catálogo de pistas |
 | GET | `/track/:id` | detalhe de uma pista |
 | GET | `/skill` | catálogo de skills |
-| GET | `/user/me/horses/:horseId` | Uma do usuário (inclui SP, energia, skills) |
+| GET | `/user/me/horses/:horseId` | Uma do usuário (inclui SP, energia, skills e a carreira) |
 | POST | `/user/me/horses/:horseId/train` | treino dinâmico |
 | POST | `/user/me/horses/:horseId/rest` | descansar |
 | POST | `/user/me/horses/:horseId/skills` | aprender skill gastando SP |
-| POST | `/race/run` | correr numa pista com uma Uma |
+| POST | `/user/me/horses/:horseId/new-career` | nova carreira com uma Uma aposentada (task 17) |
+| POST | `/race/run` | correr numa pista com uma Uma (no turno 0, só a prova da carreira) |
 | GET | `/user/me/races` | histórico de corridas |
