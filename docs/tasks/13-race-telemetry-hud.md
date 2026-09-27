@@ -5,7 +5,7 @@
 | **ID** | `13` |
 | **Branch** | `feat/race-telemetry-hud` |
 | **Base** | `feat/race-ui-redesign` (depois de atualizada com o motor por turnos) |
-| **Status** | 🔍 Em revisão |
+| **Status** | ✅ Concluída (merge em `main` em 2026-09-27) |
 | **Tamanho** | M |
 | **Depende de** | `11`, `12`, `14` |
 | **Bloqueia** | — |

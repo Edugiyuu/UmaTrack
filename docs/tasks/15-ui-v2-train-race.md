@@ -5,7 +5,7 @@
 | **ID** | `15` |
 | **Branch** | `feat/ui-v2-train-race` |
 | **Base** | `feat/race-telemetry-hud` (a corrida v2 usa o HUD e a pausa da task `13`) |
-| **Status** | 🔍 Em revisão |
+| **Status** | ✅ Concluída (merge em `main` em 2026-09-27) |
 | **Tamanho** | M |
 | **Depende de** | `13` |
 | **Bloqueia** | — |
@@ -160,7 +160,7 @@ usa um mock temporário da API (como na task `13`), apagado no fim.
 - [x] `npm run build --prefix frontend` passa
 - [x] Sem `console.log` / código morto deixado para trás
 - [x] Documentação da seção 8 atualizada
-- [ ] Commit e push em `feat/ui-v2-train-race`; tabela de status atualizada
+- [x] Commit e push em `feat/ui-v2-train-race`; tabela de status atualizada
 
 ---
 

@@ -5,7 +5,7 @@
 | **ID** | `17` |
 | **Branch** | `feat/horse-career` |
 | **Base** | `feat/skills-points-only` |
-| **Status** | 🔍 Em revisão |
+| **Status** | ✅ Concluída (merge em `main` em 2026-09-27) |
 | **Tamanho** | G |
 | **Depende de** | `15` (tela de treino v2) |
 | **Bloqueia** | — |
@@ -173,7 +173,7 @@ npm run career:check --prefix backend
 - [x] Critérios de aceite marcados
 - [x] `npx tsc --noEmit` no backend e `npm run build --prefix frontend` passam; `eslint` limpo
 - [x] Documentação da seção 7 atualizada
-- [ ] Commit e push em `feat/horse-career`; tabela de status atualizada
+- [x] Commit e push em `feat/horse-career`; tabela de status atualizada
 
 ---
 

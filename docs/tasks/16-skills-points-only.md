@@ -5,7 +5,7 @@
 | **ID** | `16` |
 | **Branch** | `feat/skills-points-only` |
 | **Base** | `feat/ui-v2-train-race` |
-| **Status** | 🔍 Em revisão |
+| **Status** | ✅ Concluída (merge em `main` em 2026-09-27) |
 | **Tamanho** | P |
 | **Depende de** | `15` (só pela pilha de branches; o código é independente) |
 | **Bloqueia** | — |
@@ -70,7 +70,7 @@ Qualquer égua aprende qualquer skill assim que tiver os SP.
 - [x] Critérios de aceite marcados
 - [x] Build e typecheck passam
 - [x] Documentação atualizada
-- [ ] Commit e push em `feat/skills-points-only`; tabela de status atualizada
+- [x] Commit e push em `feat/skills-points-only`; tabela de status atualizada
 
 ---
 

@@ -5,7 +5,7 @@
 | **ID** | `12` |
 | **Branch** | `feat/race-telemetry-engine` |
 | **Base** | `main` (com a `14` já mergeada) |
-| **Status** | 🔍 Em revisão |
+| **Status** | ✅ Concluída (merge em `main` em 2026-09-27) |
 | **Tamanho** | P |
 | **Depende de** | `14` |
 | **Bloqueia** | `13` |

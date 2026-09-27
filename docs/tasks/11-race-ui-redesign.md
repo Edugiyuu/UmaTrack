@@ -5,7 +5,7 @@
 | **ID** | `11` |
 | **Branch** | `feat/race-ui-redesign` |
 | **Base** | `docs/task-template` |
-| **Status** | 🔍 Em revisão |
+| **Status** | ✅ Concluída (merge em `main` em 2026-09-27) |
 | **Tamanho** | G |
 | **Depende de** | `10` |
 | **Bloqueia** | `13` |
