@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { getSkills } from "../../services/Race";
 import { STAT_LABEL } from "../../constants/trackVisuals";
-import type { SkillResponse, StatName } from "../../types/race";
+import type { SkillResponse } from "../../types/race";
 import "./SkillCatalog.css";
-
-const STATS: StatName[] = ["speed", "stamina", "power", "wit"];
 
 const RARITY_LABEL: Record<SkillResponse["rarity"], string> = {
   common: "Comum",
@@ -148,13 +146,6 @@ const SkillCatalog = () => {
               <dd>{describeTrigger(skill)}</dd>
             </dl>
 
-            {STATS.some((stat) => skill.requirements[stat] > 0) && (
-              <ul className="SkillCatalog__requirements">
-                {STATS.filter((stat) => skill.requirements[stat] > 0).map((stat) => (
-                  <li key={stat}>{STAT_LABEL[stat]} {skill.requirements[stat]}</li>
-                ))}
-              </ul>
-            )}
           </article>
         ))}
       </div>

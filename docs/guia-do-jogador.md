@@ -141,8 +141,9 @@ e **+1** estrela de humor.
 
 ## 5. Skills e skill points
 
-Skills são aprendidas na tela de carreira gastando SP. Cada uma exige
-atributos mínimos e só pode ser aprendida uma vez.
+Skills são aprendidas na tela de carreira gastando SP. O **único preço são os
+skill points**: não há atributo mínimo, então qualquer égua aprende qualquer skill
+assim que juntar os pontos. Cada uma só pode ser aprendida uma vez.
 
 Durante a prova elas disparam **sozinhas**, quando o gatilho acontece. A chance
 por turno é `chance base + Wit × 0,002` — 150 de Wit soma +30 pontos
@@ -150,25 +151,25 @@ percentuais em cada turno da janela elegível.
 
 ### Catálogo completo
 
-| Skill | SP | Raridade | Efeito | Dispara em | Requisitos |
-|---|---:|---|---|---|---|
-| Concentração | 60 | Comum | +7 m/turno por 1 turno | largada | Pow 40 · Wit 30 |
-| Explosão de Portão | 130 | Rara | +45% aceleração por 1 turno | largada | Spd 60 · Pow 110 · Wit 40 |
-| Arrancada Final | 90 | Comum | +5 m/turno por 1 turno | reta final | Spd 90 · Wit 50 |
-| Passo Relâmpago | 160 | Rara | +8 m/turno por 1 turno | meio da prova, em reta | Spd 130 · Pow 60 · Wit 70 |
-| Último Fôlego | 240 | **Única** | +11 m/turno por 1 turno | últimos 20% | Spd 150 · Sta 120 · Pow 90 · Wit 90 |
-| Respiração Constante | 80 | Comum | −20% de gasto de fôlego por 2 turnos | meio da prova | Sta 80 · Wit 60 |
-| Segundo Fôlego | 170 | Rara | recupera 18% do fôlego | fôlego abaixo de 30% | Sta 130 · Wit 100 |
-| Pulmões de Ferro | 110 | Comum | +25 Stamina na prova | passiva | Sta 100 |
-| Escaladora | 120 | Comum | anula 35% da perda em subida por 1 turno *(sem efeito por enquanto)* | subida | Sta 60 · Pow 110 · Wit 40 |
-| Coração de Montanha | 260 | **Única** | anula 70% da perda em subida por 2 turnos *(sem efeito por enquanto)* | subida | Spd 60 · Sta 120 · Pow 180 · Wit 60 |
-| Planagem | 95 | Comum | +6 m/turno por 1 turno | descida | Spd 70 · Wit 90 |
-| Força Bruta | 110 | Comum | +25 Power na prova | passiva | Pow 100 |
-| Especialista em Curva | 100 | Comum | +5 m/turno por 1 turno | curva | Spd 60 · Pow 70 · Wit 90 |
-| Leitura de Prova | 150 | Rara | +7 m/turno por 1 turno | reta final, do 4º para trás | Spd 80 · Sta 80 · Wit 140 |
-| Ritmista | 180 | Rara | −15% de gasto de fôlego por 4 turnos | qualquer momento | Sta 110 · Wit 130 |
-| Olhar Aguçado | 110 | Comum | +25 Wit na prova | passiva | Wit 100 |
-| Marcha de Sprint | 110 | Comum | +25 Speed na prova | passiva | Spd 100 |
+| Skill | SP | Raridade | Efeito | Dispara em |
+|---|---:|---|---|---|
+| Concentração | 60 | Comum | +7 m/turno por 1 turno | largada |
+| Explosão de Portão | 130 | Rara | +45% aceleração por 1 turno | largada |
+| Arrancada Final | 90 | Comum | +5 m/turno por 1 turno | reta final |
+| Passo Relâmpago | 160 | Rara | +8 m/turno por 1 turno | meio da prova, em reta |
+| Último Fôlego | 240 | **Única** | +11 m/turno por 1 turno | últimos 20% |
+| Respiração Constante | 80 | Comum | −20% de gasto de fôlego por 2 turnos | meio da prova |
+| Segundo Fôlego | 170 | Rara | recupera 18% do fôlego | fôlego abaixo de 30% |
+| Pulmões de Ferro | 110 | Comum | +25 Stamina na prova | passiva |
+| Escaladora | 120 | Comum | anula 35% da perda em subida por 1 turno *(sem efeito por enquanto)* | subida |
+| Coração de Montanha | 260 | **Única** | anula 70% da perda em subida por 2 turnos *(sem efeito por enquanto)* | subida |
+| Planagem | 95 | Comum | +6 m/turno por 1 turno | descida |
+| Força Bruta | 110 | Comum | +25 Power na prova | passiva |
+| Especialista em Curva | 100 | Comum | +5 m/turno por 1 turno | curva |
+| Leitura de Prova | 150 | Rara | +7 m/turno por 1 turno | reta final, do 4º para trás |
+| Ritmista | 180 | Rara | −15% de gasto de fôlego por 4 turnos | qualquer momento |
+| Olhar Aguçado | 110 | Comum | +25 Wit na prova | passiva |
+| Marcha de Sprint | 110 | Comum | +25 Speed na prova | passiva |
 
 ### Quais comprar primeiro
 

@@ -19,7 +19,6 @@ export interface SkillSeed {
     maxStaminaRatio?: number;
     minPosition?: number;
   };
-  requirements: { speed: number; stamina: number; power: number; wit: number };
 }
 
 /**
@@ -39,8 +38,7 @@ export const SKILL_CATALOG: SkillSeed[] = [
     rarity: "common",
     cost: 60,
     effect: { kind: "startDash", value: 7, duration: 1 },
-    trigger: { phase: "opening", terrain: "any", baseChance: 0.75 },
-    requirements: { speed: 0, stamina: 0, power: 40, wit: 30 }
+    trigger: { phase: "opening", terrain: "any", baseChance: 0.75 }
   },
   {
     slug: "gate-burst",
@@ -49,8 +47,7 @@ export const SKILL_CATALOG: SkillSeed[] = [
     rarity: "rare",
     cost: 130,
     effect: { kind: "accelBoost", value: 0.45, duration: 1 },
-    trigger: { phase: "opening", terrain: "any", baseChance: 0.6 },
-    requirements: { speed: 60, stamina: 0, power: 110, wit: 40 }
+    trigger: { phase: "opening", terrain: "any", baseChance: 0.6 }
   },
 
   // --- Velocidade ---
@@ -61,8 +58,7 @@ export const SKILL_CATALOG: SkillSeed[] = [
     rarity: "common",
     cost: 90,
     effect: { kind: "speedBoost", value: 5, duration: 1 },
-    trigger: { phase: "final", terrain: "any", baseChance: 0.25 },
-    requirements: { speed: 90, stamina: 0, power: 0, wit: 50 }
+    trigger: { phase: "final", terrain: "any", baseChance: 0.25 }
   },
   {
     slug: "lightning-step",
@@ -71,8 +67,7 @@ export const SKILL_CATALOG: SkillSeed[] = [
     rarity: "rare",
     cost: 160,
     effect: { kind: "speedBoost", value: 8, duration: 1 },
-    trigger: { phase: "middle", terrain: "straight", baseChance: 0.2 },
-    requirements: { speed: 130, stamina: 0, power: 60, wit: 70 }
+    trigger: { phase: "middle", terrain: "straight", baseChance: 0.2 }
   },
   {
     slug: "last-spurt",
@@ -81,8 +76,7 @@ export const SKILL_CATALOG: SkillSeed[] = [
     rarity: "unique",
     cost: 240,
     effect: { kind: "speedBoost", value: 11, duration: 1 },
-    trigger: { phase: "spurt", terrain: "any", baseChance: 0.4 },
-    requirements: { speed: 150, stamina: 120, power: 90, wit: 90 }
+    trigger: { phase: "spurt", terrain: "any", baseChance: 0.4 }
   },
 
   // --- Fôlego ---
@@ -93,8 +87,7 @@ export const SKILL_CATALOG: SkillSeed[] = [
     rarity: "common",
     cost: 80,
     effect: { kind: "staminaSave", value: 0.2, duration: 2 },
-    trigger: { phase: "middle", terrain: "any", baseChance: 0.2 },
-    requirements: { speed: 0, stamina: 80, power: 0, wit: 60 }
+    trigger: { phase: "middle", terrain: "any", baseChance: 0.2 }
   },
   {
     slug: "second-wind",
@@ -103,8 +96,7 @@ export const SKILL_CATALOG: SkillSeed[] = [
     rarity: "rare",
     cost: 170,
     effect: { kind: "staminaRecover", value: 0.18, duration: 0 },
-    trigger: { phase: "any", terrain: "any", baseChance: 0.3, maxStaminaRatio: 0.3 },
-    requirements: { speed: 0, stamina: 130, power: 0, wit: 100 }
+    trigger: { phase: "any", terrain: "any", baseChance: 0.3, maxStaminaRatio: 0.3 }
   },
   {
     slug: "iron-lungs",
@@ -113,8 +105,7 @@ export const SKILL_CATALOG: SkillSeed[] = [
     rarity: "common",
     cost: 110,
     effect: { kind: "flatStat", stat: "stamina", value: 25, duration: 0 },
-    trigger: { phase: "any", terrain: "any", baseChance: 1 },
-    requirements: { speed: 0, stamina: 100, power: 0, wit: 0 }
+    trigger: { phase: "any", terrain: "any", baseChance: 1 }
   },
 
   // --- Subida / Power ---
@@ -125,8 +116,7 @@ export const SKILL_CATALOG: SkillSeed[] = [
     rarity: "common",
     cost: 120,
     effect: { kind: "inclineBoost", value: 0.35, duration: 1 },
-    trigger: { phase: "any", terrain: "uphill", baseChance: 0.35 },
-    requirements: { speed: 0, stamina: 60, power: 110, wit: 40 }
+    trigger: { phase: "any", terrain: "uphill", baseChance: 0.35 }
   },
   {
     slug: "mountain-heart",
@@ -135,8 +125,7 @@ export const SKILL_CATALOG: SkillSeed[] = [
     rarity: "unique",
     cost: 260,
     effect: { kind: "inclineBoost", value: 0.7, duration: 2 },
-    trigger: { phase: "any", terrain: "uphill", baseChance: 0.45 },
-    requirements: { speed: 60, stamina: 120, power: 180, wit: 60 }
+    trigger: { phase: "any", terrain: "uphill", baseChance: 0.45 }
   },
   {
     slug: "downhill-glide",
@@ -145,8 +134,7 @@ export const SKILL_CATALOG: SkillSeed[] = [
     rarity: "common",
     cost: 95,
     effect: { kind: "speedBoost", value: 6, duration: 1 },
-    trigger: { phase: "any", terrain: "downhill", baseChance: 0.4 },
-    requirements: { speed: 70, stamina: 0, power: 0, wit: 90 }
+    trigger: { phase: "any", terrain: "downhill", baseChance: 0.4 }
   },
   {
     slug: "raw-power",
@@ -155,8 +143,7 @@ export const SKILL_CATALOG: SkillSeed[] = [
     rarity: "common",
     cost: 110,
     effect: { kind: "flatStat", stat: "power", value: 25, duration: 0 },
-    trigger: { phase: "any", terrain: "any", baseChance: 1 },
-    requirements: { speed: 0, stamina: 0, power: 100, wit: 0 }
+    trigger: { phase: "any", terrain: "any", baseChance: 1 }
   },
 
   // --- Curvas / Wit ---
@@ -167,8 +154,7 @@ export const SKILL_CATALOG: SkillSeed[] = [
     rarity: "common",
     cost: 100,
     effect: { kind: "cornerBoost", value: 5, duration: 1 },
-    trigger: { phase: "any", terrain: "corner", baseChance: 0.35 },
-    requirements: { speed: 60, stamina: 0, power: 70, wit: 90 }
+    trigger: { phase: "any", terrain: "corner", baseChance: 0.35 }
   },
   {
     slug: "race-reader",
@@ -177,8 +163,7 @@ export const SKILL_CATALOG: SkillSeed[] = [
     rarity: "rare",
     cost: 150,
     effect: { kind: "speedBoost", value: 7, duration: 1 },
-    trigger: { phase: "final", terrain: "any", baseChance: 0.3, minPosition: 4 },
-    requirements: { speed: 80, stamina: 80, power: 0, wit: 140 }
+    trigger: { phase: "final", terrain: "any", baseChance: 0.3, minPosition: 4 }
   },
   {
     slug: "pace-keeper",
@@ -187,8 +172,7 @@ export const SKILL_CATALOG: SkillSeed[] = [
     rarity: "rare",
     cost: 180,
     effect: { kind: "staminaSave", value: 0.15, duration: 4 },
-    trigger: { phase: "any", terrain: "any", baseChance: 0.2 },
-    requirements: { speed: 0, stamina: 110, power: 0, wit: 130 }
+    trigger: { phase: "any", terrain: "any", baseChance: 0.2 }
   },
   {
     slug: "keen-eye",
@@ -197,8 +181,7 @@ export const SKILL_CATALOG: SkillSeed[] = [
     rarity: "common",
     cost: 110,
     effect: { kind: "flatStat", stat: "wit", value: 25, duration: 0 },
-    trigger: { phase: "any", terrain: "any", baseChance: 1 },
-    requirements: { speed: 0, stamina: 0, power: 0, wit: 100 }
+    trigger: { phase: "any", terrain: "any", baseChance: 1 }
   },
   {
     slug: "sprint-gear",
@@ -207,7 +190,6 @@ export const SKILL_CATALOG: SkillSeed[] = [
     rarity: "common",
     cost: 110,
     effect: { kind: "flatStat", stat: "speed", value: 25, duration: 0 },
-    trigger: { phase: "any", terrain: "any", baseChance: 1 },
-    requirements: { speed: 100, stamina: 0, power: 0, wit: 0 }
+    trigger: { phase: "any", terrain: "any", baseChance: 1 }
   }
 ];

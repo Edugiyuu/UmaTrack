@@ -73,7 +73,6 @@ export interface SkillResponse {
     maxStaminaRatio?: number;
     minPosition?: number;
   };
-  requirements: StatBlock;
 }
 
 export interface RaceFrame {
