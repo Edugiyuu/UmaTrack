@@ -502,8 +502,24 @@ export const simulateRace = ({ track, runners, seed }: SimulateRaceOptions): Rac
       id: state.input.id,
       name: state.input.name,
       isPlayer: state.input.isPlayer,
+      isRival: state.input.isRival ?? false,
       runningStyle: state.input.runningStyle
     })),
+    rivals: states
+      .filter((state) => state.input.isRival)
+      .map((state) => ({
+        id: state.input.id,
+        name: state.input.name,
+        runningStyle: state.input.runningStyle,
+        // As trained, without passive skills: the same basis as the player's own stats.
+        stats: {
+          speed: state.input.speed,
+          stamina: state.input.stamina,
+          power: state.input.power,
+          wit: state.input.wit
+        },
+        skills: state.input.skills.map((skill) => skill.name)
+      })),
     frames,
     results,
     activations,

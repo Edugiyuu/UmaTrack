@@ -323,10 +323,24 @@ isso o tempo aparece com fração, como **12,47 turnos**.
 
 ### As adversárias
 
-O grid é gerado em torno dos **requisitos da pista**, não em torno de você.
-Isso é importante: elas **não** escalam com o seu nível, então treinar melhora
-sua colocação de verdade. Cada uma puxa para um atributo diferente e pode vir
-com algumas skills, conforme a dificuldade da pista.
+O grid tem duas partes:
+
+- **Três rivais**, montadas em cima da **sua** égua: cada atributo delas é
+  sorteado entre **90% e 130%** do seu, um por um. Uma pode ter mais Speed e
+  menos Stamina que você, outra o contrário. Em média elas são 10% melhores que
+  você, então sempre tem alguém do seu nível brigando pela vitória — e não dá
+  para fugir delas treinando mais. Elas nunca saem mais fracas que o resto do grid.
+- **O resto**, gerado em torno dos **requisitos da pista**. Essas não escalam com
+  você: treinar passa na frente delas de verdade.
+
+Antes da largada aparece a janela **Suas rivais**, com os atributos de cada uma
+e a diferença para os seus (em vermelho quando ela está acima). A corrida só
+começa quando você aperta **Largar!**. Use essa janela para saber de quem ter
+medo: uma rival com muito mais Stamina vai te passar no fim se você secar.
+
+Todas as adversárias podem vir com algumas skills, conforme a dificuldade da pista.
+Metas de **top 3** exigem vencer pelo menos uma rival; a carreira é difícil de
+propósito.
 
 ### A tela da corrida
 
@@ -337,7 +351,7 @@ No gramado do meio ficam os metros percorridos, o total e quanto falta.
 
 - **LIVE**, à esquerda, é a câmera da sua égua; embaixo dela, a **classificação**
   ao vivo com a diferença para a líder em metros. Com o páreo cheio aparecem as
-  cinco primeiras e a sua linha logo abaixo.
+  cinco primeiras e a sua linha logo abaixo. As rivais levam a etiqueta **RIVAL**.
 - **1º LUGAR**, à direita, acompanha quem lidera; embaixo, as últimas **skills**
   que dispararam (as suas em dourado). As rivais não têm arte, então a câmera
   mostra as cores e as iniciais delas.

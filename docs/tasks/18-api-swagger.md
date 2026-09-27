@@ -378,7 +378,7 @@ Defina esses dois como `components.responses.Unauthorized` e
   }
   ```
 - **`RaceSimulation`** é o maior schema da API. Documentar cada campo, com as unidades:
-  `seed`, `trackSlug`, `distance`, `runners[]`, `frames[]` (`t` em turnos, 4 por turno,
+  `seed`, `trackSlug`, `distance`, `runners[]` (com `isRival`), `rivals[]` (as 3 rivais montadas sobre a égua do jogador, task 19), `frames[]` (`t` em turnos, 4 por turno,
   `positions` em metros na ordem de `runners`, `stamina` 0..1), `results[]`,
   `activations[]` (`time` = turno contado de 0), `shortfalls` (objeto indexado pelo id da
   corredora), `telemetry[]` (`RunnerTelemetry`, 17 campos, ver
@@ -424,7 +424,7 @@ Cada schema com `description` em português e `example`. Campos obrigatórios em
 | `TrackSegment`, `Track` | `models/track.ts` | + `maxGrade`, `id` |
 | `SkillEffect`, `SkillTrigger`, `Skill` | `models/skill.ts` | |
 | `TrainingOutcome`, `RestOutcome` | `trainingEngine.ts`, `restHorse` | |
-| `RaceFrame`, `RaceRunnerResult`, `SkillActivation`, `RunnerTelemetry`, `RaceSimulation` | `types/race.ts` | copiar os comentários JSDoc como `description` |
+| `RaceFrame`, `RaceRunnerResult`, `SkillActivation`, `RunnerTelemetry`, `RivalProfile`, `RaceSimulation` | `types/race.ts` | copiar os comentários JSDoc como `description` |
 | `RaceRewards`, `RaceRunResponse` | `runRace` | |
 | `RaceResult`, `RaceHistory` | `models/raceResult.ts`, `getRaceHistory` | |
 

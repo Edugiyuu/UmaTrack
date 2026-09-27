@@ -5,8 +5,9 @@
  * outside `goal` (a placement: 3 means top 3) ends her career.
  *
  * The calendars follow each girl's profile and were tuned with `npm run career:check`,
- * which plays every career with a simple training policy: a player who trains with a
- * plan should clear most of them, and the last race of each one is meant to be a stretch.
+ * which plays every career with a simple training policy. Since the field got three
+ * rivals built on the player's own stats (task 19) that policy clears almost none of
+ * them; the goals were kept on purpose, so a career is hard but winnable with a plan.
  */
 export interface CareerRaceSeed {
   trackSlug: string;

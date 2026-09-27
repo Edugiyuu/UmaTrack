@@ -141,7 +141,13 @@ export const runRace = async (req: AuthenticatedRequest, res: Response) => {
       difficulty: track.difficulty,
       seed,
       skillPool: skillPool.map(toRaceSkill),
-      excludeName: ownedHorse.name
+      excludeName: ownedHorse.name,
+      player: {
+        speed: ownedHorse.speed,
+        stamina: ownedHorse.stamina,
+        power: ownedHorse.power,
+        wit: ownedHorse.wit
+      }
     });
 
     const simulation = simulateRace({

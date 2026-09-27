@@ -33,6 +33,8 @@ export interface RaceRunnerInput extends StatBlock {
   id: string;
   name: string;
   isPlayer: boolean;
+  /** One of the player's rivals (see rivalGenerator). */
+  isRival?: boolean;
   runningStyle: RunningStyle;
   skills: RaceSkill[];
 }
@@ -132,12 +134,28 @@ export interface RunnerTelemetry {
   effects: SkillEffectKind[];
 }
 
+export interface RivalProfile {
+  id: string;
+  name: string;
+  runningStyle: RunningStyle;
+  stats: StatBlock;
+  skills: string[];
+}
+
 export interface RaceSimulation {
   seed: number;
   trackSlug: string;
   distance: number;
   /** Runner ids in the order used by every frame of the replay. */
-  runners: { id: string; name: string; isPlayer: boolean; runningStyle: RunningStyle }[];
+  runners: {
+    id: string;
+    name: string;
+    isPlayer: boolean;
+    isRival: boolean;
+    runningStyle: RunningStyle;
+  }[];
+  /** The player's rivals as they lined up: trained stats (before passive skills) and skills. */
+  rivals: RivalProfile[];
   frames: RaceFrame[];
   results: RaceRunnerResult[];
   activations: SkillActivation[];

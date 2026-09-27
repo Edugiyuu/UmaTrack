@@ -107,7 +107,8 @@ const playCareer = (horse: (typeof HORSE_CATALOG)[number]) => {
       difficulty: trackSeed.difficulty,
       seed,
       skillPool,
-      excludeName: horse.name
+      excludeName: horse.name,
+      player: stats
     });
     const simulation = simulateRace({
       track,

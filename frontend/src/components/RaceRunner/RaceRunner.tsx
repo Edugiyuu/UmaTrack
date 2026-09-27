@@ -7,6 +7,7 @@ import RaceHeader from "./RaceHeader";
 import RaceHud from "./RaceHud";
 import RaceOval from "./RaceOval";
 import RaceResults from "./RaceResults";
+import RaceRivals from "./RaceRivals";
 import RaceStandings from "./RaceStandings";
 import TrackStrip from "./TrackStrip";
 import { ordinal } from "./format";
@@ -35,6 +36,8 @@ const RaceRunner = () => {
   const [speed, setSpeed] = useState<number>(1);
   const [showResults, setShowResults] = useState(false);
   const [paused, setPaused] = useState(false);
+  /** Held until the player has seen her rivals and sent the field off. */
+  const [started, setStarted] = useState(false);
   /** The player's call; it holds until the race ends. */
   const [hudHidden, setHudHidden] = useState(false);
   const toggleHud = useCallback(() => setHudHidden((hidden) => !hidden), []);
@@ -68,7 +71,12 @@ const RaceRunner = () => {
   }, [horseId, trackSlug, style]);
 
   const simulation = race?.simulation ?? null;
-  const playback = useRacePlayback(simulation, { speed, playing: !showResults && !paused });
+  // Races from before rivals existed have none to introduce, so they start right away.
+  const introducingRivals = !started && (simulation?.rivals?.length ?? 0) > 0;
+  const playback = useRacePlayback(simulation, {
+    speed,
+    playing: !introducingRivals && !showResults && !paused
+  });
 
   // The step handlers read the time through a ref, so they (and the keyboard listener
   // below) stay stable instead of being rebuilt on every animation frame.
@@ -94,7 +102,7 @@ const RaceRunner = () => {
   const stepBack = useCallback(() => stepTo(-1), [stepTo]);
 
   useEffect(() => {
-    if (!simulation || showResults) return;
+    if (!simulation || showResults || introducingRivals) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey || event.altKey || event.metaKey) return;
@@ -117,7 +125,7 @@ const RaceRunner = () => {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [simulation, showResults, togglePause, stepForward, stepBack]);
+  }, [simulation, showResults, introducingRivals, togglePause, stepForward, stepBack]);
 
   const playerLane = useMemo(
     () => simulation?.runners.findIndex((runner) => runner.isPlayer) ?? -1,
@@ -316,6 +324,23 @@ const RaceRunner = () => {
         )}
         <TrackStrip segments={track.segments} progress={playerProgress} />
       </section>
+
+      {introducingRivals && (
+        <RaceRivals
+          rivals={simulation.rivals.map((rival) => ({
+            ...rival,
+            color: colorOf(simulation.runners.findIndex((runner) => runner.id === rival.id))
+          }))}
+          playerName={race.horse.name}
+          playerStats={{
+            speed: race.horse.speed,
+            stamina: race.horse.stamina,
+            power: race.horse.power,
+            wit: race.horse.wit
+          }}
+          onStart={() => setStarted(true)}
+        />
+      )}
 
       {showResults && (
         <RaceResults

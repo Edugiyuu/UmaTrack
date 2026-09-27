@@ -1,5 +1,11 @@
 import { RUNNING_STYLES, type RunningStyle } from "../models/user";
-import type { RaceRunnerInput, RaceSkill, RaceTrackInput } from "../types/race";
+import type { RaceRunnerInput, RaceSkill, RaceTrackInput, StatBlock } from "../types/race";
+
+/** How many of the field are the player's rivals, built around her own stats. */
+export const RIVAL_COUNT = 3;
+/** Each rival stat is the player's stat times a draw in this range... */
+const RIVAL_MIN = 0.9;
+const RIVAL_MAX = 1.3;
 
 const RIVAL_NAMES = [
   "Amber Comet",
@@ -42,12 +48,19 @@ export interface GenerateRivalsOptions {
   skillPool: RaceSkill[];
   /** Name already taken by the player, so the field never contains a twin. */
   excludeName?: string;
+  /** The player's stats. With them, the first RIVAL_COUNT runners become her rivals. */
+  player?: StatBlock;
 }
 
 /**
- * Builds the rival field. Rivals are generated around the track requirements rather
- * than around the player, so improving your stats genuinely improves your placement
- * instead of the field silently scaling with you.
+ * Builds the field. Most of it is generated around the track requirements rather than
+ * around the player, so improving your stats genuinely improves your placement instead
+ * of the field silently scaling with you.
+ *
+ * The exception is her rivals: RIVAL_COUNT runners whose every stat is the player's
+ * times a separate draw in RIVAL_MIN..RIVAL_MAX, so someone at her level is always
+ * fighting for the win. A rival never ends up weaker than the plain field would have
+ * made her, which matters while the player is still below the track requirements.
  */
 export const generateRivals = ({
   track,
@@ -55,9 +68,13 @@ export const generateRivals = ({
   difficulty,
   seed,
   skillPool,
-  excludeName
+  excludeName,
+  player
 }: GenerateRivalsOptions): RaceRunnerInput[] => {
   const rng = createRng(seed ^ 0x9e3779b9);
+  // A stream of its own, so the rest of the field is drawn exactly as it was before
+  // rivals existed.
+  const rivalRng = createRng(seed ^ 0x5bd1e995);
 
   // Deterministic shuffle, then hand out names by index: two rivals in the same field
   // must never share a name.
@@ -100,6 +117,14 @@ export const generateRivals = ({
       picked.add(Math.floor(rng() * skillPool.length));
     }
     rival.skills = [...picked].map((skillIndex) => skillPool[skillIndex]);
+
+    if (player && index < RIVAL_COUNT) {
+      rival.isRival = true;
+      for (const key of ["speed", "stamina", "power", "wit"] as const) {
+        const scaled = Math.round(player[key] * (RIVAL_MIN + rivalRng() * (RIVAL_MAX - RIVAL_MIN)));
+        rival[key] = Math.max(rival[key], scaled);
+      }
+    }
 
     return rival;
   });

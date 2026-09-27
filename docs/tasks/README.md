@@ -52,6 +52,7 @@ O design do sistema de corridas está em [`docs/race-system-design.md`](../race-
 | 16 | [Skills custam só skill points](16-skills-points-only.md) | `feat/skills-points-only` | P | ✅ |
 | 17 | [Carreira por égua](17-horse-career.md) | `feat/horse-career` | G | ✅ |
 | 18 | [Documentar a API com Swagger (OpenAPI 3.1)](18-api-swagger.md) | `feat/api-swagger` | M | 🔲 |
+| 19 | [Rivais montadas sobre a égua do jogador](19-player-rivals.md) | `docs/mechanics-pdf-v2` | M | ✅ |
 
 ### Ordem sugerida para 11–14
 

@@ -147,11 +147,23 @@ export interface RunnerTelemetry {
   effects: SkillEffectKind[];
 }
 
+/** One of the player's rivals: built on her stats, 90% to 130% of each. */
+export interface RivalProfile {
+  id: string;
+  name: string;
+  runningStyle: RunningStyle;
+  /** Trained stats, before passive skills. */
+  stats: StatBlock;
+  skills: string[];
+}
+
 export interface RaceSimulation {
   seed: number;
   trackSlug: string;
   distance: number;
-  runners: { id: string; name: string; isPlayer: boolean; runningStyle: RunningStyle }[];
+  runners: { id: string; name: string; isPlayer: boolean; isRival: boolean; runningStyle: RunningStyle }[];
+  /** Empty for races run before rivals existed. */
+  rivals: RivalProfile[];
   frames: RaceFrame[];
   results: RaceRunnerResult[];
   activations: SkillActivation[];

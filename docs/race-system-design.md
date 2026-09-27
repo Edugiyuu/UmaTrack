@@ -141,6 +141,21 @@ O jogador vê essa telemetria no HUD da corrida (`frontend/src/components/RaceRu
 [task 13](./tasks/13-race-telemetry-hud.md)); a leitura de cada cartão está no
 [guia do jogador](./guia-do-jogador.md#lendo-o-hud-da-corrida).
 
+### 4.8 Pelotão e rivais
+`backend/src/services/rivalGenerator.ts` monta `fieldSize − 1` adversárias:
+
+- **O pelotão comum** sai dos `requirements` da pista, escalado pela `difficulty`
+  (`0,86 + d × 0,028`), com um `spread` de 0,82–1,18 por corredora e um atributo de foco.
+  Não escala com o jogador.
+- **As 3 primeiras são rivais** (`RIVAL_COUNT`, [task 19](./tasks/19-player-rivals.md)):
+  cada atributo é `max(valor do pelotão comum, round(atributo do jogador × U(0,9; 1,3)))`,
+  com sorteio independente por atributo e fluxo de rng próprio (`seed ^ 0x5bd1e995`), para
+  o pelotão comum sair igual ao que sairia sem rivais.
+
+A simulação marca cada corredora com `isRival` em `runners[]` e devolve `rivals[]`
+(atributos treinados, sem skills passivas, e nomes das skills), que o frontend mostra
+antes da largada (`RaceRivals.tsx`).
+
 ## 5. Skills e skill points
 
 - Treinar gera **skill points (SP)** além dos pontos de atributo.

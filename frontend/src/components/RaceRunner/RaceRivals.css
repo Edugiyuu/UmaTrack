@@ -1,0 +1,158 @@
+/* The rivals' introduction, laid out like the results dialog (RaceResults.css). */
+
+.RaceRivals__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  background-color: var(--surface-overlay);
+}
+
+.RaceRivals {
+  width: min(760px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface);
+  box-shadow: var(--shadow-3);
+  color: var(--text);
+  font-family: var(--font-body);
+}
+
+.RaceRivals__header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+.RaceRivals__eyebrow {
+  margin: 0;
+  transform: rotate(var(--tilt));
+  padding: var(--space-1) var(--space-4);
+  background-color: var(--brand-band);
+  color: var(--on-solid);
+  font-size: var(--text-xs);
+  font-style: italic;
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+.RaceRivals__headline {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--text-2xl);
+  font-style: italic;
+  font-weight: var(--weight-bold);
+  line-height: 1.1;
+}
+
+.RaceRivals__summary {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.RaceRivals__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-3);
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  list-style: none;
+}
+
+.RaceRivals__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--surface-sunken);
+}
+
+.RaceRivals__name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.RaceRivals__name strong {
+  font-family: var(--font-ui);
+  font-size: var(--text-md);
+}
+
+.RaceRivals__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.RaceRivals__style {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.RaceRivals__stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.RaceRivals__stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-left: var(--space-2);
+  border-left: 3px solid var(--border);
+  font-size: var(--text-sm);
+}
+
+.RaceRivals__stat--speed { border-left-color: var(--speed); }
+.RaceRivals__stat--stamina { border-left-color: var(--stamina); }
+.RaceRivals__stat--power { border-left-color: var(--power); }
+.RaceRivals__stat--wit { border-left-color: var(--wit); }
+
+.RaceRivals__stat dt {
+  color: var(--text-muted);
+}
+
+.RaceRivals__stat dd {
+  margin: 0;
+  font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.RaceRivals__diff {
+  display: inline-block;
+  min-width: 3.2em;
+  margin-left: var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-regular);
+  text-align: right;
+}
+
+/* Above the player is the threat, so it reads as danger. */
+.RaceRivals__diff.is-above {
+  color: var(--danger);
+}
+
+.RaceRivals__diff.is-below {
+  color: var(--accent);
+}
+
+.RaceRivals__skills {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}

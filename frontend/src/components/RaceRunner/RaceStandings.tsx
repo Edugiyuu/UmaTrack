@@ -5,6 +5,7 @@ export interface StandingsRunner {
   name: string;
   color: string;
   isPlayer: boolean;
+  isRival?: boolean;
   /** Metres covered. */
   position: number;
 }
@@ -36,6 +37,7 @@ const RaceStandings = ({ runners }: RaceStandingsProps) => {
           key={runner.id}
           className={[
             runner.isPlayer ? "is-player" : "",
+            runner.isRival ? "is-rival" : "",
             pinned && runner.isPlayer ? "is-pinned" : ""
           ]
             .filter(Boolean)
@@ -43,7 +45,10 @@ const RaceStandings = ({ runners }: RaceStandingsProps) => {
         >
           <span className="RaceStandings__place">{ordinal(index + 1)}</span>
           <span className="RaceStandings__dot" style={{ backgroundColor: runner.color }} aria-hidden="true" />
-          <span className="RaceStandings__name">{runner.isPlayer ? `${runner.name} (você)` : runner.name}</span>
+          <span className="RaceStandings__name">
+            {runner.isPlayer ? `${runner.name} (você)` : runner.name}
+            {runner.isRival && <span className="RaceStandings__rival">rival</span>}
+          </span>
           <span className="RaceStandings__gap">
             {index === 0 ? "—" : `+${Math.round(leader - runner.position).toLocaleString("pt-BR")}m`}
           </span>
