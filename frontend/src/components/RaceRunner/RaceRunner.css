@@ -1,7 +1,7 @@
 /**
- * The race screen. Built from the tokens in src/styles/tokens.css and from the shapes
- * the rest of the game already uses: the hero's diagonal cut on the course block, the
- * horse card's tilted band on the headline, heavy italic type for the titles.
+ * The race screen. Built from the tokens in src/styles/tokens.css and light like the
+ * rest of the site: the course is a white card with a soft shadow, as the horse cards
+ * are, the track art only a faint backdrop, and heavy italic type for the titles.
  *
  * Layout is a single column with a gap, so the telemetry HUD (task 13) can be dropped
  * in between the course and the panels without touching anything here.
@@ -10,13 +10,13 @@
 .RaceRunner {
   /* Component tokens: surfaces that exist only on the course. Declared once here so
      no rule below carries a raw colour, and the course can be retuned from one place. */
-  --course-veil-top: rgba(8, 16, 11, 0.88);
-  --course-veil-bottom: rgba(8, 16, 11, 0.94);
-  --lane-track: rgba(255, 255, 255, 0.07);
-  --lane-stripe: rgba(255, 255, 255, 0.05);
-  --lane-player-frame: rgba(255, 255, 255, 0.05);
-  --finish-dark: rgba(10, 18, 13, 0.9);
-  --finish-light: rgba(255, 255, 255, 0.85);
+  --course-veil-top: rgba(255, 255, 255, 0.86);
+  --course-veil-bottom: rgba(255, 255, 255, 0.93);
+  --lane-track: rgba(0, 0, 0, 0.06);
+  --lane-stripe: rgba(0, 0, 0, 0.04);
+  --lane-player-frame: var(--highlight-soft);
+  --finish-dark: rgba(40, 40, 40, 0.9);
+  --finish-light: rgba(255, 255, 255, 0.95);
 
   display: flex;
   flex-direction: column;
@@ -163,12 +163,12 @@
 .RaceRunner__course {
   position: relative;
   padding: var(--space-5) var(--space-4) var(--space-6);
-  background-color: var(--surface-sunken);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface);
   background-size: cover;
   background-position: center;
-  /* The hero's cut, so the track reads as the same kind of block. */
-  clip-path: var(--clip-hero);
-  /* clip-path hides a runner's pill past the finish but still lets it widen the page. */
+  box-shadow: var(--shadow-2);
+  /* Keeps a runner's pill past the finish from widening the page. */
   overflow: hidden;
 }
 
@@ -269,7 +269,7 @@
   font-family: var(--font-ui);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
-  color: var(--text-inverse);
+  color: var(--text);
   white-space: nowrap;
 }
 

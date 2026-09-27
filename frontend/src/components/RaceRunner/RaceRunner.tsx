@@ -167,7 +167,7 @@ const RaceRunner = () => {
 
   if (error) {
     return (
-      <div className="RaceRunner RaceRunner--state theme-arena">
+      <div className="RaceRunner RaceRunner--state">
         <div className="RaceRunner__state-card">
           <h1 className="RaceRunner__state-title">A corrida não aconteceu</h1>
           <p role="alert">{error}</p>
@@ -181,7 +181,7 @@ const RaceRunner = () => {
 
   if (!race || !simulation || !track) {
     return (
-      <div className="RaceRunner RaceRunner--state theme-arena">
+      <div className="RaceRunner RaceRunner--state">
         <div className="RaceRunner__state-card">
           <h1 className="RaceRunner__state-title">Preparando os portões</h1>
           <div className="RaceRunner__gates" aria-hidden="true">
@@ -202,7 +202,7 @@ const RaceRunner = () => {
   const art = trackImage(track.image);
 
   return (
-    <div className="RaceRunner theme-arena">
+    <div className="RaceRunner">
       <RaceHeader
         track={track}
         style={style}

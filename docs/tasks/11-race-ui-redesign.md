@@ -182,6 +182,13 @@ o corte diagonal do hero (`--clip-hero`) no bloco da pista, a faixa inclinada do
 saber em qual estão. A corrida é o bloco escuro sobre a página clara, do mesmo jeito que o
 hero da Home é.
 
+> **Revertido em 2026-09-27**, a pedido do Eduardo: a arena verde-escura não combinava com
+> o site, que é todo claro. `.theme-arena` saiu de `tokens.css`; a corrida usa o tema claro,
+> a pista virou um card branco com sombra (como os cards de égua, sem o corte diagonal) e a
+> arte da pista ficou só um fundo suave. O nome em cada pílula de corredora passou a ser
+> claro ou escuro conforme a cor dela (antes era sempre escuro, com contraste de até 2,3:1
+> nas rivais de cor escura; agora o mínimo é 3,8:1).
+
 **Slot do HUD.** Ficou como fluxo de coluna única com `gap`, não como um elemento vazio
 reservado: inserir o `RaceHud` entre a pista e os painéis não exige mexer no layout, e não
 sobra marcação nem CSS morto esperando a task 13. O lugar está comentado no `RaceRunner.tsx`.
