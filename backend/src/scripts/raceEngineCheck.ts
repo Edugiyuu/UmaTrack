@@ -321,6 +321,26 @@ const paperRace = (
   );
   check("runners never move backwards in the replay", monotonic);
   check("the replay starts at the gates", race.frames[0].t === 0);
+
+  // The replay must reach the line exactly at finishTime, or the animation would show a
+  // photo finish up to a quarter of a turn late and possibly in the wrong order.
+  const field = simulateRace({
+    track: track("niigata-mile"),
+    runners: Array.from({ length: 8 }, (_, index) =>
+      runner(`r${index}`, { speed: 90 + index * 3, stamina: 90, power: 75, wit: 80 })
+    ),
+    seed: 8
+  });
+  const lateArrivals = field.results.filter((result) => {
+    const lane = field.runners.findIndex((entry) => entry.id === result.id);
+    const arrival = field.frames.find((frame) => frame.positions[lane] >= field.distance);
+    return arrival?.t !== result.finishTime;
+  });
+  check(
+    "the replay reaches the line exactly at each finish time",
+    lateArrivals.length === 0,
+    lateArrivals.map((result) => `${result.id} ${result.finishTime}`).join(" · ")
+  );
   check(
     "everyone reaches the finish line",
     race.frames[race.frames.length - 1].positions.every((pos) => pos >= race.distance)

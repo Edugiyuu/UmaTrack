@@ -222,6 +222,8 @@ export const simulateRace = ({ track, runners, seed }: SimulateRaceOptions): Rac
     const startDistances = states.map((state) => state.distance);
     const startStamina = states.map(staminaRatio);
     const advances = states.map(() => 0);
+    /** Fraction of this turn at which each runner crossed the line, if she did. */
+    const finishFractions: (number | null)[] = states.map(() => null);
 
     states.forEach((state, lane) => {
       if (state.finishTime !== null) return;
@@ -311,6 +313,7 @@ export const simulateRace = ({ track, runners, seed }: SimulateRaceOptions): Rac
       if (advance >= remaining) {
         // Crossed the line inside this turn: the fraction of the turn it took decides
         // photo finishes, so two runners finishing in the same turn never tie.
+        finishFractions[lane] = remaining / advance;
         state.distance = track.distance;
         state.finishTime = Number((turn - 1 + remaining / advance).toFixed(4));
         return;
@@ -327,13 +330,35 @@ export const simulateRace = ({ track, runners, seed }: SimulateRaceOptions): Rac
       }
     });
 
-    for (let step = 1; step <= FRAME_SUBSTEPS; step += 1) {
-      const fraction = step / FRAME_SUBSTEPS;
+    // Regular samples, plus one at the exact moment each finisher crossed the line, so
+    // the animation shows photo finishes at their real time and in their real order.
+    const samples = Array.from({ length: FRAME_SUBSTEPS }, (_, index) => {
+      const fraction = (index + 1) / FRAME_SUBSTEPS;
+      return { fraction, t: Number((turn - 1 + fraction).toFixed(2)) };
+    });
+    states.forEach((state, lane) => {
+      const fraction = finishFractions[lane];
+      if (fraction === null) return;
+      const sameTime = samples.find((sample) => sample.t === state.finishTime);
+      if (sameTime) {
+        // A finish that rounds onto a regular sample shares it, at the crossing instant.
+        sameTime.fraction = Math.max(sameTime.fraction, fraction);
+      } else {
+        samples.push({ fraction, t: state.finishTime! });
+      }
+    });
+    samples.sort((a, b) => a.t - b.t);
+
+    for (const { fraction, t } of samples) {
       frames.push({
-        t: Number((turn - 1 + fraction).toFixed(2)),
-        positions: states.map((state, lane) =>
-          Math.round(Math.min(state.distance, startDistances[lane] + advances[lane] * fraction))
-        ),
+        t,
+        positions: states.map((state, lane) => {
+          const crossing = finishFractions[lane];
+          if (crossing !== null && fraction >= crossing) return track.distance;
+          const position = Math.round(startDistances[lane] + advances[lane] * fraction);
+          // Rounding must never put a runner on the line before she actually crosses it.
+          return crossing !== null ? Math.min(track.distance - 1, position) : Math.min(state.distance, position);
+        }),
         stamina: states.map((state, lane) =>
           Number((startStamina[lane] + (staminaRatio(state) - startStamina[lane]) * fraction).toFixed(3))
         )
