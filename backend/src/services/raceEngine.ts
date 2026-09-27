@@ -276,16 +276,17 @@ export const simulateRace = ({ track, runners, seed }: SimulateRaceOptions): Rac
 
       // --- speed ---------------------------------------------------------------
       const tired = state.stamina <= 0;
-      if (tired) state.exhausted = true;
 
       const power = tired ? state.stats.power / TIRED_POWER_DIVISOR : state.stats.power;
       const ceiling = tired ? state.stats.speed / TIRED_SPEED_DIVISOR : state.stats.speed;
+      const accelBoost = 1 + sumEffects(state, ["accelBoost"]);
 
+      // The launch is turn 1's acceleration, so an accelBoost that fires at the gates
+      // boosts it; otherwise a one-turn opening boost would expire before it applied.
       if (turn === 1) {
-        state.speed = Math.min(ceiling, power / START_DIVISOR);
+        state.speed = Math.min(ceiling, (power / START_DIVISOR) * accelBoost);
       } else {
-        const accel = (power / ACCEL_DIVISOR) * (1 + sumEffects(state, ["accelBoost"]));
-        state.speed = Math.min(ceiling, state.speed + accel);
+        state.speed = Math.min(ceiling, state.speed + (power / ACCEL_DIVISOR) * accelBoost);
       }
       // Nobody stands still: even a zero-stat runner eventually reaches the line.
       state.speed = Math.max(1, state.speed);
@@ -299,6 +300,8 @@ export const simulateRace = ({ track, runners, seed }: SimulateRaceOptions): Rac
         state.stats.wit / WIT_RELIEF_DIVISOR + sumEffects(state, ["staminaSave"])
       );
       state.stamina -= ((runSpeed * runSpeed) / STAMINA_DIVISOR) * pressureAt(progress) * (1 - save);
+      // Flag it the moment the bar empties, so running dry on the last turn still counts.
+      if (state.stamina <= 0) state.exhausted = true;
 
       // --- movement --------------------------------------------------------------
       const advance = runSpeed * (1 - NOISE + rng() * NOISE * 2);

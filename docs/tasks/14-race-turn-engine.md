@@ -317,3 +317,4 @@ npm run race:check --prefix backend
 | 2026-09-26 | Motor por turnos implementado. `STAMINA_DIVISOR` calibrado em 1800 com os requisitos das pistas (4.2); o teste da velocista contra a equilibrada passou de 1200m para Tokyo. `npm run race:check`: todos os casos passam. |
 | 2026-09-26 | Frontend em turnos (relógio, tempos, skills, guia) e histórico antigo preservado com `timeUnit`. A tela de corrida não foi testada no navegador: subir o backend regrava o catálogo de skills no banco compartilhado e a corrida exige login. |
 | 2026-09-26 | Tasks `12` e `13` reescritas para o motor por turnos. |
+| 2026-09-27 | Revisão do PR: um `accelBoost` que dispara no turno 1 agora multiplica a largada (antes expirava sem efeito), e `exhausted` é marcado assim que o fôlego zera, inclusive no último turno. Casos novos no `race:check`. |

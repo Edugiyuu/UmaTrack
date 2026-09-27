@@ -249,6 +249,23 @@ const paperRace = (
   check("an opening skill fires in most races", fired >= 16, `${fired}/20`);
   check("the skill usually decides a race between twins", helped >= 14, `${helped}/20`);
 
+  // 200 Wit makes the gate burst a sure thing on turn 1, where the launch is decided.
+  const burst = simulateRace({
+    track: FLAT,
+    runners: [
+      runner("burst", { ...stats, wit: 200 }, [skill("gate-burst")]),
+      runner("plain", { ...stats, wit: 200 })
+    ],
+    seed: 4
+  });
+  const firstTurn = burst.frames.find((frame) => frame.t === 1)!;
+  check(
+    "an accelBoost that fires on turn 1 speeds up the launch",
+    finishOf(burst, "burst").skillsActivated.includes("Explosão de Portão") &&
+      firstTurn.positions[0] > firstTurn.positions[1] * 1.3,
+    `${firstTurn.positions[0]}m x ${firstTurn.positions[1]}m after turn 1`
+  );
+
   const passive = simulateRace({
     track: track("sapporo-sprint"),
     runners: [runner("p", { speed: 70, stamina: 30, power: 60, wit: 40 }, [skill("iron-lungs")])],
@@ -258,6 +275,31 @@ const paperRace = (
     "passive stat skills are folded in before the race",
     passive.shortfalls.p === undefined,
     "30 + 25 Stamina clears the 35 requirement"
+  );
+}
+
+// --- running dry on the last turn still counts ----------------------------------------
+{
+  // Sweeping Stamina walks the moment the bar empties across the whole race, so some of
+  // these runners drain it on the very turn they cross the line.
+  let dryFinishes = 0;
+  let unflagged = 0;
+  for (let stamina = 20; stamina <= 60; stamina += 1) {
+    const race = simulateRace({
+      track: track("sapporo-sprint"),
+      runners: [runner("r", { speed: 60, stamina, power: 50, wit: 30 })],
+      seed: 2
+    });
+    const result = race.results[0];
+    if (result.staminaLeft === 0) {
+      dryFinishes += 1;
+      if (!result.exhausted) unflagged += 1;
+    }
+  }
+  check(
+    "a runner who finishes with an empty bar is flagged as exhausted",
+    dryFinishes > 0 && unflagged === 0,
+    `${unflagged} of ${dryFinishes} dry finishes unflagged`
   );
 }
 

@@ -72,7 +72,8 @@ demais turnos:    v = min(Speed, v + Power / 6)
 entrar em curva:  v = v / 1,2          (trecho com curve >= 0,4)
 avanço:           distância += v       (a sobra passa para o trecho seguinte)
 ```
-As skills de velocidade somam metros por turno em cima de `v` enquanto estão ativas. O
+As skills de velocidade somam metros por turno em cima de `v` enquanto estão ativas, e as
+de aceleração multiplicam o ganho do turno (no turno 1, a própria largada). O
 avanço de cada turno varia até ±2% (ruído com seed), então duas corredoras idênticas
 não andam grudadas.
 
