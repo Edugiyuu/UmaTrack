@@ -16,20 +16,22 @@ const CareerCalendar = ({ career, turnsLeft }: CareerCalendarProps) => (
             const result = career.results.find((entry) => entry.raceIndex === race.index);
             const isNext = career.nextRace?.index === race.index;
             const state = result ? (result.passed ? 'passed' : 'failed') : isNext ? 'next' : 'ahead';
+            const meta = result
+                ? `${result.placement}º ${result.passed ? '✓' : '✗'} · ${goalLabel(race.goal)}`
+                : isNext
+                    ? `${turnsLeft > 0 ? `${turnsLeft} turnos` : 'hoje'} · ${goalLabel(race.goal)}`
+                    : goalLabel(race.goal);
             return (
-                <li key={race.index} className={`CareerCalendar__race is-${state}`}>
+                // The cell is narrow: the text may be cut, so the full line is the tooltip.
+                <li
+                    key={race.index}
+                    className={`CareerCalendar__race is-${state}`}
+                    title={`${race.trackName} · ${meta}`}
+                >
                     <span className='CareerCalendar__index'>{race.index + 1}</span>
                     {/* "Sapporo" for "Sapporo Sprint": the full name does not fit five in a row. */}
-                    <span className='CareerCalendar__track' title={race.trackName}>
-                        {race.trackName.split(' ')[0]}
-                    </span>
-                    <span className='CareerCalendar__meta'>
-                        {result
-                            ? `${result.placement}º · meta ${goalLabel(race.goal)} ${result.passed ? '✓' : '✗'}`
-                            : isNext
-                                ? `${turnsLeft > 0 ? `em ${turnsLeft} turnos` : 'hoje'} · ${goalLabel(race.goal)}`
-                                : goalLabel(race.goal)}
-                    </span>
+                    <span className='CareerCalendar__track'>{race.trackName.split(' ')[0]}</span>
+                    <span className='CareerCalendar__meta'>{meta}</span>
                 </li>
             );
         })}

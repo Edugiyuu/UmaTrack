@@ -182,6 +182,7 @@ npm run career:check --prefix backend
 | Data | Nota |
 |---|---|
 | 2026-09-27 | Pedido do Eduardo, com as quatro decisões da seção 1. Implementada e verificada no mock. |
+| 2026-09-27 | Revisão do Eduardo: a tela de treino rolava para mostrar as ações. No desktop ela agora cabe na janela (altura da tela, espaçamentos em `vh`, grid de atributos ocupando a sobra; só a lista de skills rola, dentro da coluna). Conferido com as fontes reais em 1400×912, 1366×768 e 1280×720, sem texto cortado no calendário. |
 
 **Verificação no mock** (Silence Suzuka): carreira nova mostra "Próxima prova: Sapporo Sprint
 em 6 turnos · meta top 3"; no turno 0 o treino fica bloqueado, o card vira "Hoje é dia de
