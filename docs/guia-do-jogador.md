@@ -228,7 +228,11 @@ turnos trata todas do mesmo jeito. As estratégias voltam numa próxima versão.
 
 A simulação roda **no servidor**, **turno a turno**, a partir de uma semente
 aleatória. O navegador só recebe o replay pronto para animar — não dá para
-influenciar o resultado pelo cliente. No replay, cada turno dura 1 segundo em 1x.
+influenciar o resultado pelo cliente. No replay, cada turno dura 2 segundos em 1x.
+
+Dá para **pausar** a corrida e andar **turno a turno** pelos botões do topo ou
+pelo teclado: **espaço** pausa e continua, **←** e **→** voltam e avançam um
+turno (e já pausam). É o jeito de ler o HUD com calma num momento importante.
 
 ### Velocidade
 
@@ -275,7 +279,8 @@ com algumas skills, conforme a dificuldade da pista.
 ### Lendo o HUD da corrida
 
 Abaixo da pista, o HUD mostra o que o motor decidiu para a **sua** égua no turno
-que está passando. Ele muda uma vez por turno, nunca no meio de um. A primeira
+que está passando. Ele muda uma vez por turno, nunca no meio de um. Com a corrida
+pausada, ← e → mostram o turno anterior e o seguinte. A primeira
 linha resume o turno:
 
 ```

@@ -221,6 +221,18 @@ foi amostrado a cada 20–50ms durante o playback:
 - A escolha de esconder é estado do `RaceRunner`, não `localStorage`: a task pede que valha
   até o fim da prova.
 
+**Depois da revisão do Eduardo (2026-09-27).** Mesmo em 1x a corrida passava rápido demais
+para ler o HUD. Duas mudanças:
+- **1x = 2 segundos por turno** (`SECONDS_PER_TURN` em `useRacePlayback`); 2x e 4x ficam
+  como atalho para quem quer ir rápido.
+- **Pausa e passo a passo**: botões "◀ Turno", "Pausar/Continuar" e "Turno ▶" no cabeçalho,
+  e atalhos espaço / ← / →. Cada passo vai para o fim do turno anterior ou seguinte ao do
+  relógio e pausa, então o HUD mostra aquele turno inteiro, parado. `useRacePlayback` ganhou
+  `seek`. Verificado no mock: 1x avança ~2 turnos em 4s; pausado o relógio não anda; três →
+  seguidos (antes de um novo render) avançam três turnos; ← volta um.
+- Ideia guardada para depois, se ainda fizer falta: câmera lenta automática por 2 turnos nos
+  momentos-chave (curva, primeiro "forçando", cansaço, skill).
+
 **Fora do escopo, encontrado no caminho.** A pílula da corredora que cruza a linha
 (`left: 100%`) alargava a página: o `clip-path` da pista esconde, mas não corta o overflow.
 Corrigido com `overflow: hidden` em `.RaceRunner__course` (layout da task `11`). O README

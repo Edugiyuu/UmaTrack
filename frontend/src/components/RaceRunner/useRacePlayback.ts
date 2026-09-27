@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { RaceSimulation, RunnerTelemetry, SkillActivation } from "../../types/race";
 
 export interface RacePlaybackState {
@@ -19,12 +19,23 @@ export interface RacePlaybackState {
    * only changes identity when the turn does, and the HUD can memoise on it.
    */
   telemetry: RunnerTelemetry | null;
+  /**
+   * Jumps to a race time, in turns, clamped to the replay, and returns where it landed.
+   * Stable across renders.
+   */
+  seek: (time: number) => number;
 }
 
 const EMPTY: number[] = [];
 
 /**
- * Plays a simulation back frame by frame. At 1x one turn lasts one second; the replay
+ * Real seconds one turn lasts at 1x. The HUD changes once per turn, so this is how long
+ * the player has to read it: at one second the race was over before anything sank in.
+ */
+export const SECONDS_PER_TURN = 2;
+
+/**
+ * Plays a simulation back frame by frame. At 1x one turn lasts SECONDS_PER_TURN; the replay
  * is sampled a few times per turn, so positions are interpolated to keep the runners
  * moving smoothly, and the playback speed can be changed or skipped without touching
  * the underlying data.
@@ -54,7 +65,7 @@ export const useRacePlayback = (
       const delta = (timestamp - lastTimestamp.current) / 1000;
       lastTimestamp.current = timestamp;
 
-      setTime((current) => Math.min(duration, current + delta * speed));
+      setTime((current) => Math.min(duration, current + (delta * speed) / SECONDS_PER_TURN));
       frameRef.current = requestAnimationFrame(step);
     };
 
@@ -65,6 +76,15 @@ export const useRacePlayback = (
     };
   }, [simulation, playing, speed, duration]);
 
+  const seek = useCallback(
+    (target: number) => {
+      const clamped = Math.min(duration, Math.max(0, target));
+      setTime(clamped);
+      return clamped;
+    },
+    [duration]
+  );
+
   return useMemo<RacePlaybackState>(() => {
     if (!simulation || !simulation.frames.length) {
       return {
@@ -74,7 +94,8 @@ export const useRacePlayback = (
         order: EMPTY,
         finished: false,
         activations: [],
-        telemetry: null
+        telemetry: null,
+        seek
       };
     }
 
@@ -111,7 +132,8 @@ export const useRacePlayback = (
       order,
       finished: time >= duration,
       activations: simulation.activations.filter((activation) => activation.time <= time),
-      telemetry
+      telemetry,
+      seek
     };
-  }, [simulation, time, duration]);
+  }, [simulation, time, duration, seek]);
 };

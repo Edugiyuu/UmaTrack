@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import confetti from "canvas-confetti";
 import TrackProfile from "../TrackProfile/TrackProfile";
@@ -34,6 +34,7 @@ const RaceRunner = () => {
   const [error, setError] = useState<string | null>(null);
   const [speed, setSpeed] = useState<number>(1);
   const [showResults, setShowResults] = useState(false);
+  const [paused, setPaused] = useState(false);
   /** The player's call; it holds until the race ends. */
   const [hudHidden, setHudHidden] = useState(false);
   const toggleHud = useCallback(() => setHudHidden((hidden) => !hidden), []);
@@ -67,7 +68,56 @@ const RaceRunner = () => {
   }, [horseId, trackSlug, style]);
 
   const simulation = race?.simulation ?? null;
-  const playback = useRacePlayback(simulation, { speed, playing: !showResults });
+  const playback = useRacePlayback(simulation, { speed, playing: !showResults && !paused });
+
+  // The step handlers read the time through a ref, so they (and the keyboard listener
+  // below) stay stable instead of being rebuilt on every animation frame.
+  const timeRef = useRef(0);
+  timeRef.current = playback.time;
+  const { seek } = playback;
+
+  const togglePause = useCallback(() => setPaused((current) => !current), []);
+  /**
+   * Moves to the end of the turn after (or before) the one on the clock, where the HUD
+   * shows everything that turn decided. The ref moves with it, so several presses
+   * between two renders still count as several turns.
+   */
+  const stepTo = useCallback(
+    (direction: 1 | -1) => {
+      setPaused(true);
+      const turn = timeRef.current < 1e-6 ? 0 : Math.ceil(timeRef.current - 1e-6);
+      timeRef.current = seek(turn + direction);
+    },
+    [seek]
+  );
+  const stepForward = useCallback(() => stepTo(1), [stepTo]);
+  const stepBack = useCallback(() => stepTo(-1), [stepTo]);
+
+  useEffect(() => {
+    if (!simulation || showResults) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey || event.altKey || event.metaKey) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("input, textarea, select, [contenteditable='true']")) return;
+
+      if (event.key === " ") {
+        // A focused button already answers Space with a click of its own.
+        if (target?.closest("button")) return;
+        event.preventDefault();
+        togglePause();
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        stepForward();
+      } else if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        stepBack();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [simulation, showResults, togglePause, stepForward, stepBack]);
 
   const playerLane = useMemo(
     () => simulation?.runners.findIndex((runner) => runner.isPlayer) ?? -1,
@@ -161,6 +211,10 @@ const RaceRunner = () => {
         speed={speed}
         speeds={PLAYBACK_SPEEDS}
         onSpeedChange={setSpeed}
+        paused={paused}
+        onTogglePause={togglePause}
+        onStepBack={stepBack}
+        onStepForward={stepForward}
         onSkip={() => setShowResults(true)}
       />
 

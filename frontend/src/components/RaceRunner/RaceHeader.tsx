@@ -19,6 +19,11 @@ export interface RaceHeaderProps {
   speed: number;
   speeds: readonly number[];
   onSpeedChange: (speed: number) => void;
+  paused: boolean;
+  onTogglePause: () => void;
+  /** Step one whole turn; the replay pauses so the turn can be read. */
+  onStepBack: () => void;
+  onStepForward: () => void;
   onSkip: () => void;
 }
 
@@ -34,6 +39,10 @@ const RaceHeader = ({
   speed,
   speeds,
   onSpeedChange,
+  paused,
+  onTogglePause,
+  onStepBack,
+  onStepForward,
   onSkip
 }: RaceHeaderProps) => (
   <header className="RaceRunner__header">
@@ -55,6 +64,36 @@ const RaceHeader = ({
         {formatClock(time, lastTurn)}
       </span>
       <div className="RaceRunner__controls">
+        <div className="RaceRunner__transport" role="group" aria-label="Controle da corrida">
+          <Button
+            size="sm"
+            variant="ghost"
+            aria-label="Turno anterior"
+            aria-keyshortcuts="ArrowLeft"
+            disabled={time <= 0}
+            onClick={onStepBack}
+          >
+            ◀ Turno
+          </Button>
+          <Button
+            size="sm"
+            variant={paused ? "primary" : "ghost"}
+            aria-pressed={paused}
+            aria-keyshortcuts="Space"
+            onClick={onTogglePause}
+          >
+            {paused ? "Continuar" : "Pausar"}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            aria-label="Próximo turno"
+            aria-keyshortcuts="ArrowRight"
+            onClick={onStepForward}
+          >
+            Turno ▶
+          </Button>
+        </div>
         <div
           className="RaceRunner__speeds"
           role="group"
@@ -76,6 +115,7 @@ const RaceHeader = ({
           Pular para o resultado
         </Button>
       </div>
+      <p className="RaceRunner__shortcuts">Espaço pausa · ← → mudam de turno</p>
     </div>
   </header>
 );
