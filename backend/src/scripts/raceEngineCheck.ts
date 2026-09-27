@@ -369,5 +369,130 @@ for (const seed of TRACK_CATALOG) {
   );
 }
 
+// --- telemetry (docs/tasks/12-race-telemetry-engine.md) ---------------------------------
+{
+  const tokyo = track("tokyo-classic");
+  const fieldSize = TRACK_CATALOG.find((course) => course.slug === tokyo.slug)!.fieldSize;
+  const field = (withPlayer: boolean) =>
+    Array.from({ length: fieldSize }, (_, index) => ({
+      ...runner(`r${index}`, {
+        speed: 100 + index * 2,
+        stamina: 120 + index * 3,
+        power: 105 + index,
+        wit: 90 + index
+      }, SKILL_CATALOG.filter((_, k) => (k + index) % 4 === 0)),
+      isPlayer: withPlayer && index === 0
+    }));
+
+  const watched = simulateRace({ track: tokyo, runners: field(true), seed: 17 });
+  const unwatched = simulateRace({ track: tokyo, runners: field(false), seed: 17 });
+  const { telemetry, ...race } = watched;
+  const { telemetry: none, ...sameRace } = unwatched;
+  // Only the player flag itself may differ between the two.
+  const withoutFlag = (value: object) =>
+    JSON.stringify(value, (key, field) => (key === "isPlayer" ? undefined : field));
+  check(
+    "recording telemetry does not change the race",
+    withoutFlag(race) === withoutFlag(sameRace)
+  );
+  check("a race without a player has no telemetry", none.length === 0);
+
+  const turns = Math.ceil(finishOf(watched, "r0").finishTime);
+  const numeric = telemetry.every((entry) =>
+    Object.values(entry).every((value) => typeof value !== "number" || Number.isFinite(value))
+  );
+  check(
+    "one telemetry item per turn, numbered from 1, all numbers finite",
+    telemetry.length === turns && telemetry.every((entry, index) => entry.turn === index + 1) && numeric,
+    `${telemetry.length} items for ${turns} turns`
+  );
+
+  const bytes = (value: unknown) => JSON.stringify(value).length;
+  const growth = bytes(telemetry) / bytes(race);
+  check(
+    "telemetry grows a full-field payload by less than 30%",
+    growth < 0.3,
+    `+${(growth * 100).toFixed(1)}% (${bytes(race)} → ${bytes(watched)} bytes)`
+  );
+
+  // Without skills, every turn's spend is the rule on paper, so the costs add up.
+  const plain = simulateRace({
+    track: tokyo,
+    runners: [{ ...runner("p", { speed: 110, stamina: 150, power: 115, wit: 100 }), isPlayer: true }],
+    seed: 3
+  }).telemetry;
+  const spent = plain.reduce((total, entry) => total + entry.staminaCost, 0);
+  const drop = 150 - plain[plain.length - 1].stamina;
+  check(
+    "the stamina spent turn by turn adds up to what left the bar",
+    Math.abs(spent - drop) <= plain.length * 0.05,
+    `${spent.toFixed(1)} spent x ${drop.toFixed(1)} dropped`
+  );
+
+  const oval = simulateRace({
+    track: OVAL,
+    runners: [{ ...runner("o", { speed: 120, stamina: 300, power: 96, wit: 100 }), isPlayer: true }],
+    seed: 3
+  }).telemetry;
+  const corners = oval.filter((entry, index) => entry.curveLoss > 0 && oval[index + 1]);
+  const consistent = corners.every((entry) => {
+    const next = oval[entry.turn];
+    return Math.abs(next.speed - (entry.speed - entry.curveLoss + next.accel)) <= 0.2;
+  });
+  check(
+    "a corner shows as speed lost, and the next turn starts from what is left",
+    corners.length === 3 &&
+      consistent &&
+      corners.every((entry) => Math.abs(entry.speed - entry.curveLoss - entry.speed / 1.2) <= 0.2),
+    corners.map((entry) => `turn ${entry.turn} −${entry.curveLoss}`).join(" · ")
+  );
+
+  // The warning has to come while there is still something to learn from it.
+  const short = simulateRace({
+    track: tokyo,
+    runners: [{
+      ...runner("s", { ...tokyo.requirements, stamina: Math.round(tokyo.requirements.stamina * 0.7) }),
+      isPlayer: true
+    }],
+    seed: 11
+  }).telemetry;
+  const firstRushed = short.find((entry) => entry.pace === "rushed");
+  const firstTired = short.find((entry) => entry.tired);
+  const pastFirstThird = short.filter((entry) => entry.remaining <= (tokyo.distance * 2) / 3);
+  check(
+    "30% short of Stamina reads rushed after the first third, before she tires",
+    !!firstRushed && !!firstTired && firstRushed.turn < firstTired.turn &&
+      pastFirstThird.filter((entry) => !entry.tired).every((entry) => entry.pace === "rushed"),
+    `rushed on turn ${firstRushed?.turn}, tired on turn ${firstTired?.turn}`
+  );
+
+  // The verdict has to agree with what happens: no false alarm for a runner who holds
+  // on, and an early one for a runner who tires.
+  for (const course of TRACK_CATALOG) {
+    const falseAlarms: string[] = [];
+    const lateWarnings: string[] = [];
+    for (const share of [0.7, 0.85, 1, 1.1, 1.3]) {
+      const stamina = Math.round(course.requirements.stamina * share);
+      const turns = simulateRace({
+        track: course,
+        runners: [{ ...runner("r", { ...course.requirements, stamina }), isPlayer: true }],
+        seed: 11
+      }).telemetry;
+      const rushed = turns.find((entry) => entry.pace === "rushed");
+      const tired = turns.find((entry) => entry.tired);
+      if (!tired && rushed) falseAlarms.push(`${share}`);
+      if (tired && (!rushed || tired.turn - rushed.turn < 3)) lateWarnings.push(`${share}`);
+    }
+    check(
+      `${course.name}: rushed only for runners who tire, and 3+ turns before they do`,
+      falseAlarms.length === 0 && lateWarnings.length === 0,
+      [
+        falseAlarms.length ? `false alarm at ${falseAlarms.join(", ")}× Stamina` : "",
+        lateWarnings.length ? `late at ${lateWarnings.join(", ")}× Stamina` : ""
+      ].filter(Boolean).join("; ")
+    );
+  }
+}
+
 console.log(failures === 0 ? "\nAll race engine checks passed." : `\n${failures} check(s) failed.`);
 process.exit(failures === 0 ? 0 : 1);
