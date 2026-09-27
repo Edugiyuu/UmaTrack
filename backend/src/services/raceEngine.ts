@@ -6,6 +6,8 @@ import type {
   RaceSimulation,
   RaceSkill,
   RaceTrackInput,
+  RunnerTelemetry,
+  PaceVerdict,
   SkillActivation,
   StatBlock
 } from "../types/race";
@@ -46,6 +48,10 @@ const SKILL_CHANCE_PER_WIT = 0.002;
 const FRAME_SUBSTEPS = 4;
 /** Safety net so a hopeless runner still ends the race. */
 const MAX_TURNS = 300;
+/** Telemetry: a stamina range this far past the line is `safe`... */
+const SAFE_RANGE = 1.15;
+/** ...this far is `tight`, and anything short of it is `rushed`. */
+const TIGHT_RANGE = 0.95;
 
 const STATS = ["speed", "stamina", "power", "wit"] as const;
 
@@ -73,6 +79,44 @@ const phaseAt = (progress: number): RacePhase => {
 };
 
 const pressureAt = (progress: number) => PRESSURE[Math.min(2, Math.floor(progress * 3))];
+
+/** Telemetry is rounded when recorded so the payload does not carry float noise. */
+const round = (value: number, digits: number) => Number(value.toFixed(digits));
+
+/**
+ * Metres a runner can still cover on `stamina` if she holds `speed` from `from` to the
+ * line, paying each remaining third at its own pressure. Past the line the last third's
+ * pressure keeps applying, so the surplus also reads in metres.
+ */
+const staminaRangeFrom = (
+  stamina: number,
+  speed: number,
+  save: number,
+  from: number,
+  distance: number
+) => {
+  const costPerMetre = (pressure: number) =>
+    (speed / STAMINA_DIVISOR) * pressure * (1 - save);
+
+  let left = stamina;
+  let covered = 0;
+  let position = from;
+  for (let third = Math.min(2, Math.floor((from / distance) * 3)); third < 3; third += 1) {
+    const metres = (distance * (third + 1)) / 3 - position;
+    const cost = metres * costPerMetre(PRESSURE[third]);
+    if (cost >= left) return covered + left / costPerMetre(PRESSURE[third]);
+    left -= cost;
+    covered += metres;
+    position += metres;
+  }
+  return covered + left / costPerMetre(PRESSURE[2]);
+};
+
+const paceFor = (range: number, remaining: number): PaceVerdict => {
+  if (range >= remaining * SAFE_RANGE) return "safe";
+  if (range >= remaining * TIGHT_RANGE) return "tight";
+  return "rushed";
+};
 
 interface ResolvedSegment {
   start: number;
@@ -209,6 +253,8 @@ export const simulateRace = ({ track, runners, seed }: SimulateRaceOptions): Rac
     { t: 0, positions: states.map(() => 0), stamina: states.map(() => 1) }
   ];
   const activations: SkillActivation[] = [];
+  const telemetry: RunnerTelemetry[] = [];
+  const playerLane = states.findIndex((state) => state.input.isPlayer);
 
   let turn = 0;
 
@@ -278,6 +324,7 @@ export const simulateRace = ({ track, runners, seed }: SimulateRaceOptions): Rac
 
       // --- speed ---------------------------------------------------------------
       const tired = state.stamina <= 0;
+      const previousSpeed = state.speed;
 
       const power = tired ? state.stats.power / TIRED_POWER_DIVISOR : state.stats.power;
       const ceiling = tired ? state.stats.speed / TIRED_SPEED_DIVISOR : state.stats.speed;
@@ -301,13 +348,55 @@ export const simulateRace = ({ track, runners, seed }: SimulateRaceOptions): Rac
         MAX_STAMINA_SAVE,
         state.stats.wit / WIT_RELIEF_DIVISOR + sumEffects(state, ["staminaSave"])
       );
-      state.stamina -= ((runSpeed * runSpeed) / STAMINA_DIVISOR) * pressureAt(progress) * (1 - save);
+      const staminaCost =
+        ((runSpeed * runSpeed) / STAMINA_DIVISOR) * pressureAt(progress) * (1 - save);
+      const staminaBefore = state.stamina;
+      state.stamina -= staminaCost;
       // Flag it the moment the bar empties, so running dry on the last turn still counts.
       if (state.stamina <= 0) state.exhausted = true;
 
+      const remaining = track.distance - state.distance;
+
+      // --- telemetry -------------------------------------------------------------
+      // Only reads values already computed above, and never calls rng(), so recording
+      // it cannot change the race.
+      let record: RunnerTelemetry | null = null;
+      if (lane === playerLane) {
+        // Projected at the speed she is settling into (the ceiling while she still
+        // accelerates), so the verdict does not start optimistic at the gates.
+        const staminaRange = tired
+          ? 0
+          : staminaRangeFrom(
+              staminaBefore,
+              Math.max(runSpeed, ceiling),
+              save,
+              state.distance,
+              track.distance
+            );
+        record = {
+          turn,
+          phase: phaseAt(progress),
+          pressure: pressureAt(progress),
+          placement: placementOf.get(state.input.id) ?? 1,
+          speed: round(state.speed, 1),
+          runSpeed: round(runSpeed, 1),
+          ceiling: round(ceiling, 1),
+          accel: turn === 1 ? 0 : round(state.speed - previousSpeed, 1),
+          curveLoss: 0,
+          staminaCost: round(staminaCost, 1),
+          staminaSave: round(save, 3),
+          stamina: round(state.stamina, 1),
+          staminaRange: Math.round(staminaRange),
+          remaining: Math.round(remaining),
+          pace: tired ? "rushed" : paceFor(staminaRange, remaining),
+          tired,
+          effects: [...new Set(state.effects.map((effect) => effect.kind))]
+        };
+        telemetry.push(record);
+      }
+
       // --- movement --------------------------------------------------------------
       const advance = runSpeed * (1 - NOISE + rng() * NOISE * 2);
-      const remaining = track.distance - state.distance;
       advances[lane] = advance;
 
       if (advance >= remaining) {
@@ -325,9 +414,11 @@ export const simulateRace = ({ track, runners, seed }: SimulateRaceOptions): Rac
 
       // The leftover metres carry into the next segment; every corner entered on the
       // way costs speed for the next turn.
+      const speedBeforeCorners = state.speed;
       for (let index = before + 1; index <= after; index += 1) {
         if (segments[index].isCorner) state.speed /= CURVE_DIVISOR;
       }
+      if (record) record.curveLoss = round(speedBeforeCorners - state.speed, 1);
     });
 
     // Regular samples, plus one at the exact moment each finisher crossed the line, so
@@ -416,6 +507,7 @@ export const simulateRace = ({ track, runners, seed }: SimulateRaceOptions): Rac
     frames,
     results,
     activations,
-    shortfalls
+    shortfalls,
+    telemetry
   };
 };

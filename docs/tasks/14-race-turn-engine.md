@@ -5,7 +5,7 @@
 | **ID** | `14` |
 | **Branch** | `feat/race-turn-engine` |
 | **Base** | `main` |
-| **Status** | 🔍 Em revisão |
+| **Status** | ✅ Concluída |
 | **Tamanho** | G |
 | **Depende de** | — |
 | **Bloqueia** | revisão de `12` e `13` (ver seção 9) |
