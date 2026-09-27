@@ -21,22 +21,22 @@ const ATTRIBUTES = [
   {
     icon: speedIcon,
     name: "Speed",
-    text: "Define o ritmo que ela consegue segurar. Pesa mais em pistas planas e retas longas."
+    text: "É o teto: a velocidade máxima que ela alcança, em metros por turno. Correr mais rápido também gasta mais fôlego."
   },
   {
     icon: staminaIcon,
     name: "Stamina",
-    text: "É o tamanho do tanque de fôlego. Se acabar antes da linha, ela despenca para 62% do ritmo."
+    text: "É o tamanho do tanque. Cada turno gasta mais quanto mais rápido ela corre e quanto mais perto do fim. Se zerar, a velocidade máxima cai pela metade."
   },
   {
     icon: powerIcon,
     name: "Power",
-    text: "Aceleração, largada e principalmente subidas. Numa rampa, é o Power que decide quanta velocidade ela conserva."
+    text: "A arrancada: ela larga com metade do Power e ganha Power ÷ 6 por turno até o teto. É o que a faz recuperar a velocidade perdida em cada curva."
   },
   {
     icon: witIcon,
     name: "Wit",
-    text: "Economiza fôlego, reduz a perda nas curvas e aumenta a chance de as skills dispararem."
+    text: "Economiza fôlego (150 de Wit gasta 30% menos) e aumenta a chance de as skills dispararem."
   }
 ];
 
@@ -106,6 +106,10 @@ const GuideContent = () => {
 
       <section className="GuideContent__section">
         <h2>Estratégias de corrida</h2>
+        <p className="GuideContent__text">
+          Por enquanto a estratégia escolhida ainda não muda a corrida: todas correm do mesmo
+          jeito. Ela volta a valer numa próxima versão do motor.
+        </p>
         <div className="GuideContent__styles">
           {STYLES.map((style) => (
             <article key={style}>
@@ -119,9 +123,10 @@ const GuideContent = () => {
       <section className="GuideContent__section">
         <h2>As pistas</h2>
         <p className="GuideContent__text">
-          Cada pista é dividida em trechos com inclinação e curva próprias, e cobra um
-          atributo diferente. Os mínimos abaixo são <strong>recomendados</strong>: dá para
-          correr abaixo deles, mas a perda de ritmo é proporcional ao que falta.
+          A corrida acontece em turnos: a cada turno ela avança tantos metros quanto a
+          velocidade dela, e cada curva divide essa velocidade por 1,2. Os mínimos abaixo são{" "}
+          <strong>recomendados</strong>: quem está exatamente neles chega no limite do fôlego.
+          Abaixo disso, o tanque tende a secar antes da linha.
         </p>
 
         {error && <p className="GuideContent__error" role="alert">{error}</p>}

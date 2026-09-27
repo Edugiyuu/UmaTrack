@@ -1,13 +1,8 @@
 import { useEffect, useState } from "react";
 import { getRaceHistory } from "../../services/Race";
 import type { RaceHistoryEntry } from "../../types/race";
+import { formatRaceTime } from "../../utils/raceTime";
 import "./RaceHistory.css";
-
-const formatTime = (seconds: number) => {
-  const minutes = Math.floor(seconds / 60);
-  const rest = seconds - minutes * 60;
-  return minutes > 0 ? `${minutes}:${rest.toFixed(2).padStart(5, "0")}` : `${rest.toFixed(2)}s`;
-};
 
 const RaceHistory = () => {
   const [races, setRaces] = useState<RaceHistoryEntry[]>([]);
@@ -53,7 +48,7 @@ const RaceHistory = () => {
                 <strong>{race.trackName}</strong>
                 <small>{race.horseName} · {race.distance}m</small>
               </span>
-              <span className="RaceHistory__time">{formatTime(race.finishTime)}</span>
+              <span className="RaceHistory__time">{formatRaceTime(race.finishTime, race.timeUnit)}</span>
               <span className="RaceHistory__prize">+{race.prizeMoney.toLocaleString("pt-BR")}</span>
             </li>
           ))}

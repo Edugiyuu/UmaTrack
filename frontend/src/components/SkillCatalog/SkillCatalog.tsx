@@ -31,23 +31,23 @@ const TERRAIN_LABEL: Record<string, string> = {
 /** Plain-language summary of what the race engine will do with this skill. */
 const describeEffect = (skill: SkillResponse) => {
   const { kind, stat, value, duration } = skill.effect;
-  const seconds = duration > 0 ? ` por ${duration}s` : "";
+  const turns = duration > 0 ? ` por ${duration} ${duration === 1 ? "turno" : "turnos"}` : "";
 
   switch (kind) {
     case "speedBoost":
-      return `+${value} m/s de velocidade${seconds}`;
+      return `+${value} m/turno de velocidade${turns}`;
     case "startDash":
-      return `+${value} m/s na largada${seconds}`;
+      return `+${value} m/turno na largada${turns}`;
     case "cornerBoost":
-      return `+${value} m/s nas curvas${seconds}`;
+      return `+${value} m/turno nas curvas${turns}`;
     case "accelBoost":
-      return `+${Math.round(value * 100)}% de aceleração${seconds}`;
+      return `+${Math.round(value * 100)}% de aceleração${turns}`;
     case "staminaSave":
-      return `-${Math.round(value * 100)}% de gasto de fôlego${seconds}`;
+      return `-${Math.round(value * 100)}% de gasto de fôlego${turns}`;
     case "staminaRecover":
       return `recupera ${Math.round(value * 100)}% do fôlego`;
     case "inclineBoost":
-      return `anula ${Math.round(value * 100)}% da perda em subida${seconds}`;
+      return `anula ${Math.round(value * 100)}% da perda em subida${turns}`;
     case "flatStat":
       return `+${value} de ${stat ? STAT_LABEL[stat] : "atributo"} durante a prova`;
     default:

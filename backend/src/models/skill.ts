@@ -27,14 +27,14 @@ const SkillEffectSchema = new mongoose.Schema({
   stat: { type: String, required: false, enum: ["speed", "stamina", "power", "wit"] },
   /** Magnitude of the effect. Meaning depends on `kind` (see raceEngine). */
   value: { type: Number, required: true },
-  /** How long the effect stays active, in seconds. Ignored by instant effects. */
+  /** How long the effect stays active, in turns. Ignored by instant effects. */
   duration: { type: Number, required: true, min: 0, default: 0 }
 }, { _id: false });
 
 const SkillTriggerSchema = new mongoose.Schema({
   phase: { type: String, required: true, enum: SKILL_PHASES, default: "any" },
   terrain: { type: String, required: true, enum: SKILL_TERRAINS, default: "any" },
-  /** Base activation chance per eligible tick, before the Wit bonus. */
+  /** Base activation chance per eligible turn, before the Wit bonus. */
   baseChance: { type: Number, required: true, min: 0, max: 1, default: 0.02 },
   /** Optional gate: only fires while stamina is at or below this fraction. */
   maxStaminaRatio: { type: Number, required: false, min: 0, max: 1 },

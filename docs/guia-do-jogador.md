@@ -47,10 +47,10 @@ Comprar  ->  Treinar (gasta turnos e energia)  ->  Aprender skills com os SP
 
 | Atributo | O que faz na corrida |
 |---|---|
-| **Speed** | Define o ritmo que ela consegue segurar. É o principal em pistas planas. |
-| **Stamina** | O tamanho do tanque de fôlego. Se zerar antes da linha, o ritmo cai para **62%**. |
-| **Power** | Aceleração, largada e **subidas**. Numa rampa, é o Power que decide quanta velocidade ela conserva. |
-| **Wit** | Economiza fôlego (até −25%), reduz a perda nas curvas e aumenta a chance das skills dispararem. |
+| **Speed** | O teto: a velocidade máxima dela, em metros por turno. Correr mais rápido também gasta mais fôlego. |
+| **Stamina** | O tamanho do tanque de fôlego. Se zerar antes da linha, a velocidade máxima cai **pela metade** até o fim. |
+| **Power** | A arrancada: ela larga com metade do Power e acelera Power ÷ 6 por turno até o teto. É o que a faz recuperar a velocidade depois de cada curva. |
+| **Wit** | Economiza fôlego (150 de Wit gasta 30% menos) e aumenta a chance das skills dispararem. |
 
 O atributo mais alto define o **tipo** dela — e é nesse tipo que ela treina
 mais rápido (ver [afinidade](#o-que-entra-na-conta)).
@@ -130,28 +130,28 @@ Skills são aprendidas na tela de carreira gastando SP. Cada uma exige
 atributos mínimos e só pode ser aprendida uma vez.
 
 Durante a prova elas disparam **sozinhas**, quando o gatilho acontece. A chance
-por segundo é `chance base + Wit × 0,0004` — 150 de Wit soma +6 pontos
-percentuais por segundo de janela elegível.
+por turno é `chance base + Wit × 0,002` — 150 de Wit soma +30 pontos
+percentuais em cada turno da janela elegível.
 
 ### Catálogo completo
 
 | Skill | SP | Raridade | Efeito | Dispara em | Requisitos |
 |---|---:|---|---|---|---|
-| Concentração | 60 | Comum | +1,1 m/s por 3s | largada | Pow 40 · Wit 30 |
-| Explosão de Portão | 130 | Rara | +45% aceleração por 5s | largada | Spd 60 · Pow 110 · Wit 40 |
-| Arrancada Final | 90 | Comum | +0,9 m/s por 5s | reta final | Spd 90 · Wit 50 |
-| Passo Relâmpago | 160 | Rara | +1,3 m/s por 4s | meio da prova, em reta | Spd 130 · Pow 60 · Wit 70 |
-| Último Fôlego | 240 | **Única** | +1,8 m/s por 6s | últimos 20% | Spd 150 · Sta 120 · Pow 90 · Wit 90 |
-| Respiração Constante | 80 | Comum | −20% de gasto de fôlego por 12s | meio da prova | Sta 80 · Wit 60 |
+| Concentração | 60 | Comum | +7 m/turno por 1 turno | largada | Pow 40 · Wit 30 |
+| Explosão de Portão | 130 | Rara | +45% aceleração por 1 turno | largada | Spd 60 · Pow 110 · Wit 40 |
+| Arrancada Final | 90 | Comum | +5 m/turno por 1 turno | reta final | Spd 90 · Wit 50 |
+| Passo Relâmpago | 160 | Rara | +8 m/turno por 1 turno | meio da prova, em reta | Spd 130 · Pow 60 · Wit 70 |
+| Último Fôlego | 240 | **Única** | +11 m/turno por 1 turno | últimos 20% | Spd 150 · Sta 120 · Pow 90 · Wit 90 |
+| Respiração Constante | 80 | Comum | −20% de gasto de fôlego por 2 turnos | meio da prova | Sta 80 · Wit 60 |
 | Segundo Fôlego | 170 | Rara | recupera 18% do fôlego | fôlego abaixo de 30% | Sta 130 · Wit 100 |
 | Pulmões de Ferro | 110 | Comum | +25 Stamina na prova | passiva | Sta 100 |
-| Escaladora | 120 | Comum | anula 35% da perda em subida por 6s | subida | Sta 60 · Pow 110 · Wit 40 |
-| Coração de Montanha | 260 | **Única** | anula 70% da perda em subida por 8s | subida | Spd 60 · Sta 120 · Pow 180 · Wit 60 |
-| Planagem | 95 | Comum | +1,0 m/s por 4s | descida | Spd 70 · Wit 90 |
+| Escaladora | 120 | Comum | anula 35% da perda em subida por 1 turno *(sem efeito por enquanto)* | subida | Sta 60 · Pow 110 · Wit 40 |
+| Coração de Montanha | 260 | **Única** | anula 70% da perda em subida por 2 turnos *(sem efeito por enquanto)* | subida | Spd 60 · Sta 120 · Pow 180 · Wit 60 |
+| Planagem | 95 | Comum | +6 m/turno por 1 turno | descida | Spd 70 · Wit 90 |
 | Força Bruta | 110 | Comum | +25 Power na prova | passiva | Pow 100 |
-| Especialista em Curva | 100 | Comum | +0,8 m/s por 4s | curva | Spd 60 · Pow 70 · Wit 90 |
-| Leitura de Prova | 150 | Rara | +1,1 m/s por 5s | reta final, do 4º para trás | Spd 80 · Sta 80 · Wit 140 |
-| Ritmista | 180 | Rara | −15% de gasto de fôlego por 20s | qualquer momento | Sta 110 · Wit 130 |
+| Especialista em Curva | 100 | Comum | +5 m/turno por 1 turno | curva | Spd 60 · Pow 70 · Wit 90 |
+| Leitura de Prova | 150 | Rara | +7 m/turno por 1 turno | reta final, do 4º para trás | Spd 80 · Sta 80 · Wit 140 |
+| Ritmista | 180 | Rara | −15% de gasto de fôlego por 4 turnos | qualquer momento | Sta 110 · Wit 130 |
 | Olhar Aguçado | 110 | Comum | +25 Wit na prova | passiva | Wit 100 |
 | Marcha de Sprint | 110 | Comum | +25 Speed na prova | passiva | Spd 100 |
 
@@ -159,23 +159,28 @@ percentuais por segundo de janela elegível.
 
 As quatro **passivas** (Pulmões de Ferro, Força Bruta, Olhar Aguçado, Marcha de
 Sprint) custam 110 SP e dão +25 fixos do atributo pela prova inteira. São o
-melhor custo-benefício no começo: +25 de Power em Kokura vale mais do que
-qualquer boost de 4 segundos.
+melhor custo-benefício no começo: +25 de Stamina numa prova longa vale mais do
+que qualquer boost de 1 turno.
 
-Depois, compre pelo terreno da pista que você quer ganhar:
+Depois, compre pelo tipo de pista que você quer ganhar:
 
-- **Subida (Kokura, Tokyo)** → Escaladora, depois Coração de Montanha
-- **Prova longa (Tokyo)** → Respiração Constante, Ritmista, Segundo Fôlego
-- **Plana (Sapporo, Niigata)** → Marcha de Sprint, Passo Relâmpago, Arrancada Final
-- **Técnica (Kyoto)** → Especialista em Curva, Planagem, Leitura de Prova
+- **Prova longa (Tokyo, Kokura, Kyoto)** → Respiração Constante, Ritmista, Segundo Fôlego
+- **Curta (Sapporo, Niigata)** → Marcha de Sprint, Passo Relâmpago, Arrancada Final
+- **Com muitas curvas (Kyoto, Hakodate)** → Especialista em Curva, Leitura de Prova
+
+> Por enquanto **Escaladora** e **Coração de Montanha** não fazem efeito: o motor
+> por turnos ainda ignora a inclinação. Elas voltam a valer quando as pistas forem
+> revisadas.
 
 ---
 
 ## 6. As pistas
 
-Cada pista é dividida em trechos com inclinação e curva próprias. Os
-**requisitos são recomendações**, não travas: você pode se inscrever abaixo
-deles, mas perde ritmo na proporção do que falta.
+Cada pista é dividida em trechos. Por enquanto o que conta na corrida é a
+**distância** e **onde ficam as curvas**; inclinação e piso ainda não mudam
+nada (isso volta quando as pistas forem revisadas). Os **requisitos são
+recomendações**, não travas: quem está exatamente neles chega no limite do
+fôlego; abaixo, o tanque tende a secar antes da linha.
 
 | Pista | Dist. | Piso | Terreno | Inclinação | Speed | Stamina | Power | Wit | Campo | 1º lugar | Inscrição | SP |
 |---|---:|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -190,21 +195,22 @@ Prêmios vão até o **5º lugar** (1º / 2º / 3º / 4º / 5º recebem 100% / 5
 
 ### O que cada pista cobra de você
 
-- **Sapporo** — a pista de treino. Plana, curta, sem inscrição. Speed puro ganha.
-- **Niigata** — a primeira que cobra Wit. Reta longa, posicionamento importa.
-- **Hakodate** — sobe e desce o tempo todo. Trocar de ritmo cansa: quer Stamina **e** Power.
-- **Kyoto** — a descida da terceira curva embala quem tem Wit; as curvas fechadas punem quem não tem.
-- **Tokyo** — a mais longa, com subida na reta final. Sem 150 de Stamina ela quebra antes da linha.
-- **Kokura** — quase toda em rampa, e na areia (que gasta 8% mais fôlego). **Só passa com Power.**
+- **Sapporo** — a pista de treino. Curta, sem inscrição. Speed puro ganha, e dá até para chegar cansada.
+- **Niigata** — a primeira milha, e a primeira que cobra Wit para economizar fôlego.
+- **Hakodate** — duas curvas na segunda metade: Power para reacelerar depois de cada uma.
+- **Kyoto** — duas curvas seguidas antes da reta final, e 2200m de prova: Stamina e Wit.
+- **Tokyo** — a mais longa. Sem ~150 de Stamina ela quebra antes da linha.
+- **Kokura** — o maior requisito de Power do jogo (175) e 130 de Stamina.
 
 ### Exemplo real
 
-Special Week com **102 Speed / 84 Stamina / 118 Power / 90 Wit**:
+Special Week com **102 Speed / 84 Stamina / 118 Power / 90 Wit**, em 30 corridas
+contra grids gerados pelo jogo:
 
 | Pista | Resultado |
 |---|---|
-| Sapporo (60/35/50/30 — ela está acima de tudo) | **1º de 8**, 1:06.77, ~10s na frente do 2º |
-| Kokura (95/130/**175**/90 — falta Power e Stamina) | **12º de 12**, 2:49, fôlego zerado antes do fim |
+| Sapporo (60/35/50/30 — ela está acima de tudo) | **1º de 8** nas 30, em ~12,4 turnos, ~10 turnos na frente da 2ª |
+| Kokura (95/130/**175**/90 — falta Power e Stamina) | **11º ou 12º de 12**, fôlego zerado antes do fim |
 
 A mesma Uma, sem mudar nada. É a pista que decide.
 
@@ -212,86 +218,52 @@ A mesma Uma, sem mudar nada. É a pista que decide.
 
 ## 7. Estratégia de corrida
 
-Escolhida antes de cada prova. Ela muda o ritmo-alvo em cada fase:
-
-| Estratégia | Largada | Meio | Reta final | Últimos 20% |
-|---|---:|---:|---:|---:|
-| **Fugitiva** (`front`) | +7% | +3% | −2% | −3% |
-| **Ponta** (`pace`) | +2% | +1% | 0% | +2% |
-| **Perseguidora** (`late`) | −3% | −1% | +4% | +6% |
-| **Fechadora** (`end`) | −8% | −3% | +6% | **+11%** |
-
-- **Fugitiva** quer Speed alto e prova curta. Ela abre vantagem e tenta segurar.
-- **Fechadora** quer Stamina sobrando: você gasta pouco no começo para explodir
-  no fim. Se o fôlego acabar, o plano inteiro morre.
-- **Ponta** é o padrão seguro e quase nunca é a pior escolha.
-- **Perseguidora** combina com **Leitura de Prova**, que só dispara do 4º para trás.
+A tela ainda deixa escolher **Fugitiva**, **Ponta**, **Perseguidora** ou
+**Fechadora**, mas por enquanto a escolha **não muda a corrida**: o motor por
+turnos trata todas do mesmo jeito. As estratégias voltam numa próxima versão.
 
 ---
 
 ## 8. Como a corrida é decidida
 
-A simulação roda **no servidor**, em passos de 0,1 segundo, a partir de uma
-semente aleatória. O navegador só recebe o replay pronto para animar — não dá
-para influenciar o resultado pelo cliente.
+A simulação roda **no servidor**, **turno a turno**, a partir de uma semente
+aleatória. O navegador só recebe o replay pronto para animar — não dá para
+influenciar o resultado pelo cliente. No replay, cada turno dura 1 segundo em 1x.
 
-### A régua: o requisito da pista
+### Velocidade
 
-Tudo é medido contra o requisito da pista. Ter **exatamente** o recomendado é
-a nota 1,0. O peso de cada atributo varia por pista (Kokura pesa Power 1,6;
-Sapporo pesa Speed 1,35), então estar acima do recomendado no atributo que
-aquela pista valoriza rende muito mais.
+- **Turno 1:** ela sai com Power ÷ 2.
+- **Cada turno depois:** soma Power ÷ 6, até bater no teto, que é o Speed.
+- **Curva:** ao entrar numa curva a velocidade é dividida por 1,2, e ela
+  reacelera nos turnos seguintes.
+- Em cada turno ela avança tantos metros quanto a velocidade (com ±2% de
+  variação). Os metros que sobram no fim de um trecho contam no seguinte.
 
-### Ritmo
-
-O ritmo de referência é **16 m/s**. Sobre ele entram a sua nota de Speed, a
-fase da prova, a sua estratégia, a inclinação e a curva do trecho.
-
-Fases: **largada** (0–16%) · **meio** (16–66%) · **reta final** (66–80%) ·
-**últimos 20%** (80–100%), com o ritmo-alvo subindo de 0,93 para 1,07.
+Exemplo: Power 96 e Speed 120 largam a 48, depois 64, 80, 96, 112 e chegam a
+120 no 6º turno — se nenhuma curva aparecer no caminho.
 
 ### Fôlego
 
-Você tem **100 unidades de fôlego** se o seu Stamina for exatamente o
-recomendado — e isso é precisamente o suficiente para segurar o ritmo de
-referência até a linha. Stamina acima do recomendado é sobra para gastar no
-final; abaixo, você não chega.
-
-O gasto cresce com o **cubo aproximado da velocidade** (expoente 2,4): correr
-10% mais rápido custa ~26% mais fôlego. Some a isso:
-
-- **Subida**: +9% de gasto por ponto percentual de rampa, dividido pelo seu Power
-- **Areia** (Kokura): +8%
-- **Wit**: economiza até 25%, e as skills de fôlego somam até um teto de 55%
-
-**Fôlego zerado = ritmo a 62% e aceleração pela metade.** É o que separa um
-segundo lugar de um décimo segundo lugar.
-
-### Subida
+Ela começa com o valor do Stamina, e cada turno custa:
 
 ```
-velocidade mantida = 1 − (rampa% / 100) × (3,2 − 1,6 × seu Power / Power exigido)
+velocidade² ÷ 1800 × pressão × (1 − desconto)
 ```
 
-Na parede de +6,5% de Kokura:
+- **Pressão:** ×1 no primeiro terço da prova, ×1,25 no segundo, ×1,5 no último.
+- **Desconto:** Wit ÷ 500 mais as skills de fôlego, no máximo 60%.
 
-| Seu Power vs. exigido | Velocidade que você mantém |
-|---|---|
-| Metade (87 de 175) | **84%** |
-| Exatamente (175) | 90% |
-| 1,8× (315) | **98%** |
+Como o custo cresce com o quadrado da velocidade, correr mais rápido gasta mais
+**por metro**: a 120 m/turno cada metro custa o dobro do que a 60.
 
-A skill **Coração de Montanha** anula 70% dessa perda enquanto está ativa.
-
-### Curva
-
-Curva fechada tira até 5% do ritmo, e o Wit devolve até 45% dessa perda.
-**Especialista em Curva** soma +0,8 m/s por cima.
+**Fôlego zerado = cansada até o fim:** a velocidade máxima cai pela metade e o
+Power (a aceleração) para um terço.
 
 ### Chegada
 
-O tempo é interpolado dentro do passo de 0,1s, então uma chegada apertada é
-decidida pela corredora — não pela ordem em que ela aparece na lista.
+Vence quem termina em **menos turnos**. Se duas terminam no mesmo turno, vence
+quem cruzou a linha antes dentro dele (metros que faltavam ÷ velocidade). Por
+isso o tempo aparece com fração, como **12,47 turnos**.
 
 ### As adversárias
 
@@ -340,7 +312,7 @@ paga nada abaixo do 5º — **não é um jeito sustentável de farmar.**
 5. **Suba para Niigata e Hakodate** quando os requisitos estiverem verdes na
    tela de escolha de pista.
 6. **Para Tokyo, priorize Stamina** (150 é bastante). Para **Kokura, priorize
-   Power** (175 é o requisito mais alto do jogo) e leve Escaladora.
+   Power** (175 é o requisito mais alto do jogo) sem esquecer a Stamina.
 7. Antes de cada prova, olhe o **check de requisitos no card da pista**: tudo
    verde significa que você está na briga.
 
@@ -368,11 +340,12 @@ Olhe o aviso no card: os atributos em vermelho estão abaixo do recomendado.
 O resultado da corrida também lista quais faltaram. Treine esses.
 
 **"Minha Uma some no fim da prova."**
-É o fôlego zerando — o ritmo cai para 62%. Ou o Stamina está baixo para a
-distância, ou a estratégia está agressiva demais para o tanque dela.
+É o fôlego zerando — a velocidade máxima cai pela metade. O Stamina está baixo
+para a distância, ou ela é rápida demais para o tanque que tem.
 
 **"Comprei uma skill e ela não disparou."**
-Skills têm gatilho. Escaladora só existe em subida; Leitura de Prova só do 4º
+Skills têm gatilho. Escaladora só existe em subida (e, por enquanto, nem lá
+faz efeito); Leitura de Prova só do 4º
 para trás; Segundo Fôlego só com o fôlego abaixo de 30%. Uma skill de subida
 numa pista plana nunca vai ativar. E Wit baixo reduz a chance de qualquer uma.
 
