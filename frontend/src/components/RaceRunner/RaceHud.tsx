@@ -37,16 +37,19 @@ interface ReadingProps {
   detail: ReactNode;
   /** Dropped first on a phone, where only speed, stamina and pace fit. */
   secondary?: boolean;
+  /** The reading the player watches most: wider, and in its own colour. */
+  featured?: boolean;
   children?: ReactNode;
 }
 
 /** One HUD card. Its tone decides how loud it is; quiet is the normal state. */
-const Reading = ({ label, tone, value, detail, secondary, children }: ReadingProps) => (
+const Reading = ({ label, tone, value, detail, secondary, featured, children }: ReadingProps) => (
   <div
     className={[
       "RaceHud__reading",
       `RaceHud__reading--${tone}`,
-      secondary ? "RaceHud__reading--secondary" : ""
+      secondary ? "RaceHud__reading--secondary" : "",
+      featured ? "RaceHud__reading--featured" : ""
     ]
       .filter(Boolean)
       .join(" ")}
@@ -77,6 +80,14 @@ const RaceHud = ({ telemetry: turn, topCeiling, maxStamina, hidden, onToggle }: 
     <section className="RaceHud" aria-label="Desempenho da sua corredora">
       <header className="RaceHud__bar">
         <p className="RaceHud__line">{turnLine(turn)}</p>
+        {/* Announced when it changes, which is rarely; the readings are not. */}
+        <div className="RaceHud__alert-slot" aria-live="polite">
+          {!hidden && alert && (
+            <p className="RaceHud__alert">
+              <strong>{alert.title}</strong> {alert.body}
+            </p>
+          )}
+        </div>
         <Button size="sm" variant="ghost" aria-expanded={!hidden} onClick={onToggle}>
           {hidden ? "Mostrar HUD" : "Esconder HUD"}
         </Button>
@@ -84,15 +95,6 @@ const RaceHud = ({ telemetry: turn, topCeiling, maxStamina, hidden, onToggle }: 
 
       {!hidden && (
         <>
-          {/* Announced when it changes, which is rarely; the readings are not. */}
-          <div className="RaceHud__alert-slot" aria-live="polite">
-            {alert && (
-              <p className="RaceHud__alert">
-                <strong>{alert.title}</strong> {alert.body}
-              </p>
-            )}
-          </div>
-
           <div className="RaceHud__readings">
             <Reading
               label="Velocidade"
@@ -113,6 +115,7 @@ const RaceHud = ({ telemetry: turn, topCeiling, maxStamina, hidden, onToggle }: 
             <Reading
               label="Fôlego"
               tone={staminaTone}
+              featured
               value={`${staminaShare}%`}
               detail={`−${decimal(turn.staminaCost)} no turno`}
             >

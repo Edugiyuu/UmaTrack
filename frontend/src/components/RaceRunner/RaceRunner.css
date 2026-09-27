@@ -1,29 +1,44 @@
 /**
- * The race screen. Built from the tokens in src/styles/tokens.css and light like the
- * rest of the site: the course is a white card with a soft shadow, as the horse cards
- * are, the track art only a faint backdrop, and heavy italic type for the titles.
- *
- * Layout is a single column with a gap, so the telemetry HUD (task 13) can be dropped
- * in between the course and the panels without touching anything here.
+ * The race screen, v2 (docs/tasks/15-ui-v2-train-race.md, Figma "Race v2").
+ * Header on top; below it the oval between two broadcast columns (the player's camera
+ * and the standings on the left, the leader's camera and the skills on the right); the
+ * HUD and the track strip across the bottom. Every colour comes from the tokens or from
+ * the component tokens declared on .RaceRunner.
  */
 
 .RaceRunner {
-  /* Component tokens: surfaces that exist only on the course. Declared once here so
-     no rule below carries a raw colour, and the course can be retuned from one place. */
-  --course-veil-top: rgba(255, 255, 255, 0.86);
-  --course-veil-bottom: rgba(255, 255, 255, 0.93);
-  --lane-track: rgba(0, 0, 0, 0.06);
-  --lane-stripe: rgba(0, 0, 0, 0.04);
-  --lane-player-frame: var(--highlight-soft);
-  --finish-dark: rgba(40, 40, 40, 0.9);
-  --finish-light: rgba(255, 255, 255, 0.95);
+  /* Component tokens: surfaces that exist only on this screen. */
+  --course-bg: #f2f8ec;
+  --track-band: #f6d3a6;
+  --track-shadow: rgba(140, 100, 50, 0.18);
+  --turf: #8fcf6b;
+  --turf-light: #9fd87c;
+  --turf-ink: #2f6b1c;
+  --turf-on: #ffffff;
+  --turf-on-soft: #e3f5d8;
+  --finish-dark: #2b2b2b;
+  --finish-light: #ffffff;
+  --player-mark: #4f952a;
+  --player-halo: rgba(79, 149, 42, 0.35);
+  --cam-live: #ed2fe0;
+  --cam-leader: #ffc400;
+  /* The hard, offset shadow of the Figma art. */
+  --cam-shadow: 10px 4px 0 rgba(0, 0, 0, 0.25);
+  --segment-curve: #e1dcf5;
+  --segment-uphill: #ffe7cf;
+  --segment-downhill: #dcecf7;
+  /* The HUD's featured stamina reading (RaceHud.css). */
+  --hud-stamina: #ff6ea1;
+  --hud-stamina-ink: #d9467f;
+  --hud-stamina-soft: #ffe3ee;
+  --hud-card-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
   min-height: 100vh;
-  padding: var(--space-5);
-  background-color: var(--surface-page);
+  padding: var(--space-5) var(--space-6);
+  background-color: var(--surface);
   color: var(--text);
   font-family: var(--font-body);
 }
@@ -33,6 +48,7 @@
 .RaceRunner--state {
   align-items: center;
   justify-content: center;
+  background-color: var(--surface-page);
 }
 
 .RaceRunner__state-card {
@@ -90,7 +106,7 @@
 .RaceRunner__header {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
 }
@@ -98,7 +114,7 @@
 .RaceRunner__identity {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
   min-width: 0;
 }
 
@@ -108,7 +124,6 @@
   font-size: var(--text-2xl);
   font-style: italic;
   font-weight: var(--weight-bold);
-  letter-spacing: 0.02em;
   line-height: 1.1;
 }
 
@@ -118,18 +133,42 @@
   gap: var(--space-2);
 }
 
+/* A grid, so the shortcut hint sits under the controls without widening the block
+   (a wrapping flex row counted it into its width and pushed the clock under the title). */
 .RaceRunner__clock {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: var(--space-2);
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  justify-content: end;
+  gap: var(--space-2) var(--space-4);
 }
 
 .RaceRunner__time {
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: start;
+  align-items: baseline;
+  column-gap: var(--space-1);
   font-family: var(--font-ui);
-  font-size: var(--text-xl);
   font-variant-numeric: tabular-nums;
-  font-weight: var(--weight-bold);
+}
+
+.RaceRunner__time-label {
+  grid-column: 1 / -1;
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.RaceRunner__time strong {
+  font-size: var(--text-2xl);
+  line-height: 1;
+}
+
+.RaceRunner__time-total {
+  color: var(--text-muted);
 }
 
 .RaceRunner__controls {
@@ -139,14 +178,20 @@
   gap: var(--space-2);
 }
 
+/* Segmented groups, as in the Figma: a grey pill holding the buttons. */
 .RaceRunner__transport,
 .RaceRunner__speeds {
   display: flex;
-  gap: var(--space-1);
+  gap: 2px;
+  padding: var(--space-1);
+  border-radius: var(--radius-pill);
+  background-color: var(--surface-sunken);
 }
 
 .RaceRunner__shortcuts {
+  grid-column: 2;
   margin: 0;
+  text-align: right;
   font-size: var(--text-xs);
   color: var(--text-muted);
 }
@@ -158,151 +203,62 @@
   }
 }
 
-/* --- course -------------------------------------------------------------- */
+/* --- stage: cameras, oval, side panels ------------------------------------ */
+
+.RaceRunner__stage {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr) 250px;
+  grid-template-areas: "left course right";
+  gap: var(--space-5);
+  align-items: stretch;
+}
 
 .RaceRunner__course {
-  position: relative;
-  padding: var(--space-5) var(--space-4) var(--space-6);
-  border-radius: var(--radius-lg);
-  background-color: var(--surface);
-  background-size: cover;
-  background-position: center;
-  box-shadow: var(--shadow-2);
-  /* Keeps a runner's pill past the finish from widening the page. */
-  overflow: hidden;
+  grid-area: course;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: var(--space-3);
+  border-radius: 20px;
+  background-color: var(--course-bg);
 }
 
-/* The art stays as atmosphere; the runners have to win every contrast fight with it. */
-.RaceRunner__course::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    var(--course-veil-top) 0%,
-    var(--course-veil-bottom) 100%
-  );
-}
-
-.RaceRunner__lanes {
-  position: relative;
+.RaceRunner__side {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
-}
-
-.RaceRunner__lane {
-  display: grid;
-  grid-template-columns: 42px 1fr;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.RaceRunner__lane--player {
-  row-gap: var(--space-1);
-  margin: var(--space-2) 0;
-  padding: var(--space-2) var(--space-2) var(--space-3);
-  border-radius: var(--radius-md);
-  background-color: var(--lane-player-frame);
-  box-shadow: inset 3px 0 0 var(--highlight);
-}
-
-.RaceRunner__lane-place {
-  font-family: var(--font-ui);
-  font-size: var(--text-xs);
-  font-variant-numeric: tabular-nums;
-  color: var(--text-muted);
-  text-align: right;
-}
-
-.RaceRunner__lane--player .RaceRunner__lane-place {
-  color: var(--highlight);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
-}
-
-.RaceRunner__track {
-  position: relative;
-  height: 24px;
-  border-radius: var(--radius-pill);
-  background-color: var(--lane-track);
-  background-image: repeating-linear-gradient(
-    90deg,
-    transparent 0 46px,
-    var(--lane-stripe) 46px 48px
-  );
-}
-
-/* The finish line, as a chequered strip at the end of every lane. */
-.RaceRunner__track::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 10px;
-  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
-  background-color: var(--finish-dark);
-  background-image:
-    linear-gradient(45deg, var(--finish-light) 25%, transparent 25% 75%, var(--finish-light) 75%),
-    linear-gradient(45deg, var(--finish-light) 25%, transparent 25% 75%, var(--finish-light) 75%);
-  background-size: 6px 6px;
-  background-position: 0 0, 3px 3px;
-}
-
-.RaceRunner__lane--player .RaceRunner__track {
-  height: 28px;
-  background-color: var(--accent-soft);
-}
-
-.RaceRunner__runner {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  height: 19px;
-  padding: 0 var(--space-3);
-  border-radius: var(--radius-pill);
-  box-shadow: var(--shadow-1);
-  font-family: var(--font-ui);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
-  color: var(--text);
-  white-space: nowrap;
-}
-
-.RaceRunner__lane--player .RaceRunner__runner {
-  height: 24px;
-  font-size: var(--text-sm);
-  outline: 2px solid var(--highlight);
-}
-
-.RaceRunner__lane-stamina {
-  grid-column: 2;
+  gap: var(--space-4);
   min-width: 0;
 }
 
-/* --- panels -------------------------------------------------------------- */
+.RaceRunner__side--left { grid-area: left; }
+.RaceRunner__side--right { grid-area: right; }
 
-.RaceRunner__panels {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: var(--space-4);
-}
-
-.RaceRunner__segment {
+.RaceRunner__panel {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex: 1;
+  flex-direction: column;
   gap: var(--space-2);
-  margin: var(--space-3) 0 0;
-  font-size: var(--text-sm);
+  min-width: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface-page);
 }
 
-.RaceRunner__segment-label {
-  font-weight: var(--weight-bold);
+.RaceRunner__panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.RaceRunner__panel-head h2 {
+  margin: 0;
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
 }
 
 .RaceRunner__muted {
@@ -324,15 +280,20 @@
   display: flex;
   flex-direction: column;
   padding: var(--space-2) var(--space-3);
-  border-left: 3px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  background-color: var(--surface-raised);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background-color: var(--surface);
   font-size: var(--text-sm);
 }
 
 .RaceRunner__activations li.is-player {
-  border-left-color: var(--highlight);
+  border-color: var(--brand-gold);
   background-color: var(--highlight-soft);
+  color: var(--highlight);
+}
+
+.RaceRunner__activations li.is-player strong::before {
+  content: "✦ ";
 }
 
 .RaceRunner__activations span {
@@ -340,11 +301,332 @@
   font-size: var(--text-xs);
 }
 
+/* --- the oval ------------------------------------------------------------- */
+
+.RaceOval {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 480px;
+  overflow: visible;
+}
+
+.RaceOval__band {
+  fill: none;
+  stroke: var(--track-band);
+}
+
+.RaceOval__shadow {
+  fill: none;
+  stroke: var(--track-shadow);
+  transform: translateY(8px);
+}
+
+.RaceOval__lane-line {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.75);
+  stroke-width: 1.5;
+  stroke-dasharray: 8 8;
+}
+
+.RaceOval__rail {
+  fill: none;
+  stroke: var(--finish-light);
+  stroke-width: 4;
+}
+
+.RaceOval__infield { fill: var(--turf); }
+.RaceOval__mow { fill: var(--turf-light); }
+.RaceOval__finish-dark { fill: var(--finish-dark); }
+.RaceOval__finish-light { fill: var(--finish-light); }
+
+.RaceOval__finish-label {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  text-anchor: middle;
+  fill: var(--text);
+}
+
+.RaceOval__readout text {
+  text-anchor: middle;
+}
+
+.RaceOval__kicker {
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  fill: var(--turf-ink);
+}
+
+.RaceOval__distance {
+  font-family: var(--font-ui);
+  font-size: 46px;
+  fill: var(--turf-on);
+}
+
+.RaceOval__distance-total {
+  font-size: 20px;
+  fill: var(--turf-on-soft);
+}
+
+.RaceOval__progress-track {
+  fill: var(--turf-on);
+  opacity: 0.35;
+}
+
+.RaceOval__progress-fill { fill: var(--turf-on); }
+
+.RaceOval__segment {
+  font-size: 14px;
+  fill: var(--turf-ink);
+}
+
+.RaceOval__dot {
+  stroke: var(--finish-light);
+  stroke-width: 3;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.22));
+}
+
+.RaceOval__player .RaceOval__dot {
+  stroke-width: 4;
+}
+
+.RaceOval__halo {
+  fill: var(--player-halo);
+}
+
+.RaceOval__bubble rect {
+  fill: var(--text);
+}
+
+.RaceOval__bubble text {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  text-anchor: middle;
+  fill: var(--text-inverse);
+}
+
+/* --- cameras -------------------------------------------------------------- */
+
+.RaceCam {
+  --cam-color: var(--cam-live);
+  margin: 0;
+  border: 3px solid var(--cam-color);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface);
+  box-shadow: var(--cam-shadow);
+  overflow: hidden;
+}
+
+.RaceCam--leader { --cam-color: var(--cam-leader); }
+
+.RaceCam__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  background-color: var(--cam-color);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--on-solid);
+}
+
+.RaceCam__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--on-solid);
+}
+
+.RaceCam--live .RaceCam__dot {
+  animation: RaceCam__blink 1.2s steps(2, jump-none) infinite;
+}
+
+@keyframes RaceCam__blink {
+  50% { opacity: 0.2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .RaceCam--live .RaceCam__dot { animation: none; }
+}
+
+.RaceCam__view {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 5 / 4;
+  background-color: var(--surface-page);
+  overflow: hidden;
+}
+
+.RaceCam__art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Frame the face, as the Figma camera does. */
+  object-position: center 12%;
+}
+
+/* A rival has no art: her colours and her initial, like racing silks. */
+.RaceCam__silks {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background:
+    repeating-linear-gradient(135deg, transparent 0 18px, rgba(255, 255, 255, 0.18) 18px 36px),
+    var(--runner-color);
+  font-family: var(--font-ui);
+  font-size: 3rem;
+  color: var(--on-solid);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+}
+
+.RaceCam__caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.RaceCam__caption strong {
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--text-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.RaceCam__caption span {
+  flex-shrink: 0;
+}
+
+/* --- standings ------------------------------------------------------------ */
+
+.RaceStandings {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.RaceStandings li {
+  display: grid;
+  grid-template-columns: 28px 10px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 3px var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+}
+
+.RaceStandings li.is-player {
+  background-color: var(--accent-soft);
+  font-weight: var(--weight-bold);
+  color: var(--turf-ink);
+}
+
+/* The player further back than the leaders: set apart from them by a gap. */
+.RaceStandings li.is-pinned {
+  margin-top: var(--space-2);
+  position: relative;
+}
+
+.RaceStandings li.is-pinned::before {
+  content: "⋯";
+  position: absolute;
+  top: calc(-1 * var(--space-3));
+  left: var(--space-3);
+  font-size: var(--text-xs);
+  line-height: 1;
+  color: var(--text-muted);
+}
+
+.RaceStandings__place {
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
+}
+
+.RaceStandings__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.RaceStandings__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.RaceStandings__gap {
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+/* --- HUD block and track strip ------------------------------------------- */
+
+.RaceRunner__hud {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: 20px;
+  background-color: var(--surface-page);
+}
+
+.TrackStrip {
+  position: relative;
+  display: flex;
+  gap: 3px;
+  margin-top: var(--space-1);
+}
+
+.TrackStrip__segment {
+  flex-basis: 0;
+  min-width: 0;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-sunken);
+  font-size: var(--text-xs);
+  text-align: center;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.TrackStrip__segment--curve { background-color: var(--segment-curve); }
+.TrackStrip__segment--uphill { background-color: var(--segment-uphill); color: var(--uphill); }
+.TrackStrip__segment--downhill { background-color: var(--segment-downhill); color: var(--downhill); }
+
+.TrackStrip__marker {
+  position: absolute;
+  top: 50%;
+  padding: 1px var(--space-2);
+  border: 2px solid var(--finish-light);
+  border-radius: var(--radius-pill);
+  background-color: var(--player-mark);
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--on-solid);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
 /* --- narrow screens ------------------------------------------------------ */
 
-@media (max-width: 860px) {
-  .RaceRunner__panels {
-    grid-template-columns: 1fr;
+@media (max-width: 1100px) {
+  .RaceRunner__stage {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "course course"
+      "left right";
   }
 }
 
@@ -354,36 +636,73 @@
     gap: var(--space-4);
   }
 
-  .RaceRunner__header {
-    align-items: flex-start;
-  }
-
-  .RaceRunner__clock {
-    align-items: flex-start;
-    width: 100%;
-  }
-
   .RaceRunner__title {
     font-size: var(--text-xl);
   }
 
-  .RaceRunner__lane,
-  .RaceRunner__lane--player {
-    grid-template-columns: 28px 1fr;
+  .RaceRunner__clock {
+    grid-template-columns: auto;
+    justify-content: start;
+    width: 100%;
   }
 
-  /* Thirteen names do not fit; the player keeps hers, the field becomes dots. */
-  .RaceRunner__lane:not(.RaceRunner__lane--player) .RaceRunner__runner-name {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
+  .RaceRunner__shortcuts {
+    grid-column: auto;
   }
 
-  .RaceRunner__lane:not(.RaceRunner__lane--player) .RaceRunner__runner {
-    width: 14px;
-    height: 14px;
-    padding: 0;
+  .RaceRunner__stage {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "course"
+      "left"
+      "right";
+    gap: var(--space-4);
+  }
+
+  .RaceRunner__course {
+    padding: var(--space-1);
+  }
+
+  /* The oval shrinks to a third of its size: fewer, bigger marks. Font sizes and radii
+     are in viewBox units, so these values are about three times what shows. The bubble
+     and the side texts go; the standings right below say where she is. */
+  .RaceOval__bubble,
+  .RaceOval__kicker,
+  .RaceOval__segment {
+    display: none;
+  }
+
+  .RaceOval__distance { font-size: 72px; }
+  .RaceOval__distance-total { font-size: 30px; }
+  .RaceOval__finish-label { font-size: 24px; }
+  .RaceOval__dot { r: 17px; }
+  .RaceOval__player .RaceOval__dot { r: 24px; }
+  .RaceOval__halo { r: 36px; }
+
+  /* On a phone each side column lays its camera beside its panel. */
+  .RaceRunner__side {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    align-items: start;
+    gap: var(--space-3);
+  }
+
+  .RaceCam {
+    --cam-shadow: 5px 2px 0 rgba(0, 0, 0, 0.25);
+  }
+
+  .RaceCam__caption {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .RaceRunner__hud {
+    padding: var(--space-3);
+  }
+
+  /* Too many stretches for a phone: keep the colours, drop the words. */
+  .TrackStrip__segment {
+    min-height: 14px;
+    font-size: 0;
   }
 }

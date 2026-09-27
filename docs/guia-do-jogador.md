@@ -55,6 +55,21 @@ Comprar  ->  Treinar (gasta turnos e energia)  ->  Aprender skills com os SP
 O atributo mais alto define o **tipo** dela — e é nesse tipo que ela treina
 mais rápido (ver [afinidade](#o-que-entra-na-conta)).
 
+### Notas dos atributos
+
+Na tela de treino cada atributo ganha uma **nota**, da G à S, com uma barra do
+quanto falta para a próxima. A nota é só uma leitura rápida do número: a corrida
+usa o valor, nunca a letra. A escala segue os requisitos das pistas: Sapporo pede
+de 30 a 60, e Kokura, a mais dura, chega a 175.
+
+| Nota | G | F | E | D | C | B | A | S |
+|---|---|---|---|---|---|---|---|---|
+| A partir de | 0 | 40 | 60 | 80 | 100 | 125 | 150 | 180 |
+
+Cada botão **Treinar** mostra o custo (−20 de energia). Com energia abaixo de 25
+ele avisa *risco de falhar* (ver [Treinar sem energia é ruim](#treinar-sem-energia-é-ruim)),
+e o **Start race!** só libera com 35 de energia, dizendo quanto falta.
+
 ---
 
 ## 3. A temporada: turnos, energia e humor
@@ -276,6 +291,22 @@ Isso é importante: elas **não** escalam com o seu nível, então treinar melho
 sua colocação de verdade. Cada uma puxa para um atributo diferente e pode vir
 com algumas skills, conforme a dificuldade da pista.
 
+### A tela da corrida
+
+A pista aparece vista de cima, como um oval: a corrida inteira é **uma volta**,
+seja qual for a distância, com largada e chegada na reta de baixo. As corredoras
+são bolinhas; a sua é a maior, com um halo e o balão **VOCÊ** com a colocação.
+No gramado do meio ficam os metros percorridos, o total e quanto falta.
+
+- **LIVE**, à esquerda, é a câmera da sua égua; embaixo dela, a **classificação**
+  ao vivo com a diferença para a líder em metros. Com o páreo cheio aparecem as
+  cinco primeiras e a sua linha logo abaixo.
+- **1º LUGAR**, à direita, acompanha quem lidera; embaixo, as últimas **skills**
+  que dispararam (as suas em dourado). As rivais não têm arte, então a câmera
+  mostra as cores e as iniciais delas.
+- Embaixo do HUD, a **faixa da pista** mostra os trechos (retas, curvas, subidas
+  e descidas) e onde você está.
+
 ### Lendo o HUD da corrida
 
 Abaixo da pista, o HUD mostra o que o motor decidiu para a **sua** égua no turno
@@ -286,6 +317,10 @@ linha resume o turno:
 ```
 Turno 7 · 3º · 116 m/turno · −8,1 de fôlego · entrou na curva
 ```
+
+A colocação dessa linha é a do **começo** do turno; a da pista e da
+classificação anda junto com as bolinhas, então num pelotão apertado as duas
+podem diferir por alguns lugares.
 
 Os cartões ficam **apagados enquanto está tudo normal** e só ganham cor quando
 algo pede atenção. Um HUD todo apagado quer dizer uma corrida limpa.

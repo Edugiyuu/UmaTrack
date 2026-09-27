@@ -1,6 +1,6 @@
 import Button from "../ui/Button/Button";
 import Pill from "../ui/Pill/Pill";
-import { formatClock } from "./format";
+import { currentTurn } from "./format";
 import {
   RUNNING_STYLE_LABEL,
   SURFACE_LABEL,
@@ -60,9 +60,11 @@ const RaceHeader = ({
     </div>
 
     <div className="RaceRunner__clock">
-      <span className="RaceRunner__time" aria-label="Turno em curso">
-        {formatClock(time, lastTurn)}
-      </span>
+      <div className="RaceRunner__time" role="timer" aria-label={`Turno ${currentTurn(time, lastTurn)} de ${lastTurn}`}>
+        <span className="RaceRunner__time-label">Turno</span>
+        <strong>{currentTurn(time, lastTurn)}</strong>
+        <span className="RaceRunner__time-total">/ {lastTurn}</span>
+      </div>
       <div className="RaceRunner__controls">
         <div className="RaceRunner__transport" role="group" aria-label="Controle da corrida">
           <Button

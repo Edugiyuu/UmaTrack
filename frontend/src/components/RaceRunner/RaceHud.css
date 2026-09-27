@@ -24,6 +24,7 @@
 }
 
 .RaceHud__line {
+  flex-shrink: 1;
   margin: 0;
   min-width: 0;
   font-family: var(--font-ui);
@@ -38,12 +39,19 @@
 /* --- the one alert ---------------------------------------------------------- */
 
 /* The slot stays mounted, even empty, so screen readers announce the alert when it
-   appears; it takes no room until then. */
+   appears. In the bar it takes the room the turn line leaves, as a pill (Race v2). */
+.RaceHud__alert-slot {
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
 .RaceHud__alert {
-  margin: 0 0 var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border-left: 4px solid var(--danger);
-  border-radius: var(--radius-md);
+  margin: 0;
+  padding: var(--space-1) var(--space-4);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-pill);
   background-color: var(--danger-soft);
   font-size: var(--text-sm);
   color: var(--text);
@@ -62,7 +70,7 @@
 
 .RaceHud__readings {
   display: grid;
-  grid-template-columns: 1.4fr 1.4fr 1fr 0.8fr 1fr;
+  grid-template-columns: 1.2fr 1.7fr 1fr 0.9fr 1fr;
   gap: var(--space-3);
 }
 
@@ -72,10 +80,11 @@
   flex-direction: column;
   gap: var(--space-1);
   min-width: 0;
-  padding: var(--space-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid transparent;
+  border-radius: 14px;
   background-color: var(--surface);
+  box-shadow: var(--hud-card-shadow);
   transition: opacity var(--duration-base) var(--ease),
     border-color var(--duration-base) var(--ease);
 }
@@ -90,7 +99,7 @@
 
 .RaceHud__value {
   font-family: var(--font-ui);
-  font-size: var(--text-lg);
+  font-size: var(--text-xl);
   font-variant-numeric: tabular-nums;
   line-height: 1.15;
   color: var(--reading-color);
@@ -100,6 +109,22 @@
   font-size: var(--text-xs);
   color: var(--text-muted);
   overflow-wrap: anywhere;
+}
+
+/* Fôlego is the reading the player watches most: wider, pink like the stamina bar of
+   the original sketch, and with a thicker bar. Danger still wins over it. */
+.RaceHud__reading--featured:not(.RaceHud__reading--danger) {
+  --reading-color: var(--hud-stamina-ink);
+  --meter-color: var(--hud-stamina);
+}
+
+.RaceHud__reading--featured:not(.RaceHud__reading--danger) .Meter__track {
+  --meter-color: var(--hud-stamina);
+  background-color: var(--hud-stamina-soft);
+}
+
+.RaceHud__reading--featured .Meter__track {
+  height: 14px;
 }
 
 /* Quiet is the normal state: still readable, just not asking for attention. */
@@ -134,6 +159,16 @@
 @media (max-width: 860px) {
   .RaceHud__readings {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .RaceHud__bar {
+    flex-wrap: wrap;
+  }
+
+  .RaceHud__alert-slot {
+    order: 3;
+    flex-basis: 100%;
+    justify-content: flex-start;
   }
 }
 

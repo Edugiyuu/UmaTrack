@@ -1,18 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import confetti from "canvas-confetti";
-import TrackProfile from "../TrackProfile/TrackProfile";
 import Button from "../ui/Button/Button";
-import Panel from "../ui/Panel/Panel";
-import Pill from "../ui/Pill/Pill";
+import RaceCam from "./RaceCam";
 import RaceHeader from "./RaceHeader";
 import RaceHud from "./RaceHud";
-import RaceLane from "./RaceLane";
+import RaceOval from "./RaceOval";
 import RaceResults from "./RaceResults";
+import RaceStandings from "./RaceStandings";
+import TrackStrip from "./TrackStrip";
+import { ordinal } from "./format";
 import { useRacePlayback } from "./useRacePlayback";
 import { getTracks, runRace, type RunRaceResponse } from "../../services/Race";
 import { horseColors } from "../../constants/horseColors";
-import { trackImage } from "../../constants/trackVisuals";
 import type { RunningStyle, TrackResponse } from "../../types/race";
 import "./RaceRunner.css";
 
@@ -137,15 +137,6 @@ const RaceRunner = () => {
     };
   }, [simulation]);
 
-  /** Placement by lane, so a lane does not have to search the standings itself. */
-  const placements = useMemo(() => {
-    const byLane: number[] = [];
-    playback.order.forEach((lane, index) => {
-      byLane[lane] = index + 1;
-    });
-    return byLane;
-  }, [playback.order]);
-
   useEffect(() => {
     if (!playback.finished || !race || showResults) return;
     setShowResults(true);
@@ -196,10 +187,27 @@ const RaceRunner = () => {
   }
 
   const playerResult = simulation.results.find((result) => result.isPlayer)!;
-  const playerProgress =
-    playerLane >= 0 ? (playback.positions[playerLane] ?? 0) / simulation.distance : 0;
+  const playerCovered = playerLane >= 0 ? (playback.positions[playerLane] ?? 0) : 0;
+  const playerProgress = playerCovered / simulation.distance;
+  const playerPlacement = playback.order.indexOf(playerLane) + 1;
   const latestActivations = playback.activations.slice(-4).reverse();
-  const art = trackImage(track.image);
+
+  const colorOf = (lane: number) => {
+    const runner = simulation.runners[lane];
+    return runner.isPlayer
+      ? horseColors[runner.name] ?? "var(--brand-turf)"
+      : RIVAL_COLORS[lane % RIVAL_COLORS.length];
+  };
+
+  const standings = playback.order.map((lane) => ({
+    ...simulation.runners[lane],
+    color: colorOf(lane),
+    position: playback.positions[lane] ?? 0
+  }));
+  const leader = standings[0];
+  const player = playerLane >= 0 ? simulation.runners[playerLane] : null;
+  const leaderLead = standings.length > 1 ? leader.position - standings[1].position : 0;
+  const playerGap = leader ? leader.position - playerCovered : 0;
 
   return (
     <div className="RaceRunner">
@@ -218,85 +226,95 @@ const RaceRunner = () => {
         onSkip={() => setShowResults(true)}
       />
 
-      <section
-        className="RaceRunner__course"
-        style={art ? { backgroundImage: `url(${art})` } : undefined}
-        aria-label="Corrida em andamento"
-      >
-        <div className="RaceRunner__lanes">
-          {simulation.runners.map((runner, lane) => (
-            <RaceLane
-              key={runner.id}
-              name={runner.name}
-              isPlayer={runner.isPlayer}
-              color={
-                runner.isPlayer
-                  ? horseColors[runner.name] ?? "var(--brand-turf)"
-                  : RIVAL_COLORS[lane % RIVAL_COLORS.length]
-              }
-              progress={(playback.positions[lane] ?? 0) / simulation.distance}
-              placement={placements[lane] ?? lane + 1}
-              stamina={playback.stamina[lane] ?? 0}
-            />
-          ))}
-        </div>
-      </section>
-
-      {playback.telemetry && hudScale && (
-        <RaceHud
-          telemetry={playback.telemetry}
-          topCeiling={hudScale.topCeiling}
-          maxStamina={hudScale.maxStamina}
-          hidden={hudHidden}
-          onToggle={toggleHud}
-        />
-      )}
-
-      <section className="RaceRunner__panels">
-        <Panel
-          title="Perfil da pista"
-          action={<span>{Math.round(playerProgress * track.distance)}m</span>}
-        >
-          <TrackProfile
-            segments={track.segments}
-            distance={track.distance}
-            progress={playerProgress}
-            height={96}
-            showLabels
+      <div className="RaceRunner__stage">
+        <section className="RaceRunner__course" aria-label="Corrida em andamento">
+          <RaceOval
+            runners={simulation.runners.map((runner, lane) => ({
+              id: runner.id,
+              color: colorOf(lane),
+              isPlayer: runner.isPlayer,
+              progress: (playback.positions[lane] ?? 0) / simulation.distance,
+              lane
+            }))}
+            playerPlacement={playerPlacement}
+            covered={playerCovered}
+            distance={simulation.distance}
+            segmentLabel={currentSegment?.label}
           />
-          {currentSegment && (
-            <p className="RaceRunner__segment">
-              <span className="RaceRunner__segment-label">{currentSegment.label}</span>
-              {currentSegment.grade > 0 && (
-                <Pill tone="uphill">▲ subida {currentSegment.grade}%</Pill>
-              )}
-              {currentSegment.grade < 0 && (
-                <Pill tone="downhill">▼ descida {Math.abs(currentSegment.grade)}%</Pill>
-              )}
-              {currentSegment.curve >= 0.4 && <Pill tone="curve">↩ curva</Pill>}
-            </p>
-          )}
-        </Panel>
+        </section>
 
-        <Panel title="Skills" action={<span>{playback.activations.length} no páreo</span>}>
-          {latestActivations.length === 0 ? (
-            <p className="RaceRunner__muted">Nenhuma skill ativada ainda.</p>
-          ) : (
-            <ul className="RaceRunner__activations">
-              {latestActivations.map((activation, index) => (
-                <li
-                  key={`${activation.runnerId}-${activation.skillSlug}-${index}`}
-                  className={activation.runnerId === "player" ? "is-player" : undefined}
-                >
-                  <strong>{activation.skillName}</strong>
-                  <span>
-                    {activation.runnerName} · {activation.distance}m
-                  </span>
-                </li>
-              ))}
-            </ul>
+        <aside className="RaceRunner__side RaceRunner__side--left">
+          {player && (
+            <RaceCam
+              title="LIVE"
+              tone="live"
+              name={player.name}
+              caption={
+                playerPlacement === 1
+                  ? "1º · liderando"
+                  : `${ordinal(playerPlacement)} · ${Math.round(playerGap)}m do líder`
+              }
+              color={colorOf(playerLane)}
+              hasArt
+            />
           )}
-        </Panel>
+          <section className="RaceRunner__panel" aria-labelledby="race-standings-title">
+            <header className="RaceRunner__panel-head">
+              <h2 id="race-standings-title">Classificação</h2>
+              <span>{standings.length} corredoras</span>
+            </header>
+            <RaceStandings runners={standings} />
+          </section>
+        </aside>
+
+        <aside className="RaceRunner__side RaceRunner__side--right">
+          {leader && (
+            <RaceCam
+              title="1º LUGAR"
+              tone="leader"
+              name={leader.name}
+              caption={`${Math.round(leaderLead)}m à frente`}
+              color={leader.color}
+              hasArt={leader.isPlayer}
+            />
+          )}
+          <section className="RaceRunner__panel" aria-labelledby="race-skills-title">
+            <header className="RaceRunner__panel-head">
+              <h2 id="race-skills-title">Skills</h2>
+              <span>{playback.activations.length} no páreo</span>
+            </header>
+            {latestActivations.length === 0 ? (
+              <p className="RaceRunner__muted">Nenhuma skill ativada ainda.</p>
+            ) : (
+              <ul className="RaceRunner__activations">
+                {latestActivations.map((activation, index) => (
+                  <li
+                    key={`${activation.runnerId}-${activation.skillSlug}-${index}`}
+                    className={activation.runnerId === "player" ? "is-player" : undefined}
+                  >
+                    <strong>{activation.skillName}</strong>
+                    <span>
+                      {activation.runnerName} · {activation.distance}m
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </aside>
+      </div>
+
+      <section className="RaceRunner__hud">
+        {playback.telemetry && hudScale && (
+          <RaceHud
+            telemetry={playback.telemetry}
+            topCeiling={hudScale.topCeiling}
+            maxStamina={hudScale.maxStamina}
+            hidden={hudHidden}
+            onToggle={toggleHud}
+          />
+        )}
+        <TrackStrip segments={track.segments} progress={playerProgress} />
       </section>
 
       {showResults && (
