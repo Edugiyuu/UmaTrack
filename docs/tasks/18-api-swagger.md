@@ -5,7 +5,7 @@
 | **ID** | `18` |
 | **Branch** | `feat/api-swagger` |
 | **Base** | `main` |
-| **Status** | 🔲 Não iniciada |
+| **Status** | 🔍 Em revisão |
 | **Tamanho** | M (1–2 sessões) |
 | **Depende de** | — |
 | **Bloqueia** | — |
@@ -40,18 +40,18 @@ criar uma rota sem documentá-la.
 ## 3. Escopo
 
 ### Dentro do escopo
-- [ ] Especificação **OpenAPI 3.1** escrita em TypeScript (`backend/src/docs/openapi/`), com
+- [x] Especificação **OpenAPI 3.1** escrita em TypeScript (`backend/src/docs/openapi/`), com
       `components.schemas` para todos os modelos que a API devolve.
-- [ ] **Swagger UI** servido em `GET /docs` e o JSON cru em `GET /openapi.json`.
-- [ ] Esquema de segurança `bearerAuth` (JWT) aplicado às rotas protegidas.
-- [ ] Documentação de **todas as 18 operações** listadas na seção 4.3, **como elas se
+- [x] **Swagger UI** servido em `GET /docs` e o JSON cru em `GET /openapi.json`.
+- [x] Esquema de segurança `bearerAuth` (JWT) aplicado às rotas protegidas.
+- [x] Documentação de **todas as 18 operações** listadas na seção 4.3, **como elas se
       comportam hoje** (inclusive as inconsistências, marcadas como tal).
-- [ ] Exemplos de requisição e resposta com valores reais (tirados dos catálogos em
+- [x] Exemplos de requisição e resposta com valores reais (tirados dos catálogos em
       `backend/src/data/` e de uma simulação offline do motor).
-- [ ] Script `npm run docs:check` que compara as rotas registradas no Express com os
+- [x] Script `npm run docs:check` que compara as rotas registradas no Express com os
       paths da spec e falha se houver diferença.
-- [ ] Variável de ambiente `API_DOCS` para ligar ou desligar `/docs` e `/openapi.json`.
-- [ ] Corrigir as referências desatualizadas em `docs/race-system-design.md` (seções 4.7, 5,
+- [x] Variável de ambiente `API_DOCS` para ligar ou desligar `/docs` e `/openapi.json`.
+- [x] Corrigir as referências desatualizadas em `docs/race-system-design.md` (seções 4.7, 5,
       6 e 7) e apontar a seção 7 para o Swagger.
 
 ### Fora do escopo
@@ -504,41 +504,41 @@ O script **não** sobe o servidor nem conecta no banco. Ele:
 ## 5. Plano de execução
 Cada passo cabe em um commit.
 
-1. [ ] Criar a branch `feat/api-swagger` a partir de `main`; instalar as dependências;
+1. [x] Criar a branch `feat/api-swagger` a partir de `main`; instalar as dependências;
        conferir compatibilidade de `swagger-ui-express` com Express 5.
-2. [ ] Esqueleto: `docs/openapi/index.ts` com `info`, `servers`, `tags`, `bearerAuth`;
+2. [x] Esqueleto: `docs/openapi/index.ts` com `info`, `servers`, `tags`, `bearerAuth`;
        `swagger.ts`; montar no `app.ts`. `/docs` abre vazio.
-3. [ ] `schemas.ts` e `responses.ts` com todos os schemas da seção 4.5, importando os
+3. [x] `schemas.ts` e `responses.ts` com todos os schemas da seção 4.5, importando os
        `enum` dos models.
-4. [ ] Paths de **Sistema, Auth e Usuário** (rotas 1–6).
-5. [ ] Paths de **Catálogo de éguas, Pistas e Skills** (rotas 7, 8, 14–16).
-6. [ ] Paths de **Égua do usuário, Treino e carreira, aprender skill** (rotas 9–13).
-7. [ ] Paths de **Corrida** (17–18), com o exemplo real de simulação gerado offline.
-8. [ ] `openapiCheck.ts` + script `docs:check`; rodar e zerar as diferenças.
-9. [ ] Validar a spec com um linter OpenAPI (ex.: `npx @redocly/cli lint`
+4. [x] Paths de **Sistema, Auth e Usuário** (rotas 1–6).
+5. [x] Paths de **Catálogo de éguas, Pistas e Skills** (rotas 7, 8, 14–16).
+6. [x] Paths de **Égua do usuário, Treino e carreira, aprender skill** (rotas 9–13).
+7. [x] Paths de **Corrida** (17–18), com o exemplo real de simulação gerado offline.
+8. [x] `openapiCheck.ts` + script `docs:check`; rodar e zerar as diferenças.
+9. [x] Validar a spec com um linter OpenAPI (ex.: `npx @redocly/cli lint`
        apontando para o `/openapi.json` salvo em arquivo) e corrigir avisos relevantes.
-10. [ ] Documentação: `docs/race-system-design.md` (4.7, 5, 6, 7), `README.md` (UTF-16!),
+10. [x] Documentação: `docs/race-system-design.md` (4.7, 5, 6, 7), `README.md` (UTF-16!),
         `.env.example`, `docs/tasks/README.md`.
-11. [ ] Criar as tasks de correção levantadas na seção 9 (formato de erro, bug do
+11. [x] Criar as tasks de correção levantadas na seção 9 (formato de erro, bug do
         `getHorse`, status do login, controllers sem rota).
 
 ## 6. Critérios de aceite
-- [ ] **Dado** o backend rodando, **quando** abro `http://localhost:3000/docs`, **então**
+- [x] **Dado** o backend rodando, **quando** abro `http://localhost:3000/docs`, **então**
       vejo as 18 operações agrupadas em 9 tags, cada uma com summary e descrição em português.
-- [ ] **Dado** `GET /openapi.json`, **quando** passo pelo linter, **então** não há erros.
-- [ ] **Dado** uma rota protegida, **quando** olho no Swagger, **então** ela tem cadeado, e
+- [x] **Dado** `GET /openapi.json`, **quando** passo pelo linter, **então** não há erros.
+- [x] **Dado** uma rota protegida, **quando** olho no Swagger, **então** ela tem cadeado, e
       depois de colar o token do login em "Authorize" o "Try it out" envia o header certo.
-- [ ] **Dado** qualquer operação, **então** ela lista todos os códigos de status que o
+- [x] **Dado** qualquer operação, **então** ela lista todos os códigos de status que o
       controller pode devolver (seção 4.4), com exemplo de corpo para cada um.
-- [ ] **Dado** `POST /race/run`, **então** o exemplo de 200 é uma simulação real, e
+- [x] **Dado** `POST /race/run`, **então** o exemplo de 200 é uma simulação real, e
       `RaceSimulation`, `RunnerTelemetry` e `CareerOutcome` têm cada campo descrito com unidade.
-- [ ] **Dado** que eu acrescente uma rota nova sem documentar, **quando** rodo
+- [x] **Dado** que eu acrescente uma rota nova sem documentar, **quando** rodo
       `npm run docs:check`, **então** ele falha e diz qual rota falta.
-- [ ] **Dado** `API_DOCS=false`, **quando** o backend sobe, **então** `/docs` e
+- [x] **Dado** `API_DOCS=false`, **quando** o backend sobe, **então** `/docs` e
       `/openapi.json` respondem 404.
-- [ ] **Dado** um valor novo em `RUNNING_STYLES` (ou outro enum), **então** a spec o mostra
+- [x] **Dado** um valor novo em `RUNNING_STYLES` (ou outro enum), **então** a spec o mostra
       sem editar arquivo de documentação.
-- [ ] `docs/race-system-design.md` não cita mais `POST /races`, `requirements` de skill nem
+- [x] `docs/race-system-design.md` não cita mais `POST /races`, `requirements` de skill nem
       o fator `0.4`.
 
 ## 7. Como verificar
@@ -548,7 +548,7 @@ npm install --prefix backend
 ```
 
 ```bash
-npx tsc --noEmit -p backend
+cd backend && npx tsc --noEmit
 ```
 
 ```bash
@@ -564,11 +564,11 @@ npm run docs:check --prefix backend
   `career:check` continuam passando.
 
 ## 8. Impacto em documentação
-- [ ] `README.md` — seção "API" com o link para `/docs` e `API_DOCS`
-- [ ] `docs/race-system-design.md` — corrigir 4.7, 5, 6 e trocar a tabela da seção 7 por
+- [x] `README.md` — seção "API" com o link para `/docs` e `API_DOCS`
+- [x] `docs/race-system-design.md` — corrigir 4.7, 5, 6 e trocar a tabela da seção 7 por
       um link para o Swagger (mantendo uma lista curta das rotas)
-- [ ] `docs/guia-do-jogador.md` — seção "Para quem mexe no código": link para `/docs`
-- [ ] `docs/tasks/README.md` — linha 18 + status
+- [x] `docs/guia-do-jogador.md` — seção "Para quem mexe no código": link para `/docs`
+- [x] `docs/tasks/README.md` — linha 18 + status
 
 ## 9. Riscos e questões em aberto
 | Risco / dúvida | Impacto | Mitigação / quem decide |
@@ -585,12 +585,12 @@ npm run docs:check --prefix backend
 | Gerar os tipos do frontend a partir da spec (`openapi-typescript`) eliminaria a duplicação de `frontend/src/types/race.ts` | — | Fora do escopo; sugerir como task futura. |
 
 ## 10. Definition of Done
-- [ ] Critérios de aceite (seção 6) todos marcados
-- [ ] Build passa: `npm run build --prefix frontend` e `npx tsc --noEmit` no backend
-- [ ] `npm run docs:check` passa
-- [ ] Sem `console.log` / código morto deixado para trás
-- [ ] Documentação da seção 8 atualizada
-- [ ] Tasks de correção da seção 9 criadas
+- [x] Critérios de aceite (seção 6) todos marcados
+- [x] Build passa: `npm run build --prefix frontend` e `npx tsc --noEmit` no backend
+- [x] `npm run docs:check` passa
+- [x] Sem `console.log` / código morto deixado para trás
+- [x] Documentação da seção 8 atualizada
+- [x] Tasks de correção da seção 9 criadas
 - [ ] Commit e push na branch própria; tabela em `docs/tasks/README.md` atualizada
 
 ---
@@ -600,3 +600,9 @@ npm run docs:check --prefix backend
 | Data | Nota |
 |---|---|
 | 2026-09-27 | Task criada. Inventário de rotas e respostas levantado a partir de `main` (15b36a5). |
+| 2026-09-27 | Implementada. Spec em `backend/src/docs/openapi/` (18 operações, 9 tags), Swagger UI em `/docs`, JSON em `/openapi.json`, `npm run docs:check` (18 × 18). Redocly `lint` (recommended): 0 erros, 5 avisos aceitos — `/`, `/horse`, `/track` e `/skill` não têm resposta 4xx de verdade, e o servidor padrão é `localhost`. |
+| 2026-09-27 | **Dependências só em `devDependencies`** (`swagger-ui-express`, `@types/swagger-ui-express`, `openapi-types`). `mountApiDocs` carrega o `swagger-ui-express` com `require` dentro de `try`: numa instalação `--omit=dev` as docs ficam desligadas com um aviso, sem derrubar o servidor. `openapi-types` só entra como tipo. |
+| 2026-09-27 | `API_DOCS`: `true`/`false` forçam; sem a variável, as docs ficam ligadas **exceto com `NODE_ENV=production`** (resolve o risco do "Try it out" em produção da seção 9). Testado: `false` → 404 nas duas rotas; sem variável → 200; `production` → 404; `true` + `production` → 200. |
+| 2026-09-27 | Desvios do plano: o `openapi-types` tem o `PathItemObject` 3.1 quebrado (mistura o tipo de operação do 3.0), então os arquivos de path usam um tipo local `Paths` e o `index.ts` faz um cast; campos anuláveis usam `anyOf` com `{ type: "null" }` (com `oneOf` o validador de exemplos do Redocly rejeitava `null`); rotas públicas declaram `security: []`. `User` (create/purchase, carreira crua em `StoredCareer`) e `UserProfile` (`GET /user/me`, carreira como `CareerView`) viraram schemas separados porque as respostas diferem. O 500 de `SECRET_KEY` ausente é um `components.examples.AuthMisconfigured` referenciado dentro do 500 de cada rota protegida (não dá para ter duas respostas 500). |
+| 2026-09-27 | Exemplo de `POST /race/run`: simulação real gerada offline (Silence Suzuka 98/68/68/58, `front`, `steady-breathing`, `niigata-mile`, seed 20260927), recortada para 3 corredoras, 8 frames e 3 turnos de telemetria. Os demais exemplos leem os catálogos de `src/data`. |
+| 2026-09-27 | Verificado no navegador com um express isolado que só monta `mountApiDocs` (sem banco): 18 operações em 9 tags, 10 cadeados, e depois do Authorize o "Try it out" manda `Authorization: Bearer …`. **Não** percorri as rotas contra um MongoDB local. `race:check`, `training:check` e `career:check` passam. Tasks de correção criadas: `20`, `21`, `22`. |

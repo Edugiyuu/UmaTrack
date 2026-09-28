@@ -499,3 +499,6 @@ cd backend && npm run race:check && npm run training:check
 
 O design técnico por trás dessas regras está em
 [`race-system-design.md`](./race-system-design.md).
+
+As rotas da API, com corpo, respostas e exemplos, estão no Swagger: com o backend rodando,
+abra `http://localhost:3000/docs`.

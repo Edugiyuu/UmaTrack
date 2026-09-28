@@ -118,7 +118,7 @@ Tipos em `RunnerTelemetry` (`backend/src/types/race.ts`, espelhado no frontend).
 
 A telemetria é só leitura: é coletada dos valores já calculados, sem sorteio, e o
 `race:check` prova que a mesma corrida com e sem ela é idêntica. Ela vai na resposta de
-`POST /races` e não é gravada no histórico.
+`POST /race/run` e não é gravada no histórico.
 
 **Alcance de fôlego e veredito de ritmo.** Com o fôlego do início do turno, o motor
 projeta quantos metros ela ainda aguenta mantendo a velocidade atual (ou o teto, enquanto
@@ -159,7 +159,8 @@ antes da largada (`RaceRivals.tsx`).
 ## 5. Skills e skill points
 
 - Treinar gera **skill points (SP)** além dos pontos de atributo.
-- Skills ficam num catálogo com `cost` em SP, `requirements` (atributo mínimo) e efeito.
+- Skills ficam num catálogo com `cost` em SP, gatilho e efeito. O preço é só em SP: não há
+  atributo mínimo (os `requirements` de skill saíram na task 16).
 - Skills aprendidas ficam gravadas na Uma do usuário e são passadas ao motor de corrida.
 
 Tipos de efeito: `speedBoost`, `accelBoost`, `staminaRecover`, `staminaSave`,
@@ -169,7 +170,7 @@ Tipos de efeito: `speedBoost`, `accelBoost`, `staminaRecover`, `staminaSave`,
 
 ```
 ganho = round(base[trainType] * scoreRatio * affinity * moodMult * energyMult * diminishing)
-SP    = round(ganho * 0.4) + bônus de acerto perfeito
+SP    = max(1, round(ganho * 0.45)) + 8 num acerto perfeito
 ```
 - `energia` cai a cada treino; com energia baixa há risco de ganho reduzido.
 - Ação **Rest** gasta um turno e devolve energia + humor.
@@ -178,15 +179,20 @@ SP    = round(ganho * 0.4) + bônus de acerto perfeito
 
 ## 7. Rotas da API
 
+A referência completa (corpo, respostas, códigos de erro e exemplos) é o **Swagger**: com o
+backend rodando, abra `http://localhost:3000/docs` (JSON cru em `/openapi.json`). A spec fica
+em `backend/src/docs/openapi/` e o `npm run docs:check` falha se uma rota ficar sem
+documentação. Resumo das rotas do jogo:
+
 | Método | Rota | Descrição |
 |---|---|---|
-| GET | `/track` | catálogo de pistas |
-| GET | `/track/:id` | detalhe de uma pista |
+| GET | `/track`, `/track/:id` | catálogo de pistas (`:id` aceita slug) |
 | GET | `/skill` | catálogo de skills |
-| GET | `/user/me/horses/:horseId` | Uma do usuário (inclui SP, energia, skills e a carreira) |
-| POST | `/user/me/horses/:horseId/train` | treino dinâmico |
-| POST | `/user/me/horses/:horseId/rest` | descansar |
+| GET | `/user/me/horses/:horseId` | Uma do usuário (SP, energia, skills e carreira) |
+| POST | `/user/me/horses/:horseId/train` · `/rest` · `/new-career` | treino, descanso, nova carreira |
 | POST | `/user/me/horses/:horseId/skills` | aprender skill gastando SP |
-| POST | `/user/me/horses/:horseId/new-career` | nova carreira com uma Uma aposentada (task 17) |
-| POST | `/race/run` | correr numa pista com uma Uma (no turno 0, só a prova da carreira) |
+| POST | `/race/run` | correr (no turno 0, só a prova da carreira) |
 | GET | `/user/me/races` | histórico de corridas |
+
+Cadastro, login, perfil e loja (`/user/create`, `/user/login`, `/verify-token`, `/user/me`,
+`/user/me/purchase-horse`, `/horse`) estão só no Swagger.
