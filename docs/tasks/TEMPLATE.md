@@ -7,7 +7,7 @@
 | Campo | Valor |
 |---|---|
 | **ID** | `NN` |
-| **Branch** | `tipo/slug` |
+| **Branch** | `tipo/slug` — nova, ou reusada de `NN` (ver nota abaixo) |
 | **Base** | `main` |
 | **Status** | 🔲 Não iniciada · 🚧 Em andamento · 🔍 Em revisão · ✅ Concluída |
 | **Tamanho** | P (< 1 sessão) · M (1–2 sessões) · G (quebrar em subtasks) |
@@ -15,6 +15,12 @@
 | **Bloqueia** | `NN` / — |
 | **Área** | backend · frontend · fullstack · docs |
 | **Criada em** | AAAA-MM-DD |
+
+> **Branch nova ou reusada?** Se esta task é parecida com outra ainda aberta (mesma área,
+> mesmos arquivos, mesmo tipo de mudança — ex.: "mudar visual dos GIFs" e "mudar visual
+> das skills"), continue na branch dela em vez de abrir outra. Escreva `reusa \`tipo/slug\`
+> da task NN` no campo **Branch**. Abra uma branch nova quando a task for de outra área,
+> puder ser mergeada sozinha, ou a branch existente já tiver sido mergeada na `main`.
 
 ---
 
@@ -89,7 +95,7 @@
 - [ ] Build passa: `npm run build --prefix frontend` e `npx tsc --noEmit` no backend
 - [ ] Sem `console.log` / código morto deixado para trás
 - [ ] Documentação da seção 8 atualizada
-- [ ] Commit e push na branch própria; tabela em `docs/tasks/README.md` atualizada
+- [ ] Commit e push na branch da task (própria ou compartilhada); tabela em `docs/tasks/README.md` atualizada
 
 ---
 
