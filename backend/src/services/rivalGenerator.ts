@@ -4,8 +4,8 @@ import type { RaceRunnerInput, RaceSkill, RaceTrackInput, StatBlock } from "../t
 /** How many of the field are the player's rivals, built around her own stats. */
 export const RIVAL_COUNT = 3;
 /** Each rival stat is the player's stat times a draw in this range... */
-const RIVAL_MIN = 0.9;
-const RIVAL_MAX = 1.3;
+const RIVAL_MIN = 0.7;
+const RIVAL_MAX = 1.2;
 
 const RIVAL_NAMES = [
   "Amber Comet",
