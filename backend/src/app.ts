@@ -7,10 +7,12 @@ import cors from 'cors';
 import routes from "./routes";
 import { ensureTracksSeeded } from "./services/seedTracks";
 import { ensureSkillsSeeded } from "./services/seedSkills";
+import { mountApiDocs } from "./docs/swagger";
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+mountApiDocs(app);
 app.use(routes);
 
 app.get('/', (req, res) => {
