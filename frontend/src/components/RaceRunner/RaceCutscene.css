@@ -1,0 +1,123 @@
+/* The `unique` skill cutscene (task 23, frame 2). The entrance is a GSAP timeline in
+   RaceCutscene.tsx; it never opens with reduced motion. */
+
+.RaceCutscene {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background-color: rgba(12, 12, 12, 0.62);
+  color: var(--on-solid);
+  cursor: pointer;
+  overflow: hidden;
+  outline: none;
+}
+
+/* Cinema bars top and bottom. */
+.RaceCutscene__bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  height: 9vh;
+  min-height: 44px;
+  padding: 0 var(--space-6);
+  background-color: #000;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.RaceCutscene__bar--top { top: 0; text-transform: uppercase; }
+.RaceCutscene__bar--bottom { bottom: 0; justify-content: flex-end; }
+
+/* The diagonal band of frame 2: violet into magenta into coral. */
+.RaceCutscene__band {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  top: 50%;
+  height: 46vh;
+  background: linear-gradient(
+    90deg,
+    var(--brand-violet) 0%,
+    var(--brand-magenta) 45%,
+    #ff5f6d 100%
+  );
+  box-shadow: 0 0 60px rgba(255, 255, 255, 0.25);
+  translate: 0 -50%;
+  rotate: -8deg;
+}
+
+.RaceCutscene__art {
+  position: absolute;
+  left: 12%;
+  bottom: 6vh;
+  height: 80vh;
+  max-width: 40vw;
+  object-fit: contain;
+  filter: drop-shadow(0 0 24px rgba(255, 255, 255, 0.6));
+}
+
+.RaceCutscene__copy {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  max-width: min(640px, 90vw);
+  margin-left: 30vw;
+}
+
+.RaceCutscene__tag {
+  padding: var(--space-1) var(--space-4);
+  border-radius: var(--radius-pill);
+  background-color: var(--on-solid);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--brand-magenta);
+}
+
+.RaceCutscene__name {
+  font-family: var(--font-ui);
+  font-size: clamp(2.6rem, 8vw, 6.5rem);
+  line-height: 1;
+  text-transform: uppercase;
+  text-shadow: 4px 4px 0 rgba(0, 0, 0, 0.25);
+  overflow-wrap: anywhere;
+}
+
+.RaceCutscene__desc {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+.RaceCutscene__chip {
+  padding: var(--space-1) var(--space-3);
+  border: 2px solid var(--on-solid);
+  border-radius: var(--radius-pill);
+  background-color: var(--fx-boost);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 600px) {
+  .RaceCutscene__art {
+    left: -8%;
+    height: 60vh;
+    max-width: 70vw;
+    opacity: 0.55;
+  }
+
+  .RaceCutscene__copy {
+    margin: 0 var(--space-4);
+  }
+
+  .RaceCutscene__desc {
+    font-size: var(--text-md);
+  }
+}
