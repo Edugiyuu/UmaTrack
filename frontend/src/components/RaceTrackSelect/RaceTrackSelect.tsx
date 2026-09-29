@@ -126,7 +126,6 @@ const RaceTrackSelect = () => {
             <progress max={100} value={horse.energy ?? 0} />
             <span>{horse.energy ?? 0}/100</span>
           </label>
-          <p>Humor: {"★".repeat(horse.mood ?? 3)}{"☆".repeat(Math.max(0, 5 - (horse.mood ?? 3)))}</p>
           <p>Skill points: <strong>{horse.skillPoints ?? 0}</strong></p>
           <p>Skills: {horse.skills?.length ? horse.skills.map((skill) => skill.name).join(", ") : "nenhuma"}</p>
           <p>Carteira: <strong>{monies.toLocaleString("pt-BR")}</strong></p>

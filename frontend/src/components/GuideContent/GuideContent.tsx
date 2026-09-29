@@ -93,13 +93,13 @@ const GuideContent = () => {
         <p className="GuideContent__text">
           Cada treino gasta <strong>1 turno</strong> e <strong>20 de energia</strong>. O ganho
           não é fixo: depende de quanto você acertou no minigame, da afinidade dela com aquele
-          tipo de treino, do humor, da energia que sobrou e de quão alto o atributo já está —
+          tipo de treino, da energia que sobrou e de quão alto o atributo já está —
           quanto mais alto, mais caro fica cada ponto. Treinar também rende skill points, com
           bônus se o round for perfeito.
         </p>
         <p className="GuideContent__text">
           Com a energia baixa o treino rende menos e pode até dar errado. <strong>Descansar</strong>{" "}
-          gasta um turno e devolve energia e humor. Terminar uma corrida abre a próxima
+          gasta um turno e devolve energia. Terminar uma corrida abre a próxima
           temporada e repõe os turnos.
         </p>
       </section>

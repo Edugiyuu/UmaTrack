@@ -94,7 +94,6 @@ const ownedHorseState = {
   skillPoints: 44,
   skills: [learnedSkill],
   energy: 65,
-  mood: 4,
   runningStyle: "front",
   fans: 300,
   racesRun: 1,
@@ -112,12 +111,11 @@ export const trainingExample = {
   statGain: 8,
   skillPointsGained: 12,
   energySpent: 20,
-  moodChange: 1,
   failed: false,
-  notes: ["Humor ótimo!", "Round perfeito: +8 skill points de bônus."]
+  notes: ["Round perfeito: +8 skill points de bônus."]
 };
 
-export const restExample = { energyRecovered: 45, energy: 75, mood: 5, turnSpent: true };
+export const restExample = { energyRecovered: 45, energy: 75, turnSpent: true };
 
 const userBase = {
   _id: IDS.user,
@@ -147,7 +145,6 @@ export const userExample = {
       skillPoints: 0,
       skills: [],
       energy: 100,
-      mood: 3,
       runningStyle: "pace",
       fans: 0,
       racesRun: 0,

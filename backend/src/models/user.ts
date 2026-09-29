@@ -4,7 +4,6 @@ export const RUNNING_STYLES = ["front", "pace", "late", "end"] as const;
 export type RunningStyle = (typeof RUNNING_STYLES)[number];
 
 export const MAX_ENERGY = 100;
-export const MAX_MOOD = 5;
 
 /** A skill the horse girl has already paid for, snapshotted so old races stay readable. */
 const LearnedSkillSchema = new mongoose.Schema({
@@ -55,7 +54,6 @@ const OwnedHorseSchema = new mongoose.Schema({
   skillPoints: { type: Number, required: true, min: 0, default: 0 },
   skills: { type: [LearnedSkillSchema], required: true, default: [] },
   energy: { type: Number, required: true, min: 0, max: MAX_ENERGY, default: MAX_ENERGY },
-  mood: { type: Number, required: true, min: 1, max: MAX_MOOD, default: 3 },
   runningStyle: { type: String, required: true, enum: RUNNING_STYLES, default: "pace" },
 
   fans: { type: Number, required: true, min: 0, default: 0 },

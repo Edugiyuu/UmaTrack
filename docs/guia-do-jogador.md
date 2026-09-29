@@ -7,7 +7,7 @@ Os números deste guia vêm direto do código (`backend/src/data/` e
 
 - [1. Começando](#1-começando)
 - [2. Os quatro atributos](#2-os-quatro-atributos)
-- [3. A carreira: turnos, energia e humor](#3-a-carreira-turnos-energia-e-humor)
+- [3. A carreira: turnos e energia](#3-a-carreira-turnos-e-energia)
 - [4. Treino](#4-treino)
 - [5. Skills e skill points](#5-skills-e-skill-points)
 - [6. As pistas](#6-as-pistas)
@@ -72,7 +72,7 @@ e o **Start race!** só libera com 35 de energia, dizendo quanto falta.
 
 ---
 
-## 3. A carreira: turnos, energia e humor
+## 3. A carreira: turnos e energia
 
 Cada garota-cavalo tem a **sua carreira**: uma lista de provas, em ordem, com
 uma **meta** de colocação em cada uma. Antes de cada prova ela tem alguns
@@ -99,7 +99,6 @@ não muda com elas.
 |---|---|---|---|
 | **Turnos** | os da próxima prova | 1 por treino, descanso ou prova avulsa | A prova da carreira entrega os turnos da seguinte |
 | **Energia** | 100 | 20 por treino, 35 por corrida | Descansar: **+45** |
-| **Humor** | ★★★★★ | Cai ao falhar um treino ou correr mal | Descansar, treinar bem ou vencer |
 
 > **Descanso quando os turnos acabam**
 > No dia da prova o descanso continua disponível e **não cobra turno**. Se ela
@@ -120,7 +119,7 @@ turnos de preparo antes dela e a meta.
 
 As primeiras provas são para aquecer; a última é o desafio de cada uma. Numa
 simulação com um jogador simples (treina o atributo mais longe do requisito,
-compra as passivas, não corre avulsas), de 13% a 52% das carreiras chegam ao
+compra as passivas, não corre avulsas), de 2% a 14% das carreiras chegam ao
 fim. Quem planeja o treino, corre avulsas para juntar SP e escolhe as skills
 vai melhor. Para rodar a simulação: `npm run career:check --prefix backend`.
 
@@ -136,18 +135,17 @@ pontuação; quem decide o ganho é o servidor.
 
 ### O que entra na conta
 
-O ganho é o produto de seis fatores:
+O ganho é o produto de cinco fatores:
 
 | Fator | Efeito |
 |---|---|
 | **Desempenho** | `0,25 + 0,75 × (acertos/10)^1,15`. Mesmo um round ruim rende alguma coisa; um round perfeito rende o dobro de um round mediano. |
 | **Afinidade** | `0,85 + 0,3 × (atributo / maior atributo dela)`. Treinar o forte dela rende até **~15% a mais**; o fraco rende até 15% a menos. |
-| **Humor** | ★ 0,85 · ★★ 0,93 · ★★★ 1,00 · ★★★★ 1,07 · ★★★★★ 1,15 |
 | **Energia** | ≥60 → 1,00 · 30–59 → 0,80 · 10–29 → 0,55 · <10 → **0,30** |
 | **Retorno decrescente** | `1 / (1 + atributo/260)`. Em 100 o ganho já é 72% do original; em 260, metade; em 400, 39%. |
 | **Sorte** | ±: um jitter entre 0,90 e 1,15. |
 
-Base por tipo, antes de tudo isso: **Speed 9 · Stamina 9 · Power 8 · Wit 7**.
+Base por tipo, antes de tudo isso: **Speed 10,08 · Stamina 10,08 · Power 8,96 · Wit 7,84**.
 
 ### Skill points
 
@@ -163,15 +161,14 @@ de 3 para 11. **Vale muito mais perseguir o 10/10 do que treinar mais vezes mal.
 
 Abaixo de **25** de energia o treino pode **falhar**: a chance é
 `(25 − energia) / 50`, ou seja 50% com a energia zerada. Um treino falhado
-rende só 40% do ganho e ainda tira uma estrela de humor.
+rende só 40% do ganho.
 
 Com energia abaixo de 10 o multiplicador já é 0,30 — você está queimando um
 turno para quase nada. **Descanse antes.**
 
 ### Descanso
 
-Gasta 1 turno (ou nada, se você não tiver turnos), devolve **+45** de energia
-e **+1** estrela de humor.
+Gasta 1 turno (ou nada, se você não tiver turnos) e devolve **+45** de energia.
 
 ---
 
@@ -453,9 +450,7 @@ Correr custa **35 de energia** e a inscrição da pista. Ao terminar, você rece
 Além disso:
 
 - Na **prova da carreira**, bater a meta entrega os turnos da próxima prova;
-  não bater encerra a carreira. Uma **avulsa** gasta 1 turno (ver [A carreira](#3-a-carreira-turnos-energia-e-humor))
-- Vencer sobe **+1 estrela** de humor
-- Terminar na metade de baixo do grid **desce 1 estrela**
+  não bater encerra a carreira. Uma **avulsa** gasta 1 turno (ver [A carreira](#3-a-carreira-turnos-e-energia))
 - A corrida entra no histórico, visível no seu perfil
 
 Repare que mesmo em último você leva SP e fãs. Perder numa pista difícil pode
@@ -473,7 +468,7 @@ paga nada abaixo do 5º — **não é um jeito sustentável de farmar.**
 3. **Treine mirando o 10/10**, não o volume. O bônus de +8 SP por round
    perfeito é o que financia as skills.
 4. **Descanse antes de cair abaixo de 25 de energia.** Um treino falhado
-   custa um turno e ainda tira humor.
+   custa um turno e rende quase nada.
 5. **Suba para Niigata e Hakodate** quando os requisitos estiverem verdes na
    tela de escolha de pista.
 6. **Para Tokyo, priorize Stamina** (150 é bastante). Para **Kokura, priorize
@@ -515,7 +510,7 @@ para trás; Segundo Fôlego só com o fôlego abaixo de 30%. Uma skill de subida
 numa pista plana nunca vai ativar. E Wit baixo reduz a chance de qualquer uma.
 
 **"O treino rendeu menos que da última vez."**
-Confira humor, energia e o quanto aquele atributo já subiu. Os três reduzem o
+Confira a energia e o quanto aquele atributo já subiu. Os dois reduzem o
 ganho, e o retorno decrescente é permanente.
 
 ---

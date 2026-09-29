@@ -17,7 +17,7 @@ Comprar Uma  ->  Treinar (turnos + energia + skill points)  ->  Aprender skills
 ```
 
 O treino deixa de dar um ganho fixo e passa a ser **dinâmico**: o ganho depende do
-desempenho no minigame, do tipo de treino, da afinidade da Uma, do humor, da energia
+desempenho no minigame, do tipo de treino, da afinidade da Uma, da energia
 restante e de retornos decrescentes conforme o atributo cresce.
 
 ## 2. Atributos
@@ -169,11 +169,11 @@ Tipos de efeito: `speedBoost`, `accelBoost`, `staminaRecover`, `staminaSave`,
 ## 6. Treino dinâmico
 
 ```
-ganho = round(base[trainType] * scoreRatio * affinity * moodMult * energyMult * diminishing)
+ganho = round(base[trainType] * scoreRatio * affinity * energyMult * diminishing)
 SP    = max(1, round(ganho * 0.45)) + 8 num acerto perfeito
 ```
 - `energia` cai a cada treino; com energia baixa há risco de ganho reduzido.
-- Ação **Rest** gasta um turno e devolve energia + humor.
+- Ação **Rest** gasta um turno e devolve energia.
 - Turnos contam até a próxima prova da carreira; a prova da carreira entrega os turnos da
   seguinte (ver `docs/tasks/17-horse-career.md`). Provas avulsas gastam 1 turno.
 

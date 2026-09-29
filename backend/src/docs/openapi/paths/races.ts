@@ -20,7 +20,7 @@ export const racePaths: Paths = {
         "7. 409 energia abaixo de 35\n" +
         "8. 400 dinheiro abaixo da inscrição (a prova da carreira não cobra inscrição)\n\n" +
         "**Efeitos colaterais:** desconta 35 de energia e a inscrição; paga o prêmio; soma skill points e fãs; " +
-        "humor +1 na vitória e −1 na metade de baixo do campo; numa prova avulsa consome 1 turno, na prova da " +
+        "numa prova avulsa consome 1 turno, na prova da " +
         "carreira avança o calendário ou encerra a carreira (`rewards.career`); grava um `RaceResult` no histórico. " +
         "Se `runningStyle` vier, ele é gravado na égua.",
       operationId: "runRace",

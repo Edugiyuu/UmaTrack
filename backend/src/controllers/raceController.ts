@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import Track from '../models/track';
 import Skill from '../models/skill';
 import RaceResult from '../models/raceResult';
-import { MAX_ENERGY, MAX_MOOD, RUNNING_STYLES, type RunningStyle } from '../models/user';
+import { MAX_ENERGY, RUNNING_STYLES, type RunningStyle } from '../models/user';
 import type { AuthenticatedRequest } from '../middleware/authMiddleware';
 import { findOwnedHorse, serializeOwnedHorse } from '../services/ownedHorse';
 import { applyCareerResult, isCareerRaceDue, isRetired, nextCareerRace, type CareerOutcome } from '../services/career';
@@ -183,9 +183,6 @@ export const runRace = async (req: AuthenticatedRequest, res: Response) => {
     ownedHorse.racesRun += 1;
     if (playerResult.placement === 1) {
       ownedHorse.racesWon += 1;
-      ownedHorse.mood = Math.min(MAX_MOOD, ownedHorse.mood + 1);
-    } else if (playerResult.placement > Math.ceil(track.fieldSize / 2)) {
-      ownedHorse.mood = Math.max(1, ownedHorse.mood - 1);
     }
     // A career race moves the calendar on (or ends the career); an optional race costs
     // a turn of the countdown, like training does.
