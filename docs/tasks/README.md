@@ -65,6 +65,7 @@ O design do sistema de corridas está em [`docs/race-system-design.md`](../race-
 | 22 | [Remover os controllers sem rota](22-unrouted-controllers.md) | `fix/api-errors` | P | 🔲 |
 | 23 | [Efeitos visuais da corrida (skills, largada, reta final, HUD vivo)](23-race-skill-fx.md) | `feat/race-visual-effects` | G | 🔍 |
 | 24 | [Música e som do jogo (trilha por tela, corrida e efeitos sonoros)](24-game-audio.md) | `feat/race-visual-effects` | G | 🔲 |
+| 25 | [Passivas únicas de cada égua](25-horse-passives.md) | `feat/horse-passives` | M | 🔲 |
 
 ### Ordem sugerida para 11–14
 
