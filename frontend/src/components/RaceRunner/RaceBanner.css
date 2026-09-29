@@ -1,0 +1,128 @@
+/* Seals and banners on the course (task 23). */
+
+.RaceSeal {
+  --seal-color: var(--fx-skill);
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-5);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: calc(100% - var(--space-6));
+  margin: 0;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  background-color: rgba(20, 20, 20, 0.86);
+  box-shadow: var(--shadow-2);
+  font-size: var(--text-sm);
+  color: var(--text-inverse);
+  white-space: nowrap;
+  /* Centred with `translate`, so GSAP's own transform (the rise in) does not fight it. */
+  translate: -50% 0;
+  pointer-events: none;
+}
+
+.RaceSeal strong {
+  font-family: var(--font-ui);
+  color: var(--seal-color);
+}
+
+.RaceSeal--skill strong { color: var(--text-inverse); }
+
+.RaceSeal__dot {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--text-inverse);
+  border-radius: 50%;
+  background-color: var(--seal-color);
+}
+
+.RaceSeal--player .RaceSeal__dot { background-color: var(--player-mark); }
+
+.RaceSeal__detail {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* How she left the gates: a bigger, coloured stamp. */
+.RaceSeal--good,
+.RaceSeal--bad {
+  font-family: var(--font-ui);
+  font-size: var(--text-lg);
+  font-style: italic;
+  letter-spacing: var(--tracking-caps);
+}
+
+.RaceSeal--good { background-color: var(--fx-heal); }
+.RaceSeal--bad { background-color: var(--fx-danger); }
+
+@media (max-width: 600px) {
+  .RaceSeal {
+    bottom: var(--space-2);
+    font-size: var(--text-xs);
+  }
+
+  .RaceSeal__detail {
+    display: none;
+  }
+}
+
+/* --- the final-stretch banner (frame 6) ------------------------------------- */
+
+/* Holds the banner over the stage and clips its tilted ends, so it never widens the page. */
+.RaceFinalBanner-slot {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.RaceFinalBanner {
+  position: absolute;
+  left: -5%;
+  right: -5%;
+  top: 50%;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5) var(--space-6);
+  background: linear-gradient(90deg, #ffb81a 0%, #ff6a1a 45%, #e03838 100%);
+  box-shadow: var(--shadow-3);
+  color: var(--on-solid);
+  /* Placed with `translate`/`rotate`; GSAP slides it across with its own transform. */
+  translate: 0 -50%;
+  rotate: -4deg;
+  pointer-events: none;
+}
+
+.RaceFinalBanner__title {
+  font-family: var(--font-ui);
+  font-size: clamp(2.8rem, 9vw, 7rem);
+  font-style: italic;
+  line-height: 1;
+  letter-spacing: var(--tracking-caps);
+  text-shadow: 5px 5px 0 rgba(0, 0, 0, 0.18);
+}
+
+.RaceFinalBanner__left {
+  position: absolute;
+  left: 8%;
+  padding: var(--space-1) var(--space-4);
+  border-radius: var(--radius-pill);
+  background-color: rgba(20, 20, 20, 0.85);
+  font-family: var(--font-ui);
+  font-size: var(--text-md);
+}
+
+@media (max-width: 860px) {
+  .RaceFinalBanner__left {
+    position: static;
+    margin-right: var(--space-3);
+    font-size: var(--text-xs);
+  }
+}

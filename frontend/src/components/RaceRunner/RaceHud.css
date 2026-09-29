@@ -48,14 +48,20 @@
 }
 
 .RaceHud__alert {
+  --alert-color: var(--danger);
+  --alert-soft: var(--danger-soft);
   margin: 0;
   padding: var(--space-1) var(--space-4);
-  border: 1px solid var(--danger);
+  border: 1px solid var(--alert-color);
   border-radius: var(--radius-pill);
-  background-color: var(--danger-soft);
+  background-color: var(--alert-soft);
   font-size: var(--text-sm);
   color: var(--text);
 }
+
+.RaceHud__alert--heal { --alert-color: var(--fx-heal); --alert-soft: var(--fx-heal-soft); }
+.RaceHud__alert--boost { --alert-color: var(--fx-boost); --alert-soft: var(--fx-boost-soft); }
+.RaceHud__alert--info { --alert-color: var(--fx-skill); --alert-soft: var(--highlight-soft); }
 
 .RaceHud__alert strong {
   margin-right: var(--space-1);
@@ -63,7 +69,7 @@
   font-style: italic;
   letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
-  color: var(--danger);
+  color: var(--alert-color);
 }
 
 /* --- readings --------------------------------------------------------------- */
@@ -76,6 +82,7 @@
 
 .RaceHud__reading {
   --reading-color: var(--text);
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
@@ -149,9 +156,91 @@
   background-color: var(--danger-soft);
 }
 
+.RaceHud__reading--boost {
+  --reading-color: var(--fx-boost-ink);
+  border-color: var(--fx-boost);
+  background-color: var(--fx-boost-soft);
+  box-shadow: 0 0 0 3px var(--fx-boost-soft), var(--hud-card-shadow);
+}
+
+.RaceHud__reading--heal {
+  --reading-color: var(--fx-heal-ink);
+  --meter-color: var(--hud-stamina);
+  border: 2px solid var(--fx-heal);
+  background-color: var(--fx-heal-soft);
+  box-shadow: 0 0 18px var(--fx-heal-soft), var(--hud-card-shadow);
+}
+
+.RaceHud__reading--boost .RaceHud__detail,
+.RaceHud__reading--heal .RaceHud__detail,
 .RaceHud__reading--curve .RaceHud__detail,
 .RaceHud__reading--danger .RaceHud__detail {
   color: var(--reading-color);
+}
+
+/* Low stamina: border, number and bar beat red until she recovers. */
+.RaceHud__reading--pulse {
+  animation: RaceHud__pulse 1s ease-in-out infinite;
+}
+
+@keyframes RaceHud__pulse {
+  50% { box-shadow: 0 0 0 6px var(--danger-soft), var(--hud-card-shadow); }
+}
+
+/* A skill of hers fired this turn. */
+.RaceHud__reading--glow {
+  border-color: var(--fx-skill);
+  box-shadow: 0 0 16px rgba(255, 184, 26, 0.45), var(--hud-card-shadow);
+}
+
+/* The chip on the corner: the refill ("+15%") or the speed trend ("▲ 0,6"). */
+.RaceHud__badge {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-3);
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-pill);
+  background-color: var(--fx-heal);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--on-solid);
+}
+
+.RaceHud__reading--heal .RaceHud__badge {
+  top: calc(-1 * var(--space-3));
+  left: 50%;
+  right: auto;
+  padding: var(--space-1) var(--space-3);
+  border: 2px solid var(--surface);
+  transform: translateX(-50%);
+}
+
+.RaceHud__badge:has(.is-up),
+.RaceHud__badge:has(.is-down) {
+  background-color: var(--accent-soft);
+  color: var(--accent);
+}
+
+.RaceHud__badge:has(.is-down) {
+  background-color: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* The bars drain and fill over the turn change instead of snapping. */
+.RaceHud .Meter__fill,
+.RaceHud .Meter__gain {
+  transition-duration: 300ms;
+  transition-timing-function: var(--ease);
+}
+
+.RaceRunner.is-paused .RaceHud__reading--pulse {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .RaceHud__reading--pulse {
+    animation: none;
+  }
 }
 
 /* --- narrow screens --------------------------------------------------------- */

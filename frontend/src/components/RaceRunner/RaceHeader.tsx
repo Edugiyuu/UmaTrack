@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from "react";
 import Button from "../ui/Button/Button";
 import Pill from "../ui/Pill/Pill";
 import { currentTurn } from "./format";
@@ -7,6 +8,7 @@ import {
   TERRAIN_LABEL,
   CATEGORY_LABEL
 } from "../../constants/trackVisuals";
+import { raceAudio } from "../../services/raceAudio";
 import type { RunningStyle, TrackResponse } from "../../types/race";
 
 export interface RaceHeaderProps {
@@ -26,6 +28,23 @@ export interface RaceHeaderProps {
   onStepForward: () => void;
   onSkip: () => void;
 }
+
+/** Sound on or off for the race; the choice is kept for the next one. */
+const SoundToggle = () => {
+  const muted = useSyncExternalStore(raceAudio.subscribe, raceAudio.isMuted);
+  return (
+    <Button
+      size="sm"
+      variant="ghost"
+      aria-pressed={muted}
+      aria-label={muted ? "Ligar o som" : "Desligar o som"}
+      title={muted ? "Ligar o som" : "Desligar o som"}
+      onClick={() => raceAudio.setMuted(!muted)}
+    >
+      <span aria-hidden="true">{muted ? "🔇" : "🔊"}</span>
+    </Button>
+  );
+};
 
 /**
  * The title block: which race this is, on the left, and the clock and playback
@@ -113,6 +132,7 @@ const RaceHeader = ({
             </Button>
           ))}
         </div>
+        <SoundToggle />
         <Button size="sm" variant="ink" onClick={onSkip}>
           Pular para o resultado
         </Button>

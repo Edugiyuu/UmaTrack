@@ -4,7 +4,8 @@ import { horseFolder, withImageFallback } from "../../utils/horseImage";
 export interface RaceCamProps {
   /** "LIVE", "1º LUGAR". */
   title: string;
-  tone: "live" | "leader";
+  /** `skill`: the player's skill has just fired, and the camera goes gold. */
+  tone: "live" | "leader" | "skill";
   name: string;
   /** Line under the portrait: placement, gap, how long she has led. */
   caption: string;

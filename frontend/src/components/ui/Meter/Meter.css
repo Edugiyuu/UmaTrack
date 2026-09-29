@@ -70,3 +70,13 @@
   margin-left: -1px;
   background-color: var(--text);
 }
+
+/* The part of the fill a recovery just gave back (race HUD, task 23). */
+.Meter__gain {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background-color: var(--fx-heal, var(--success));
+  transition: left var(--duration-fast) linear, width var(--duration-fast) linear;
+}

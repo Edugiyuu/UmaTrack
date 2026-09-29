@@ -1,0 +1,29 @@
+/* Speed lines over the course (task 23, frame 4). GSAP moves them (RaceFxOverlay.tsx). */
+
+.RaceFx {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.RaceFx__line {
+  position: absolute;
+  right: 0;
+  height: 3px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, transparent, var(--fx-boost));
+  opacity: 0;
+}
+
+/* Fainter on a phone, so the lines never hide the runners. */
+@media (max-width: 600px) {
+  .RaceFx {
+    opacity: 0.55;
+  }
+
+  .RaceFx__line {
+    height: 2px;
+  }
+}

@@ -32,6 +32,15 @@
   --hud-stamina-ink: #d9467f;
   --hud-stamina-soft: #ffe3ee;
   --hud-card-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  /* Race effects (task 23): skill, refill, speed, danger. */
+  --fx-skill: #ffb81a;
+  --fx-heal: #22c773;
+  --fx-heal-ink: #129a55;
+  --fx-heal-soft: rgba(34, 199, 115, 0.14);
+  --fx-boost: #4fadff;
+  --fx-boost-ink: #1f7fd1;
+  --fx-boost-soft: rgba(79, 173, 255, 0.16);
+  --fx-danger: #e03838;
 
   display: flex;
   flex-direction: column;
@@ -206,6 +215,7 @@
 /* --- stage: cameras, oval, side panels ------------------------------------ */
 
 .RaceRunner__stage {
+  position: relative;
   display: grid;
   grid-template-columns: 250px minmax(0, 1fr) 250px;
   grid-template-areas: "left course right";
@@ -214,6 +224,7 @@
 }
 
 .RaceRunner__course {
+  position: relative;
   grid-area: course;
   display: flex;
   align-items: center;
@@ -290,6 +301,10 @@
   border-color: var(--brand-gold);
   background-color: var(--highlight-soft);
   color: var(--highlight);
+}
+
+.RaceRunner__activations li.is-fresh {
+  box-shadow: 0 0 0 2px var(--fx-skill), 0 0 14px rgba(255, 184, 26, 0.45);
 }
 
 .RaceRunner__activations li.is-player strong::before {
@@ -398,6 +413,114 @@
   fill: var(--text);
 }
 
+/* --- effects on the oval (task 23) ---------------------------------------- */
+
+.RaceOval__player,
+.RaceOval__rival {
+  transition: opacity var(--duration-base) var(--ease);
+}
+
+.RaceOval__gate {
+  fill: var(--brand-ink);
+  stroke: var(--finish-light);
+  stroke-width: 2;
+}
+
+/* The player's skill has the stage: everyone else steps back. */
+.RaceOval .is-dim {
+  opacity: 0.4;
+}
+
+.RaceOval__skill {
+  --fx-color: var(--fx-skill);
+}
+
+.RaceOval__skill-halo {
+  fill: var(--fx-color);
+  opacity: 0.28;
+}
+
+.RaceOval__skill-ring {
+  fill: none;
+  stroke: var(--fx-color);
+  stroke-width: 4;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: RaceOval__ring 0.8s var(--ease) infinite;
+}
+
+@keyframes RaceOval__ring {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.RaceOval__player.is-heal .RaceOval__halo { fill: var(--fx-heal-soft); }
+.RaceOval__player.is-heal .RaceOval__dot { filter: drop-shadow(0 0 10px var(--fx-heal)); }
+.RaceOval__player.is-boost .RaceOval__dot { filter: drop-shadow(0 0 10px var(--fx-boost)); }
+
+.RaceOval__trail circle {
+  fill: var(--fx-boost);
+}
+
+.RaceOval__trail circle:nth-child(1) { opacity: 0.15; }
+.RaceOval__trail circle:nth-child(2) { opacity: 0.3; }
+.RaceOval__trail circle:nth-child(3) { opacity: 0.5; }
+
+.RaceOval__sparks text {
+  font-family: var(--font-ui);
+  font-size: 18px;
+  text-anchor: middle;
+  fill: var(--fx-heal);
+  animation: RaceOval__spark 0.9s ease-out infinite;
+}
+
+.RaceOval__sparks text:nth-child(2) { animation-delay: 0.2s; }
+.RaceOval__sparks text:nth-child(3) { animation-delay: 0.45s; }
+.RaceOval__sparks text:nth-child(4) { animation-delay: 0.65s; }
+
+@keyframes RaceOval__spark {
+  0% { transform: translateY(0); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translateY(-14px); opacity: 0; }
+}
+
+.RaceOval__bubble.is-skill rect { fill: var(--fx-skill); }
+.RaceOval__bubble.is-heal rect { fill: var(--fx-heal); }
+.RaceOval__bubble.is-boost rect { fill: var(--fx-boost); }
+.RaceOval__bubble.is-skill text { fill: var(--brand-ink); }
+
+/* Speed skill: a blue glow round the whole screen while it lasts. */
+.RaceRunner.has-boost::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  box-shadow: inset 0 0 90px rgba(79, 173, 255, 0.45);
+  pointer-events: none;
+}
+
+.RaceRunner.is-paused .RaceOval__skill-ring,
+.RaceRunner.is-paused .RaceOval__sparks text {
+  animation-play-state: paused;
+}
+
+@media (max-width: 600px) {
+  .RaceRunner.has-boost::after {
+    box-shadow: inset 0 0 40px rgba(79, 173, 255, 0.3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .RaceOval__skill-ring,
+  .RaceOval__sparks text {
+    animation: none;
+  }
+
+  .RaceOval__sparks {
+    display: none;
+  }
+}
+
 .RaceOval__bubble text {
   font-family: var(--font-ui);
   font-size: 13px;
@@ -418,6 +541,10 @@
 }
 
 .RaceCam--leader { --cam-color: var(--cam-leader); }
+.RaceCam--skill {
+  --cam-color: var(--fx-skill);
+  box-shadow: 0 0 22px rgba(255, 184, 26, 0.55), var(--cam-shadow);
+}
 
 .RaceCam__head {
   display: flex;
@@ -614,6 +741,13 @@
 }
 
 .TrackStrip__segment--curve { background-color: var(--segment-curve); }
+/* In the final stretch its segment takes the spotlight (task 23). */
+.TrackStrip__segment.is-final {
+  border: 2px solid var(--brand-turf);
+  background-color: var(--accent-soft);
+  font-family: var(--font-ui);
+  color: var(--accent);
+}
 .TrackStrip__segment--uphill { background-color: var(--segment-uphill); color: var(--uphill); }
 .TrackStrip__segment--downhill { background-color: var(--segment-downhill); color: var(--downhill); }
 
@@ -716,5 +850,123 @@
   .TrackStrip__segment {
     min-height: 14px;
     font-size: 0;
+  }
+}
+
+/* --- one screen, no scroll -------------------------------------------------- */
+
+/* On a desktop window the race fits the viewport: the stage takes whatever height the
+   header and the HUD leave, the oval scales down to it, and the cameras shrink with the
+   window. Smaller screens keep the scrolling layout above. */
+@media (min-width: 1101px) and (min-height: 620px) {
+  .RaceRunner {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    gap: var(--space-3);
+    padding-top: var(--space-3);
+    padding-bottom: var(--space-3);
+    overflow: hidden;
+  }
+
+  .RaceRunner__stage {
+    flex: 1 1 0;
+    grid-template-rows: minmax(0, 1fr);
+    gap: var(--space-4);
+    min-height: 0;
+  }
+
+  .RaceRunner__course {
+    min-height: 0;
+    padding: var(--space-2);
+  }
+
+  .RaceOval {
+    width: 100%;
+    height: 100%;
+    max-height: none;
+  }
+
+  .RaceRunner__side {
+    gap: var(--space-3);
+    min-height: 0;
+  }
+
+  .RaceCam {
+    flex-shrink: 0;
+  }
+
+  .RaceCam__view {
+    aspect-ratio: auto;
+    height: clamp(96px, 22vh, 220px);
+  }
+
+  .RaceRunner__panel {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .RaceRunner__hud {
+    flex-shrink: 0;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .RaceHud__bar:not(:last-child) {
+    margin-bottom: var(--space-2);
+  }
+
+  .RaceHud__reading {
+    padding: var(--space-2) var(--space-3);
+  }
+}
+
+/* A short window (a laptop): smaller cameras and a tighter HUD, so the standings and
+   the skills still fit whole beside the oval. */
+@media (min-width: 1101px) and (min-height: 620px) and (max-height: 820px) {
+  .RaceRunner {
+    gap: var(--space-2);
+    padding-top: var(--space-2);
+    padding-bottom: var(--space-2);
+  }
+
+  .RaceRunner__title {
+    font-size: var(--text-xl);
+  }
+
+  .RaceRunner__shortcuts {
+    display: none;
+  }
+
+  .RaceCam__view {
+    height: clamp(64px, 13vh, 120px);
+  }
+
+  .RaceCam__caption {
+    padding-top: var(--space-1);
+    padding-bottom: var(--space-1);
+  }
+
+  .RaceRunner__panel {
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .RaceStandings li,
+  .RaceRunner__activations li {
+    padding-top: 2px;
+    padding-bottom: 2px;
+  }
+
+  .RaceRunner__activations {
+    gap: var(--space-1);
+  }
+
+  .RaceHud__value {
+    font-size: var(--text-lg);
+  }
+
+  .RaceHud__readings {
+    gap: var(--space-2);
   }
 }

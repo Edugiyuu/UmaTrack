@@ -13,6 +13,8 @@ export interface MeterProps {
   compact?: boolean;
   /** 0..1: a tick for the reference the value is measured against, such as a ceiling. */
   marker?: number;
+  /** 0..1: the end of the fill that was just won back, drawn in the heal colour. */
+  gain?: number;
 }
 
 const clamp = (value: number) => Math.min(1, Math.max(0, value));
@@ -27,7 +29,8 @@ const Meter = ({
   caption,
   tone = "accent",
   compact = false,
-  marker
+  marker,
+  gain
 }: MeterProps) => {
   const ratio = clamp(Number.isFinite(value) ? value : 0);
   const percent = Math.round(ratio * 100);
@@ -48,6 +51,16 @@ const Meter = ({
         aria-label={compact ? label : undefined}
       >
         <div className="Meter__fill" style={{ width: `${percent}%` }} />
+        {gain !== undefined && gain > 0 && (
+          <div
+            className="Meter__gain"
+            style={{
+              left: `${Math.round(clamp(ratio - gain) * 100)}%`,
+              width: `${Math.round(Math.min(gain, ratio) * 100)}%`
+            }}
+            aria-hidden="true"
+          />
+        )}
         {marker !== undefined && (
           <div
             className="Meter__marker"

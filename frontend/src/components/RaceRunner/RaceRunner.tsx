@@ -2,7 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import confetti from "canvas-confetti";
 import Button from "../ui/Button/Button";
+import { RaceFinalBanner, RaceSeal, BANNER_MS, type Seal } from "./RaceBanner";
 import RaceCam from "./RaceCam";
+import RaceCountdown, { type CountdownStep } from "./RaceCountdown";
+import RaceCutscene from "./RaceCutscene";
+import RaceFxOverlay from "./RaceFxOverlay";
 import RaceHeader from "./RaceHeader";
 import RaceHud from "./RaceHud";
 import RaceOval from "./RaceOval";
@@ -12,9 +16,18 @@ import RaceStandings from "./RaceStandings";
 import TrackStrip from "./TrackStrip";
 import { ordinal } from "./format";
 import { useRacePlayback } from "./useRacePlayback";
-import { getTracks, runRace, type RunRaceResponse } from "../../services/Race";
+import { skillEffectText, useRaceEffects, type RaceEvent } from "./useRaceEffects";
+import { usePrefersReducedMotion } from "../../hooks/usePrefersReducedMotion";
+import { getSkills, getTracks, runRace, type RunRaceResponse } from "../../services/Race";
+import { raceAudio } from "../../services/raceAudio";
 import { horseColors } from "../../constants/horseColors";
-import type { RunningStyle, TrackResponse } from "../../types/race";
+import type {
+  RaceSimulation,
+  RunningStyle,
+  SkillActivation,
+  SkillResponse,
+  TrackResponse
+} from "../../types/race";
 import "./RaceRunner.css";
 
 const RIVAL_COLORS = [
@@ -24,6 +37,40 @@ const RIVAL_COLORS = [
 ];
 
 const PLAYBACK_SPEEDS = [1, 2, 4] as const;
+
+/** At most this many seals wait their turn; the rest are dropped, rivals' first. */
+const SEAL_QUEUE = 3;
+/** A seal older than this, in turns of race time, is stale and never shown. */
+const SEAL_TTL = 2;
+
+const segmentAt = (track: TrackResponse, distance: number) => {
+  let cursor = 0;
+  for (const segment of track.segments) {
+    cursor += segment.lengthRatio * track.distance;
+    if (distance < cursor) return segment;
+  }
+  return track.segments.at(-1) ?? null;
+};
+
+/** Stand-in while the race loads, so the effects hook can run before there is one. */
+const EMPTY_SIMULATION: RaceSimulation = {
+  seed: 0,
+  trackSlug: "",
+  distance: 0,
+  runners: [],
+  rivals: [],
+  frames: [],
+  results: [],
+  activations: [],
+  shortfalls: {},
+  telemetry: []
+};
+
+interface CutsceneState {
+  activation: SkillActivation;
+  skill: SkillResponse;
+  remaining: number;
+}
 
 const RaceRunner = () => {
   const { horseId, trackSlug } = useParams();
@@ -41,6 +88,14 @@ const RaceRunner = () => {
   /** The player's call; it holds until the race ends. */
   const [hudHidden, setHudHidden] = useState(false);
   const toggleHud = useCallback(() => setHudHidden((hidden) => !hidden), []);
+  const [skills, setSkills] = useState<Map<string, SkillResponse>>(() => new Map());
+  /** 3, 2, 1, "VAI!" (0), then -1 once the gates are open for good. Runs once per race. */
+  const [countdown, setCountdown] = useState<CountdownStep | -1>(3);
+  const [seals, setSeals] = useState<Seal[]>([]);
+  const sealId = useRef(0);
+  const [banner, setBanner] = useState<{ remaining: number } | null>(null);
+  const [cutscene, setCutscene] = useState<CutsceneState | null>(null);
+  const reducedMotion = usePrefersReducedMotion();
 
   const style = (searchParams.get("style") ?? "pace") as RunningStyle;
 
@@ -50,6 +105,13 @@ const RaceRunner = () => {
 
     const start = async () => {
       try {
+        // The catalogue says what each skill is; without it the race still runs, just
+        // without the cutscene and the effect details.
+        getSkills()
+          .then((catalogue) => {
+            if (!cancelled) setSkills(new Map(catalogue.map((skill) => [skill.slug, skill])));
+          })
+          .catch(() => undefined);
         const tracks = await getTracks();
         const selected = tracks.find((candidate) => candidate.slug === trackSlug) ?? null;
         if (cancelled) return;
@@ -73,10 +135,31 @@ const RaceRunner = () => {
   const simulation = race?.simulation ?? null;
   // Races from before rivals existed have none to introduce, so they start right away.
   const introducingRivals = !started && (simulation?.rivals?.length ?? 0) > 0;
+  const counting = Boolean(simulation) && !introducingRivals && !showResults && countdown > 0;
   const playback = useRacePlayback(simulation, {
     speed,
-    playing: !introducingRivals && !showResults && !paused
+    // The countdown and the cutscene hold the race; "VAI!" (step 0) lets it go.
+    playing: !introducingRivals && !showResults && !paused && countdown <= 0 && !cutscene
   });
+
+  // --- the countdown: one number per beat, shorter at 4x ---------------------------
+  const countdownBeat = speed >= 4 ? 250 : 600;
+  useEffect(() => {
+    if (!simulation || introducingRivals || showResults || countdown < 0) return;
+    raceAudio.play(countdown === 0 ? "gatesOpen" : "countdownTick");
+    const timer = window.setTimeout(
+      () => setCountdown((step) => (step <= 0 ? -1 : ((step - 1) as CountdownStep))),
+      countdownBeat
+    );
+    return () => window.clearTimeout(timer);
+  }, [simulation, introducingRivals, showResults, countdown, countdownBeat]);
+
+  const skipCountdown = useCallback(() => {
+    setCountdown((step) => {
+      if (step > 0) raceAudio.play("gatesOpen");
+      return -1;
+    });
+  }, []);
 
   // The step handlers read the time through a ref, so they (and the keyboard listener
   // below) stay stable instead of being rebuilt on every animation frame.
@@ -113,7 +196,8 @@ const RaceRunner = () => {
         // A focused button already answers Space with a click of its own.
         if (target?.closest("button")) return;
         event.preventDefault();
-        togglePause();
+        if (counting) skipCountdown();
+        else togglePause();
       } else if (event.key === "ArrowRight") {
         event.preventDefault();
         stepForward();
@@ -125,7 +209,16 @@ const RaceRunner = () => {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [simulation, showResults, introducingRivals, togglePause, stepForward, stepBack]);
+  }, [
+    simulation,
+    showResults,
+    introducingRivals,
+    counting,
+    skipCountdown,
+    togglePause,
+    stepForward,
+    stepBack
+  ]);
 
   const playerLane = useMemo(
     () => simulation?.runners.findIndex((runner) => runner.isPlayer) ?? -1,
@@ -155,14 +248,125 @@ const RaceRunner = () => {
 
   const currentSegment = useMemo(() => {
     if (!track || playerLane < 0) return null;
-    const distance = playback.positions[playerLane] ?? 0;
-    let cursor = 0;
-    for (const segment of track.segments) {
-      cursor += segment.lengthRatio * track.distance;
-      if (distance < cursor) return segment;
-    }
-    return track.segments.at(-1) ?? null;
+    return segmentAt(track, playback.positions[playerLane] ?? 0);
   }, [track, playback.positions, playerLane]);
+
+  // --- effects: toasts, the banner and the cutscene come from one-off race events ----
+  const colorOfRunner = useCallback(
+    (runnerId: string) => {
+      if (!simulation) return undefined;
+      const lane = simulation.runners.findIndex((runner) => runner.id === runnerId);
+      return lane >= 0 ? RIVAL_COLORS[lane % RIVAL_COLORS.length] : undefined;
+    },
+    [simulation]
+  );
+
+  const pushSeal = useCallback((seal: Omit<Seal, "id">) => {
+    sealId.current += 1;
+    const next = { ...seal, id: sealId.current };
+    setSeals((waiting) => {
+      let queue = waiting.filter((queued) => queued.at >= next.at - SEAL_TTL);
+      const isRival = next.tone === "skill";
+      if (queue.length >= SEAL_QUEUE) {
+        // Full: make room by dropping the last waiting rival seal, or drop this rival one.
+        const dropAt = queue.map((queued) => queued.tone).lastIndexOf("skill");
+        if (dropAt < 1 || isRival) return queue;
+        queue = [...queue.slice(0, dropAt), ...queue.slice(dropAt + 1)];
+      }
+      if (isRival) return [...queue, next];
+      // Hers (and the start verdict) go ahead of the rivals still waiting.
+      const at = queue.findIndex((queued, index) => index > 0 && queued.tone === "skill");
+      return at < 0 ? [...queue, next] : [...queue.slice(0, at), next, ...queue.slice(at)];
+    });
+  }, []);
+
+  const onRaceEvent = useCallback(
+    (event: RaceEvent) => {
+      if (!simulation) return;
+      if (event.type === "skill") {
+        const { activation, skill } = event.active;
+        const isPlayer = activation.runnerId === "player";
+        raceAudio.play("skillActivate");
+        // Only her `unique` skills get the full-screen moment, and not when it would
+        // hold up a fast replay or a player who asked for less motion.
+        if (isPlayer && skill?.rarity === "unique" && speed < 4 && !reducedMotion) {
+          raceAudio.play("cutscene");
+          setCutscene({
+            activation,
+            skill,
+            remaining:
+              simulation.telemetry?.[activation.time]?.remaining ??
+              simulation.distance - activation.distance
+          });
+          return;
+        }
+        pushSeal({
+          tone: isPlayer ? "player" : "skill",
+          color: isPlayer ? undefined : colorOfRunner(activation.runnerId),
+          at: activation.time,
+          lead: isPlayer ? "VOCÊ ativou" : `${activation.runnerName} ativou`,
+          name: activation.skillName,
+          detail: skillEffectText(skill)
+        });
+      } else if (event.type === "startVerdict") {
+        pushSeal({
+          tone: event.good ? "good" : "bad",
+          at: 1,
+          lead: event.good ? "BOA LARGADA!" : "LARGOU MAL",
+          detail: `${ordinal(event.placement)} após o turno 1`
+        });
+      } else if (event.type === "finalStretch") {
+        raceAudio.play("finalStretch");
+        setBanner({ remaining: event.remaining });
+      } else if (event.type === "finish") {
+        raceAudio.play("finish");
+      }
+    },
+    [simulation, speed, reducedMotion, pushSeal, colorOfRunner]
+  );
+
+  const effects = useRaceEffects({
+    simulation: simulation ?? EMPTY_SIMULATION,
+    time: playback.time,
+    skills,
+    maxStamina: hudScale?.maxStamina ?? 0,
+    live: Boolean(simulation) && !introducingRivals && !showResults && countdown <= 0,
+    onEvent: onRaceEvent
+  });
+
+  // One seal at a time; the banner and the cutscene go first, and a pause holds it.
+  const holdSeals = Boolean(banner || cutscene) || paused;
+  const currentSeal = seals[0];
+  const staleSeal = currentSeal ? currentSeal.at < playback.time - SEAL_TTL : false;
+  useEffect(() => {
+    if (!currentSeal) return;
+    if (staleSeal) {
+      setSeals((queue) => queue.slice(1));
+      return;
+    }
+    if (holdSeals) return;
+    const timer = window.setTimeout(
+      () => setSeals((queue) => queue.slice(1)),
+      speed >= 4 ? 700 : 1300
+    );
+    return () => window.clearTimeout(timer);
+  }, [currentSeal, staleSeal, holdSeals, speed]);
+
+  // The banner waits for a cutscene to close, then crosses once.
+  useEffect(() => {
+    if (!banner || cutscene) return;
+    const timer = window.setTimeout(() => setBanner(null), BANNER_MS);
+    return () => window.clearTimeout(timer);
+  }, [banner, cutscene]);
+
+  // Skipping to the result drops whatever was still on screen.
+  useEffect(() => {
+    if (!showResults) return;
+    setSeals([]);
+    setBanner(null);
+    setCutscene(null);
+    setCountdown(-1);
+  }, [showResults]);
 
   if (error) {
     return (
@@ -216,14 +420,33 @@ const RaceRunner = () => {
   const player = playerLane >= 0 ? simulation.runners[playerLane] : null;
   const leaderLead = standings.length > 1 ? leader.position - standings[1].position : 0;
   const playerGap = leader ? leader.position - playerCovered : 0;
+  const lastTurn = Math.ceil(simulation.frames.at(-1)?.t ?? 1);
+
+  const { playerSkill, boost, heal } = effects;
+  const ovalBubble = heal
+    ? { text: `+${Math.round(heal.gain * 100)}% FÔLEGO`, tone: "heal" as const }
+    : playerSkill
+      ? { text: `✦ ${playerSkill.activation.skillName}!`, tone: "skill" as const }
+      : boost && boost.gain > 0
+        ? { text: `▲ +${Math.round(boost.gain)} m/turno`, tone: "boost" as const }
+        : undefined;
+  const cutsceneSegment = cutscene ? segmentAt(track, cutscene.activation.distance) : null;
 
   return (
-    <div className="RaceRunner">
+    <div
+      className={[
+        "RaceRunner",
+        paused || cutscene ? "is-paused" : "",
+        boost && !counting ? "has-boost" : ""
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <RaceHeader
         track={track}
         style={style}
         time={playback.time}
-        lastTurn={Math.ceil(simulation.frames.at(-1)?.t ?? 1)}
+        lastTurn={lastTurn}
         speed={speed}
         speeds={PLAYBACK_SPEEDS}
         onSpeedChange={setSpeed}
@@ -248,14 +471,44 @@ const RaceRunner = () => {
             covered={playerCovered}
             distance={simulation.distance}
             segmentLabel={currentSegment?.label}
+            fx={{
+              highlights: [...effects.highlights.keys()].map((runnerId) => ({
+                id: runnerId,
+                color:
+                  runnerId === "player" ? "var(--fx-skill)" : colorOfRunner(runnerId) ?? "var(--fx-skill)"
+              })),
+              dimOthers: Boolean(playerSkill),
+              player: heal ? "heal" : boost ? "boost" : null,
+              bubble: ovalBubble,
+              gates: countdown > 0
+            }}
           />
+          {boost && !counting && <RaceFxOverlay paused={paused || Boolean(cutscene)} />}
+          {counting || countdown === 0 ? (
+            <RaceCountdown
+              step={countdown as CountdownStep}
+              beat={countdownBeat / 1000}
+              onSkip={skipCountdown}
+            />
+          ) : (
+            currentSeal &&
+            !staleSeal &&
+            !banner &&
+            !cutscene && <RaceSeal key={currentSeal.id} seal={currentSeal} />
+          )}
         </section>
+
+        {banner && !cutscene && (
+          <div className="RaceFinalBanner-slot">
+            <RaceFinalBanner remaining={banner.remaining} />
+          </div>
+        )}
 
         <aside className="RaceRunner__side RaceRunner__side--left">
           {player && (
             <RaceCam
-              title="LIVE"
-              tone="live"
+              title={playerSkill ? "✦ SKILL · VOCÊ" : "LIVE"}
+              tone={playerSkill ? "skill" : "live"}
               name={player.name}
               caption={
                 playerPlacement === 1
@@ -298,7 +551,14 @@ const RaceRunner = () => {
                 {latestActivations.map((activation, index) => (
                   <li
                     key={`${activation.runnerId}-${activation.skillSlug}-${index}`}
-                    className={activation.runnerId === "player" ? "is-player" : undefined}
+                    className={
+                      [
+                        activation.runnerId === "player" ? "is-player" : "",
+                        playback.time - activation.time <= 1 ? "is-fresh" : ""
+                      ]
+                        .filter(Boolean)
+                        .join(" ") || undefined
+                    }
                   >
                     <strong>{activation.skillName}</strong>
                     <span>
@@ -320,9 +580,26 @@ const RaceRunner = () => {
             maxStamina={hudScale.maxStamina}
             hidden={hudHidden}
             onToggle={toggleHud}
+            fx={{
+              boost: counting ? null : boost,
+              heal,
+              lowStamina: effects.lowStamina,
+              speedTrend: effects.speedTrend,
+              skillGlow: Boolean(playerSkill),
+              notice: counting
+                ? {
+                    title: "Largada",
+                    body: "Portões fechados: a corrida começa no VAI! (clique para pular)"
+                  }
+                : undefined
+            }}
           />
         )}
-        <TrackStrip segments={track.segments} progress={playerProgress} />
+        <TrackStrip
+          segments={track.segments}
+          progress={playerProgress}
+          finalStretch={effects.finalStretch}
+        />
       </section>
 
       {introducingRivals && (
@@ -339,6 +616,23 @@ const RaceRunner = () => {
             wit: race.horse.wit
           }}
           onStart={() => setStarted(true)}
+        />
+      )}
+
+      {cutscene && player && (
+        <RaceCutscene
+          activation={cutscene.activation}
+          skill={cutscene.skill}
+          horseName={player.name}
+          context={[
+            track.name,
+            `turno ${cutscene.activation.time + 1} / ${lastTurn}`,
+            cutsceneSegment?.label
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+          remaining={cutscene.remaining}
+          onClose={() => setCutscene(null)}
         />
       )}
 

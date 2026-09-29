@@ -7,7 +7,7 @@ import type { PaceVerdict, RunnerTelemetry, SkillEffectKind } from "../types/rac
  */
 
 /** How loud a HUD reading is: quiet when normal, loud only when it needs attention. */
-export type HudTone = "quiet" | "normal" | "accent" | "curve" | "danger";
+export type HudTone = "quiet" | "normal" | "accent" | "curve" | "danger" | "boost" | "heal";
 
 export const PACE_LABEL: Record<PaceVerdict, string> = {
   safe: "com sobra",

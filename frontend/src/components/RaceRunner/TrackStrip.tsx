@@ -4,6 +4,8 @@ export interface TrackStripProps {
   segments: TrackSegment[];
   /** 0..1, where the player is. */
   progress: number;
+  /** She is in the final stretch: its segment is highlighted. */
+  finalStretch?: boolean;
 }
 
 const segmentKind = (segment: TrackSegment) => {
@@ -20,12 +22,14 @@ const segmentText = (segment: TrackSegment) => {
 };
 
 /** The track as a strip of its stretches, with a marker where the player is. */
-const TrackStrip = ({ segments, progress }: TrackStripProps) => (
+const TrackStrip = ({ segments, progress, finalStretch }: TrackStripProps) => (
   <div className="TrackStrip" aria-label="Trechos da pista">
     {segments.map((segment, index) => (
       <span
         key={`${segment.label}-${index}`}
-        className={`TrackStrip__segment TrackStrip__segment--${segmentKind(segment)}`}
+        className={`TrackStrip__segment TrackStrip__segment--${segmentKind(segment)}${
+          finalStretch && index === segments.length - 1 ? " is-final" : ""
+        }`}
         style={{ flexGrow: segment.lengthRatio }}
         title={segmentText(segment)}
       >
