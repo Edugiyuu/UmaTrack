@@ -58,8 +58,11 @@ O design do sistema de corridas está em [`docs/race-system-design.md`](../race-
 | 15 | [Telas v2 de treino e de corrida (Figma)](15-ui-v2-train-race.md) | `feat/ui-v2-train-race` | M | ✅ |
 | 16 | [Skills custam só skill points](16-skills-points-only.md) | `feat/skills-points-only` | P | ✅ |
 | 17 | [Carreira por égua](17-horse-career.md) | `feat/horse-career` | G | ✅ |
-| 18 | [Documentar a API com Swagger (OpenAPI 3.1)](18-api-swagger.md) | `feat/api-swagger` | M | 🔲 |
+| 18 | [Documentar a API com Swagger (OpenAPI 3.1)](18-api-swagger.md) | `feat/api-swagger` | M | 🔍 |
 | 19 | [Rivais montadas sobre a égua do jogador](19-player-rivals.md) | `docs/mechanics-pdf-v2` | M | ✅ |
+| 20 | [Padronizar as respostas de erro da API](20-api-error-format.md) | `fix/api-errors` | P | 🔲 |
+| 21 | [Corrigir o 404 de `GET /horse/:id`](21-get-horse-404.md) | `fix/api-errors` | P | 🔲 |
+| 22 | [Remover os controllers sem rota](22-unrouted-controllers.md) | `fix/api-errors` | P | 🔲 |
 
 ### Ordem sugerida para 11–14
 

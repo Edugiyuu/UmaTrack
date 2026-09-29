@@ -83,6 +83,7 @@
 - [ ] `README.md`
 - [ ] `docs/race-system-design.md`
 - [ ] `docs/guia-do-jogador.md`
+- [ ] Spec da API em `backend/src/docs/openapi/` (se mexeu em rota, controller ou resposta) + `npm run docs:check`
 - [ ] `docs/tasks/README.md` (linha da tabela + status)
 
 ## 9. Riscos e questões em aberto
