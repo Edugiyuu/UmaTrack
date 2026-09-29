@@ -28,7 +28,6 @@ const RACE_ENERGY_COST = 35;
 /** Below this the server may spoil the session (see resolveTraining). */
 const TRAINING_RISK_ENERGY = 25;
 const MINIGAME_MAX_SCORE = 10;
-const MAX_MOOD = 5;
 
 const STAT_CARDS: { stat: TrainType; label: string; icon: string }[] = [
     { stat: 'speed', label: 'Speed', icon: speedIcon },
@@ -78,7 +77,6 @@ const CareerMenu = () => {
 
     const turnsLeft = horse?.turnsLeft ?? 0;
     const energy = horse?.energy ?? 0;
-    const mood = Math.min(MAX_MOOD, Math.max(0, horse?.mood ?? 3));
 
     const startTraining = (trainType: TrainType) => {
         if (!horse || turnsLeft <= 0 || training) return;
@@ -224,13 +222,6 @@ const CareerMenu = () => {
                             />
                             <strong>{energy}/100</strong>
                         </div>
-                    </div>
-                    <div className='Career__cell'>
-                        <span className='Career__cell-label'>Humor</span>
-                        <strong className='Career__mood' aria-label={`Humor ${mood} de ${MAX_MOOD}`}>
-                            {'★'.repeat(mood)}
-                            <span>{'★'.repeat(MAX_MOOD - mood)}</span>
-                        </strong>
                     </div>
                     <div className='Career__cell'>
                         <span className='Career__cell-label'>Skill pts</span>

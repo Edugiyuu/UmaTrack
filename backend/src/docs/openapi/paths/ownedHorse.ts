@@ -48,8 +48,8 @@ export const ownedHorsePaths: Paths = {
       description:
         "Converte a pontuação do minigame em pontos de atributo e skill points. **A pontuação é o único dado " +
         "confiado ao cliente**; todo o resto é calculado no servidor (`resolveTraining`):\n\n" +
-        "`ganho = round(base × desempenho × afinidade × humor × energia × retorno decrescente × sorteio)`, " +
-        "mínimo 1. Base 9 (speed, stamina), 8 (power), 7 (wit); desempenho `0,25 + 0,75 × (score/maxScore)^1,15`. " +
+        "`ganho = round(base × desempenho × afinidade × energia × retorno decrescente × sorteio)`, " +
+        "mínimo 1. Base 10,08 (speed, stamina), 8,96 (power), 7,84 (wit); desempenho `0,25 + 0,75 × (score/maxScore)^1,15`. " +
         "Skill points: `max(1, round(ganho × 0,45))`, +8 num round perfeito. Energia abaixo de 25 pode fazer " +
         "o treino fracassar. Detalhes no PDF `docs/UmaSprint-Mecanicas-do-Jogo.pdf`.\n\n" +
         "Gasta 20 de energia e 1 turno. Com 0 turnos a prova da carreira é obrigatória e treinar é recusado.",
@@ -82,7 +82,7 @@ export const ownedHorsePaths: Paths = {
       },
       responses: {
         "200": jsonResponse(
-          "Treino feito. `horse` já vem com o ganho, a energia, o humor e o turno atualizados.",
+          "Treino feito. `horse` já vem com o ganho, a energia e o turno atualizados.",
           {
             type: "object",
             required: ["horse", "training"],
@@ -97,7 +97,6 @@ export const ownedHorsePaths: Paths = {
                   stamina: ownedHorseExample.stamina + trainingExample.statGain,
                   skillPoints: ownedHorseExample.skillPoints + trainingExample.skillPointsGained,
                   energy: ownedHorseExample.energy - trainingExample.energySpent,
-                  mood: ownedHorseExample.mood + trainingExample.moodChange,
                   turnsLeft: ownedHorseExample.turnsLeft - 1
                 },
                 training: trainingExample
@@ -126,7 +125,7 @@ export const ownedHorsePaths: Paths = {
       tags: ["Treino e carreira"],
       summary: "Descansar",
       description:
-        "Devolve 45 de energia (até 100) e +1 de humor (até 5), gastando 1 turno. Com 0 turnos descansar " +
+        "Devolve 45 de energia (até 100), gastando 1 turno. Com 0 turnos descansar " +
         "continua permitido e **não gasta turno** (`turnSpent: false`), para a égua não travar sem energia " +
         "para a prova obrigatória.",
       operationId: "restHorse",
@@ -143,7 +142,7 @@ export const ownedHorsePaths: Paths = {
             rested: {
               summary: "Descanso",
               value: {
-                horse: { ...ownedHorseExample, energy: 75, mood: 5, turnsLeft: ownedHorseExample.turnsLeft - 1 },
+                horse: { ...ownedHorseExample, energy: 75, turnsLeft: ownedHorseExample.turnsLeft - 1 },
                 rest: restExample
               }
             }
@@ -181,7 +180,6 @@ export const ownedHorsePaths: Paths = {
                 skillPoints: 0,
                 skills: [],
                 energy: 100,
-                mood: 3,
                 runningStyle: "pace",
                 fans: 0,
                 racesRun: 0,

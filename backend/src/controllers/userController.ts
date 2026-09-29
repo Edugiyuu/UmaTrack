@@ -1,4 +1,4 @@
-import User, { MAX_ENERGY, MAX_MOOD } from "../models/user";
+import User, { MAX_ENERGY } from "../models/user";
 import Horse from "../models/horse";
 import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 
 import jwt from 'jsonwebtoken';
 import type { AuthenticatedRequest } from '../middleware/authMiddleware';
-import { findOwnedHorse, serializeOwnedHorse } from '../services/ownedHorse';
+import { findOwnedHorse, plainOwnedHorse, serializeOwnedHorse } from '../services/ownedHorse';
 import { careerView, freshOwnedHorse, isRetired } from '../services/career';
 import {
   TRAINING_ENERGY_COST,
@@ -141,7 +141,7 @@ export const getUser = async (req: AuthenticatedRequest, res: Response) => {
 
     // Same career shape as the career screen, so the profile can list retired horses.
     const horses = user.horses.map((ownedHorse) => ({
-      ...ownedHorse.toObject(),
+      ...plainOwnedHorse(ownedHorse),
       career: ownedHorse.career?.status ? careerView(ownedHorse) : undefined
     }));
 
@@ -309,14 +309,12 @@ export const trainHorse = async (req: AuthenticatedRequest, res: Response) => {
       trainType: trainType as TrainType,
       score: reportedScore,
       maxScore: reportedMax,
-      energy: ownedHorse.energy,
-      mood: ownedHorse.mood
+      energy: ownedHorse.energy
     });
 
     ownedHorse[trainType as TrainType] += outcome.statGain;
     ownedHorse.skillPoints += outcome.skillPointsGained;
     ownedHorse.energy = Math.max(0, ownedHorse.energy - outcome.energySpent);
-    ownedHorse.mood = Math.min(MAX_MOOD, Math.max(1, ownedHorse.mood + outcome.moodChange));
     ownedHorse.turnsLeft -= 1;
 
     await user.save();
@@ -358,11 +356,10 @@ export const restHorse = async (req: AuthenticatedRequest, res: Response) => {
     // energy bar, and without this the horse could neither train, rest nor race.
     const outOfTurns = ownedHorse.turnsLeft <= 0;
 
-    const rested = resolveRest(ownedHorse.energy, ownedHorse.mood);
+    const rested = resolveRest(ownedHorse.energy);
     const energyRecovered = rested.energy - ownedHorse.energy;
 
     ownedHorse.energy = rested.energy;
-    ownedHorse.mood = rested.mood;
     if (!outOfTurns) {
       ownedHorse.turnsLeft -= 1;
     }
@@ -374,7 +371,6 @@ export const restHorse = async (req: AuthenticatedRequest, res: Response) => {
       rest: {
         energyRecovered,
         energy: rested.energy,
-        mood: rested.mood,
         turnSpent: !outOfTurns
       }
     });

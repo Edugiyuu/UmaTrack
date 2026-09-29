@@ -1,4 +1,4 @@
-import { MAX_ENERGY, MAX_MOOD } from "../models/user";
+import { MAX_ENERGY } from "../models/user";
 import type { StatBlock } from "../types/race";
 
 export const TRAIN_TYPES = ["speed", "stamina", "power", "wit"] as const;
@@ -6,24 +6,25 @@ export type TrainType = (typeof TRAIN_TYPES)[number];
 
 /** Energy a training session burns. */
 export const TRAINING_ENERGY_COST = 20;
-/** Energy and mood a rest turn gives back. */
+/** Energy a rest turn gives back. */
 export const REST_ENERGY_GAIN = 45;
 
-/** Ceiling gain for a flawless session, before every multiplier. */
+/**
+ * Ceiling gain for a flawless session, before every multiplier. These are the old
+ * 9 / 9 / 8 / 7 times 1.12: mood used to add up to ×1.15, and removing it (task 26)
+ * without making up for it cut full-career completion from ~8% to ~1% in career:check.
+ */
 const BASE_GAIN: Record<TrainType, number> = {
-  speed: 9,
-  stamina: 9,
-  power: 8,
-  wit: 7
+  speed: 10.08,
+  stamina: 10.08,
+  power: 8.96,
+  wit: 7.84
 };
-
-const MOOD_MULTIPLIER = [0.85, 0.93, 1, 1.07, 1.15];
 
 export interface TrainingOutcome {
   statGain: number;
   skillPointsGained: number;
   energySpent: number;
-  moodChange: number;
   /** True when low energy spoiled the session. */
   failed: boolean;
   /** Human-readable reasons, shown in the results screen. */
@@ -55,7 +56,6 @@ export interface TrainingInput {
   score: number;
   maxScore: number;
   energy: number;
-  mood: number;
   /** Injected so tests can pin the outcome; defaults to Math.random. */
   random?: () => number;
 }
@@ -70,7 +70,6 @@ export const resolveTraining = ({
   score,
   maxScore,
   energy,
-  mood,
   random = Math.random
 }: TrainingInput): TrainingOutcome => {
   const notes: string[] = [];
@@ -79,7 +78,6 @@ export const resolveTraining = ({
   // A poor round still teaches something, a perfect one is worth chasing.
   const performance = 0.25 + 0.75 * Math.pow(scoreRatio, 1.15);
   const affinity = affinityFor(stats, trainType);
-  const moodMultiplier = MOOD_MULTIPLIER[Math.min(MAX_MOOD, Math.max(1, mood)) - 1];
   const energyFactor = energyMultiplier(energy);
   // Every point gets harder to add as the stat grows.
   const diminishing = 1 / (1 + stats[trainType] / 260);
@@ -89,7 +87,7 @@ export const resolveTraining = ({
   const failed = failureChance > 0 && random() < failureChance;
 
   let statGain = Math.round(
-    BASE_GAIN[trainType] * performance * affinity * moodMultiplier * energyFactor * diminishing * jitter
+    BASE_GAIN[trainType] * performance * affinity * energyFactor * diminishing * jitter
   );
   if (failed) {
     statGain = Math.floor(statGain * 0.4);
@@ -98,8 +96,6 @@ export const resolveTraining = ({
   statGain = Math.max(1, statGain);
 
   if (affinity >= 1.05) notes.push("Treino afinado com o tipo dela.");
-  if (moodMultiplier > 1) notes.push("Humor ótimo!");
-  if (moodMultiplier < 1) notes.push("Humor baixo atrapalhou.");
   if (energyFactor < 1) notes.push("Energia baixa reduziu o ganho.");
   if (diminishing < 0.7) notes.push("Atributo já alto: cada ponto custa mais.");
 
@@ -109,24 +105,15 @@ export const resolveTraining = ({
     notes.push("Round perfeito: +8 skill points de bônus.");
   }
 
-  let moodChange = 0;
-  if (failed) {
-    moodChange = -1;
-  } else if (scoreRatio >= 0.9 && mood < MAX_MOOD) {
-    moodChange = 1;
-  }
-
   return {
     statGain,
     skillPointsGained,
     energySpent: TRAINING_ENERGY_COST,
-    moodChange,
     failed,
     notes
   };
 };
 
-export const resolveRest = (energy: number, mood: number) => ({
-  energy: Math.min(MAX_ENERGY, energy + REST_ENERGY_GAIN),
-  mood: Math.min(MAX_MOOD, mood + 1)
+export const resolveRest = (energy: number) => ({
+  energy: Math.min(MAX_ENERGY, energy + REST_ENERGY_GAIN)
 });

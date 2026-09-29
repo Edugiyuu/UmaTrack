@@ -53,7 +53,6 @@ const placementFactor = (placement: number) =>
 const playCareer = (horse: (typeof HORSE_CATALOG)[number]) => {
   const stats = { speed: horse.speed, stamina: horse.stamina, power: horse.power, wit: horse.wit };
   let energy = 100;
-  let mood = 3;
   let skillPoints = 0;
   const learned: RaceSkill[] = [];
   const placements: number[] = [];
@@ -63,7 +62,7 @@ const playCareer = (horse: (typeof HORSE_CATALOG)[number]) => {
 
     for (let turn = 0; turn < race.turnsBefore; turn += 1) {
       if (energy < REST_BELOW) {
-        ({ energy, mood } = resolveRest(energy, mood));
+        ({ energy } = resolveRest(energy));
         continue;
       }
       const target = (stat: TrainType) => track.requirements[stat] * 1.1;
@@ -76,13 +75,11 @@ const playCareer = (horse: (typeof HORSE_CATALOG)[number]) => {
         score: 6 + Math.floor(rng() * 5),
         maxScore: 10,
         energy,
-        mood,
         random: rng
       });
       stats[trainType] += outcome.statGain;
       skillPoints += outcome.skillPointsGained;
       energy = Math.max(0, energy - outcome.energySpent);
-      mood = Math.min(5, Math.max(1, mood + outcome.moodChange));
     }
 
     // Buy the passive for the stat furthest below the requirements, when affordable.
@@ -97,7 +94,7 @@ const playCareer = (horse: (typeof HORSE_CATALOG)[number]) => {
     }
 
     // Turns are over: rest for free until she can race.
-    while (energy < RACE_ENERGY_COST) ({ energy, mood } = resolveRest(energy, mood));
+    while (energy < RACE_ENERGY_COST) ({ energy } = resolveRest(energy));
 
     const seed = Math.floor(rng() * 0xffffffff);
     const trackSeed = TRACK_CATALOG.find((candidate) => candidate.slug === race.trackSlug)!;

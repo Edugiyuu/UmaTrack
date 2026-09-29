@@ -333,15 +333,6 @@
   background: linear-gradient(90deg, var(--accent), #9be35a);
 }
 
-.Career__mood {
-  color: var(--color-yellow);
-  letter-spacing: 0.08em;
-}
-
-.Career__mood span {
-  color: var(--border);
-}
-
 .Career__notice,
 .Career__error {
   margin: 0;

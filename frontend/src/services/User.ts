@@ -151,7 +151,6 @@ export interface TrainingOutcome {
     statGain: number;
     skillPointsGained: number;
     energySpent: number;
-    moodChange: number;
     failed: boolean;
     notes: string[];
 }
@@ -186,7 +185,6 @@ export const trainHorse = async (
 export interface RestOutcome {
     energyRecovered: number;
     energy: number;
-    mood: number;
     /** False when she rested on an empty turn counter, which costs nothing. */
     turnSpent: boolean;
 }

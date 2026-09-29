@@ -33,11 +33,16 @@ export const normalizeOwnedHorse = (
   ensure("turnsLeft", 5);
   ensure("skillPoints", 0);
   ensure("energy", MAX_ENERGY);
-  ensure("mood", 3);
   ensure("runningStyle", "pace");
   ensure("fans", 0);
   ensure("racesRun", 0);
   ensure("racesWon", 0);
+
+  // Mood was removed (task 26): drop it from older saves so it is not stored forever.
+  if (ownedHorse.get("mood") !== undefined) {
+    ownedHorse.set("mood", undefined, { strict: false });
+    changed = true;
+  }
 
   if (!ownedHorse.skills) {
     ownedHorse.skills = [] as unknown as OwnedHorseDoc["skills"];
@@ -94,11 +99,21 @@ export const findOwnedHorse = async (userId: string, horseId: string) => {
  * frontend routes with; `ownedHorseId` exposes the subdocument id for the API calls
  * that need to address the copy itself.
  */
+/**
+ * The saved horse as a plain object, minus the fields the game no longer has. Saves not
+ * yet read by `normalizeOwnedHorse` can still carry them (mood, removed in task 26).
+ */
+export const plainOwnedHorse = (ownedHorse: OwnedHorseDoc) => {
+  const plain = ownedHorse.toObject() as Record<string, unknown>;
+  delete plain.mood;
+  return plain;
+};
+
 export const serializeOwnedHorse = (
   catalogHorse: InstanceType<typeof Horse>,
   ownedHorse: OwnedHorseDoc
 ) => {
-  const plain = ownedHorse.toObject() as Record<string, unknown> & { _id: mongoose.Types.ObjectId };
+  const plain = plainOwnedHorse(ownedHorse) as Record<string, unknown> & { _id: mongoose.Types.ObjectId };
 
   return {
     ...plain,

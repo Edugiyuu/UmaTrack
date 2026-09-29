@@ -58,7 +58,6 @@ export interface HorseResponseProfile {
   skillPoints?: number;
   skills?: LearnedSkill[];
   energy?: number;
-  mood?: number;
   runningStyle?: RunningStyle;
   fans?: number;
   racesRun?: number;

@@ -1,5 +1,5 @@
 import type { OpenAPIV3_1 } from "openapi-types";
-import { CAREER_STATUSES, MAX_ENERGY, MAX_MOOD, RUNNING_STYLES } from "../../models/user";
+import { CAREER_STATUSES, MAX_ENERGY, RUNNING_STYLES } from "../../models/user";
 import { SKILL_EFFECT_KINDS, SKILL_PHASES, SKILL_RARITIES, SKILL_TERRAINS } from "../../models/skill";
 import { TRACK_CATEGORIES, TRACK_SURFACES, TRACK_TERRAINS } from "../../models/track";
 import { TRAIN_TYPES } from "../../services/trainingEngine";
@@ -58,10 +58,6 @@ const ownedHorseFields: Record<string, Schema | OpenAPIV3_1.ReferenceObject> = {
     minimum: 0,
     maximum: MAX_ENERGY
   }),
-  mood: integer("Humor, de 1 (péssimo) a 5 (ótimo). Multiplica o ganho do treino.", {
-    minimum: 1,
-    maximum: MAX_MOOD
-  }),
   runningStyle: string("Estilo de corrida. Hoje é só gravado: não muda a simulação.", {
     enum: RUNNING_STYLE_ENUM
   }),
@@ -82,7 +78,6 @@ const ownedHorseRequired = [
   "skillPoints",
   "skills",
   "energy",
-  "mood",
   "runningStyle",
   "fans",
   "racesRun",
@@ -490,15 +485,11 @@ export const schemas: Record<string, Schema> = {
   TrainingOutcome: {
     type: "object",
     description: "Resultado de um treino, calculado no servidor a partir da pontuação do minigame.",
-    required: ["statGain", "skillPointsGained", "energySpent", "moodChange", "failed", "notes"],
+    required: ["statGain", "skillPointsGained", "energySpent", "failed", "notes"],
     properties: {
       statGain: integer("Pontos somados ao atributo treinado (mínimo 1).", { minimum: 1 }),
       skillPointsGained: integer("`max(1, round(ganho × 0,45))`, +8 num round perfeito.", { minimum: 1 }),
       energySpent: integer("Energia gasta (sempre 20)."),
-      moodChange: integer("Mudança de humor: −1 no treino fracassado, +1 com 90% da pontuação.", {
-        minimum: -1,
-        maximum: 1
-      }),
       failed: { type: "boolean", description: "`true` quando a energia baixa (< 25) estragou o treino." },
       notes: { type: "array", items: { type: "string" }, description: "Motivos legíveis, mostrados na tela de resultado." }
     },
@@ -508,11 +499,10 @@ export const schemas: Record<string, Schema> = {
   RestOutcome: {
     type: "object",
     description: "Resultado de um descanso.",
-    required: ["energyRecovered", "energy", "mood", "turnSpent"],
+    required: ["energyRecovered", "energy", "turnSpent"],
     properties: {
       energyRecovered: integer("Energia recuperada (até 45, limitada a 100).", { minimum: 0 }),
       energy: integer("Energia depois do descanso.", { minimum: 0, maximum: MAX_ENERGY }),
-      mood: integer("Humor depois do descanso (+1, até 5).", { minimum: 1, maximum: MAX_MOOD }),
       turnSpent: {
         type: "boolean",
         description: "`false` quando ela já estava com 0 turnos: descansar continua permitido para não travar a prova obrigatória."
@@ -738,7 +728,7 @@ export const schemas: Record<string, Schema> = {
       msg: string("`Vitória!` no 1º lugar, senão `Corrida concluída`.", { enum: ["Vitória!", "Corrida concluída"] }),
       simulation: ref("RaceSimulation"),
       rewards: ref("RaceRewards"),
-      horse: withDescription("OwnedHorse", "A égua já com prêmios, energia, humor e turnos atualizados."),
+      horse: withDescription("OwnedHorse", "A égua já com prêmios, energia e turnos atualizados."),
       monies: integer("Dinheiro do usuário depois da inscrição e do prêmio.", { minimum: 0 })
     }
   },

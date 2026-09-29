@@ -19,7 +19,6 @@ const base = {
   trainType: "speed" as const,
   maxScore: 10,
   energy: 100,
-  mood: 3,
   random: fixedRandom
 };
 
@@ -39,10 +38,6 @@ const tired = resolveTraining({ ...base, score: 10, energy: 15 });
 check("low energy cuts the gain", tired.statGain < perfect.statGain,
   `${tired.statGain} x ${perfect.statGain}`);
 
-const grumpy = resolveTraining({ ...base, score: 10, mood: 1 });
-const happy = resolveTraining({ ...base, score: 10, mood: 5 });
-check("mood matters", happy.statGain > grumpy.statGain, `${happy.statGain} x ${grumpy.statGain}`);
-
 const powerType = resolveTraining({
   ...base,
   score: 10,
@@ -59,11 +54,10 @@ check("she grows faster in her own speciality", powerType.statGain > offType.sta
   `power ${powerType.statGain} x wit ${offType.statGain}`);
 
 const exhausted = resolveTraining({ ...base, score: 10, energy: 0, random: () => 0.01 });
-check("training on an empty tank can go wrong", exhausted.failed && exhausted.moodChange === -1);
+check("training on an empty tank can go wrong", exhausted.failed);
 
-const rested = resolveRest(40, 2);
-check("resting refills energy and lifts the mood", rested.energy > 40 && rested.mood === 3);
-check("resting never goes over the cap", resolveRest(MAX_ENERGY - 5, 5).energy === MAX_ENERGY);
+check("resting refills energy", resolveRest(40).energy > 40);
+check("resting never goes over the cap", resolveRest(MAX_ENERGY - 5).energy === MAX_ENERGY);
 
 console.log(failures === 0 ? "\nAll training checks passed." : `\n${failures} check(s) failed.`);
 process.exit(failures === 0 ? 0 : 1);
