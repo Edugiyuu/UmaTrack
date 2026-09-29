@@ -194,9 +194,11 @@ export const useRaceEffects = ({
       playerSkills.find((active) => active.skill?.rarity === "unique") ?? playerSkills.at(-1) ?? null;
     const recovery = playerSkills.find((active) => active.kind === "staminaRecover");
     const turn = turnIndex >= 0 ? turns[turnIndex] : null;
+    // Past her last turn she has crossed the line: no boost, refill or trend is live.
+    const running = Math.ceil(time) <= turns.length;
 
     let boost: RaceEffects["boost"] = null;
-    if (live && turn && turn.effects.some((kind) => SPEED_KINDS.includes(kind))) {
+    if (live && running && turn && turn.effects.some((kind) => SPEED_KINDS.includes(kind))) {
       const source = [...described]
         .reverse()
         .find(
@@ -213,7 +215,7 @@ export const useRaceEffects = ({
     }
 
     let heal: RaceEffects["heal"] = null;
-    if (recovery && maxStamina > 0) {
+    if (recovery && running && maxStamina > 0) {
       const index = recovery.activation.time;
       const after = turns[index];
       if (after) {
@@ -233,7 +235,7 @@ export const useRaceEffects = ({
       heal,
       staminaShare,
       lowStamina: staminaShare < LOW_STAMINA,
-      speedTrend: turn && previousTurn ? turn.runSpeed - previousTurn.runSpeed : 0,
+      speedTrend: running && turn && previousTurn ? turn.runSpeed - previousTurn.runSpeed : 0,
       finalStretch: live && spurtIndex >= 0 && time > spurtIndex
     };
   }, [described, live, time, turnIndex, turns, maxStamina, spurtIndex]);

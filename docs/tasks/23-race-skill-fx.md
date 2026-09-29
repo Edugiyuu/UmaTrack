@@ -327,6 +327,14 @@ na Tokyo Classic (2400 m). O frontend rodou em `--mode mock`.
 | 375 px | Sem rolagem horizontal; contagem menor; cutscene legível |
 | Mudo + recarregar | Continua mudo |
 
+**Tela sem rolagem (pedido do Eduardo depois da revisão).** Em janelas de desktop
+(1101 px ou mais de largura, 620 px ou mais de altura) a corrida ocupa exatamente a
+altura da janela: o oval encolhe para caber, as câmeras acompanham a altura, e abaixo de
+820 px de altura as câmeras e o HUD ficam mais compactos. Conferido em 1904×915 e
+1366×680: nada rola e a classificação e as skills aparecem inteiras. Telas menores
+continuam rolando. Junto veio uma correção: depois que ela cruza a linha, o boost, a
+recuperação e a seta de tendência do último turno deixam de aparecer.
+
 Não deu para emular `prefers-reduced-motion` no navegador do app; o caminho foi
 conferido no código (cutscene não abre, GSAP não anima, loops em CSS desligam). Esse
 critério fica aberto até alguém testar com a opção ligada no sistema.
