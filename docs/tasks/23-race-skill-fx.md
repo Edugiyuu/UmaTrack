@@ -8,7 +8,7 @@
 | **Status** | 🔲 Não iniciada |
 | **Tamanho** | G, feita em partes (A–D), um commit por parte |
 | **Depende de** | `15` (tela de corrida v2) |
-| **Bloqueia** | `24` (som da corrida) |
+| **Bloqueia** | `24` (música e som do jogo) |
 | **Área** | frontend |
 | **Criada em** | 2026-09-28 |
 
