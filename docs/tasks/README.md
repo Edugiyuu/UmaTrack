@@ -64,6 +64,7 @@ O design do sistema de corridas está em [`docs/race-system-design.md`](../race-
 | 21 | [Corrigir o 404 de `GET /horse/:id`](21-get-horse-404.md) | `fix/api-errors` | P | 🔲 |
 | 22 | [Remover os controllers sem rota](22-unrouted-controllers.md) | `fix/api-errors` | P | 🔲 |
 | 23 | [Efeitos visuais da corrida (skills, largada, reta final, HUD vivo)](23-race-skill-fx.md) | `feat/race-visual-effects` | G | 🔲 |
+| 24 | [Som da corrida (música, ambiente e efeitos sonoros)](24-race-audio.md) | `feat/race-visual-effects` | M | 🔲 |
 
 ### Ordem sugerida para 11–14
 

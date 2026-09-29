@@ -8,7 +8,7 @@
 | **Status** | 🔲 Não iniciada |
 | **Tamanho** | G, feita em partes (A–D), um commit por parte |
 | **Depende de** | `15` (tela de corrida v2) |
-| **Bloqueia** | — |
+| **Bloqueia** | `24` (som da corrida) |
 | **Área** | frontend |
 | **Criada em** | 2026-09-28 |
 
@@ -38,8 +38,8 @@ Os frames 5–7 têm uma nota amarela embaixo com a animação e o som de cada e
 nomes e números de skill nos frames são exemplos ("Respiro +15%", "Arranque final +18%").
 Na tela entram as skills e os valores reais de `backend/src/data/skills.ts`.
 
-O **som** fica com o Eduardo. Esta task só deixa os eventos prontos para ele ligar os
-áudios (parte D).
+O **som** fica para a task `24`, na mesma branch. Esta task só deixa os eventos prontos
+(parte D). Os arquivos de áudio ficam com o Eduardo.
 
 ## 2. Objetivo
 A corrida marca a largada, mostra na pista quem ativou cada skill e o que ela fez, avisa
