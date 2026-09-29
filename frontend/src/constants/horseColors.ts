@@ -6,7 +6,7 @@ export const horseColors: Record<string, string> = {
   'Mejiro McQueen': '#800080',
   'El Condor Pasa': '#ff4500',
   'Daiwa Scarlet': '#ff0000',
-  'Nice Nature': '#775f58ff',
+  'Nice Nature': '#BD5C5C',
   'Grass Wonder': '#3f8bc2ff',
   'Tokai Teio': '#4169e1',
   'Twin Turbo': '#ff8c00',
