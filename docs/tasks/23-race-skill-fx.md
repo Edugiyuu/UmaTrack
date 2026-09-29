@@ -5,7 +5,7 @@
 | **ID** | `23` |
 | **Branch** | `feat/race-visual-effects` |
 | **Base** | `main` |
-| **Status** | 🔲 Não iniciada |
+| **Status** | 🔍 Em revisão |
 | **Tamanho** | G, feita em partes (A–D), um commit por parte |
 | **Depende de** | `15` (tela de corrida v2) |
 | **Bloqueia** | `24` (música e som do jogo) |
@@ -52,60 +52,60 @@ contínua. Nada muda no motor, e os ganchos de som ficam prontos.
 
 #### Parte A — Skills (frames 1–4)
 **1. Skill ativa (qualquer corredora)**
-- [ ] A bolinha de quem ativou ganha halo e anel por ~1 turno: dourado para a égua do
+- [x] A bolinha de quem ativou ganha halo e anel por ~1 turno: dourado para a égua do
       jogador, na cor da rival para as rivais.
-- [ ] Quando a skill é do jogador, as outras bolinhas esmaecem (opacidade ~0,4) durante o
+- [x] Quando a skill é do jogador, as outras bolinhas esmaecem (opacidade ~0,4) durante o
       destaque, e o balão "VOCÊ · Nº" mostra o nome da skill ("✦ Concentração!").
-- [ ] Toast na pista: "VOCÊ ativou ✦ Concentração", ou "Rival B ativou ✦ Arranque".
-- [ ] A câmera LIVE fica dourada ("✦ SKILL · VOCÊ"); a linha do feed "Skills" e o card
+- [x] Toast na pista: "VOCÊ ativou ✦ Concentração", ou "Rival B ativou ✦ Arranque".
+- [x] A câmera LIVE fica dourada ("✦ SKILL · VOCÊ"); a linha do feed "Skills" e o card
       "Skills ativas" brilham.
 
 **2. Cutscene (só skills `unique` da égua do jogador)**
-- [ ] Só as skills de raridade `unique` abrem cutscene. Skills comuns e raras, e as
+- [x] Só as skills de raridade `unique` abrem cutscene. Skills comuns e raras, e as
       skills das rivais, ficam só com o destaque do item 1.
-- [ ] Sobreposição de tela cheia: escurecimento, barras de cinema, faixa diagonal em
+- [x] Sobreposição de tela cheia: escurecimento, barras de cinema, faixa diagonal em
       gradiente, arte da égua, nome da skill enorme, descrição e selos de efeito, e o
       rodapé "toque para pular ›".
-- [ ] Dura ~1,8 s, pausa a reprodução e some com clique, espaço ou Esc.
-- [ ] Não abre em 4x nem com "Pular p/ resultado". Nesses casos fica só o destaque do item 1.
+- [x] Dura ~1,8 s, pausa a reprodução e some com clique, espaço ou Esc.
+- [x] Não abre em 4x nem com "Pular p/ resultado". Nesses casos fica só o destaque do item 1.
 
 **3. Skill de fôlego (`staminaRecover`)**
-- [ ] O card de Fôlego fica verde e brilhando, com o selo "+N%"; a barra mostra em verde a
+- [x] O card de Fôlego fica verde e brilhando, com o selo "+N%"; a barra mostra em verde a
       parte recuperada.
-- [ ] A bolinha ganha halo verde e partículas "+", e o balão mostra "+N% FÔLEGO".
-- [ ] O alerta e o card de Ritmo refletem a recuperação.
+- [x] A bolinha ganha halo verde e partículas "+", e o balão mostra "+N% FÔLEGO".
+- [x] O alerta e o card de Ritmo refletem a recuperação.
 
 **4. Skill de velocidade (`speedBoost`, `accelBoost`, `startDash`)**
-- [ ] Linhas de velocidade animadas sobre a pista e brilho azul nas bordas enquanto o
+- [x] Linhas de velocidade animadas sobre a pista e brilho azul nas bordas enquanto o
       efeito dura.
-- [ ] Rastro azul atrás da bolinha do jogador; o balão mostra o ganho ("▲ +8 m/turno").
-- [ ] O card de Velocidade fica azul e diz quanto a skill somou.
+- [x] Rastro azul atrás da bolinha do jogador; o balão mostra o ganho ("▲ +8 m/turno").
+- [x] O card de Velocidade fica azul e diz quanto a skill somou.
 
 #### Parte B — Largada e reta final (frames 5 e 6)
 **5. Largada**
-- [ ] Antes do turno 0, as corredoras ficam nos portões e a pista escurece com a contagem
+- [x] Antes do turno 0, as corredoras ficam nos portões e a pista escurece com a contagem
       "3 · 2 · 1 · VAI!" (~0,6 s por número, ~0,25 s em 4x). O número entra grande e encolhe.
-- [ ] No "VAI!" os portões abrem e a reprodução começa. Clique ou espaço pulam a contagem.
-- [ ] Depois do turno 1: selo "BOA LARGADA!" ou "LARGOU MAL" para a égua do jogador.
-- [ ] Voltar com ← até o início não repete a contagem.
+- [x] No "VAI!" os portões abrem e a reprodução começa. Clique ou espaço pulam a contagem.
+- [x] Depois do turno 1: selo "BOA LARGADA!" ou "LARGOU MAL" para a égua do jogador.
+- [x] Voltar com ← até o início não repete a contagem.
 
 **6. Reta final**
-- [ ] Na primeira vez que a égua do jogador entra na fase `spurt` (últimos 20% da prova),
+- [x] Na primeira vez que a égua do jogador entra na fase `spurt` (últimos 20% da prova),
       um banner inclinado "RETA FINAL" com "FALTAM N m" entra, fica ~1,5 s e sai.
-- [ ] Nada mais muda na tela, só o trecho "Reta final" da faixa de segmentos ganha destaque.
-- [ ] Esse é o gancho para trocar a música pela trilha tensa (parte D).
+- [x] Nada mais muda na tela, só o trecho "Reta final" da faixa de segmentos ganha destaque.
+- [x] Esse é o gancho para trocar a música pela trilha tensa (parte D).
 
 #### Parte C — HUD vivo (frame 7)
 **7. HUD vivo**
-- [ ] Os números de Velocidade, Fôlego, Pressão e distância rolam até o novo valor
+- [x] Os números de Velocidade, Fôlego, Pressão e distância rolam até o novo valor
       (~300 ms), com seta de tendência ("▲ 0,6").
-- [ ] As barras drenam e enchem de forma contínua.
-- [ ] Fôlego abaixo de 25%: o card pulsa em vermelho (borda, número e barra) até recuperar.
+- [x] As barras drenam e enchem de forma contínua.
+- [x] Fôlego abaixo de 25%: o card pulsa em vermelho (borda, número e barra) até recuperar.
       O alerta vira "FÔLEGO BAIXO".
-- [ ] O alerta entra deslizando quando a frase muda.
+- [x] O alerta entra deslizando quando a frase muda.
 
 #### Parte D — Ganchos de som (sem os áudios)
-- [ ] Um módulo `raceAudio` com os eventos abaixo, volume e mudo guardados no
+- [x] Um módulo `raceAudio` com os eventos abaixo, volume e mudo guardados no
       `localStorage`, e um botão 🔊/🔇 no cabeçalho, ao lado das velocidades.
       Sem áudio configurado, nada toca e nada quebra.
 
@@ -118,12 +118,12 @@ contínua. Nada muda no motor, e os ganchos de som ficam prontos.
 | `finish` | Égua do jogador cruza a linha |
 
 #### Gerais
-- [ ] `prefers-reduced-motion: reduce`: sem cutscene, contagem animada, linhas,
+- [x] `prefers-reduced-motion: reduce`: sem cutscene, contagem animada, linhas,
       partículas, pulsos ou números rolando. Ficam cor e texto.
-- [ ] Os efeitos seguem a reprodução: pausar congela; ← e → mostram o estado do turno.
+- [x] Os efeitos seguem a reprodução: pausar congela; ← e → mostram o estado do turno.
       Eventos de uma vez só (cutscene, contagem, banner, selos) não se repetem ao voltar.
-- [ ] Um selo por vez na pista, numa fila. O banner da reta final e a cutscene têm prioridade.
-- [ ] 375px sem rolagem horizontal; no celular, linhas e brilhos ficam mais fracos para não
+- [x] Um selo por vez na pista, numa fila. O banner da reta final e a cutscene têm prioridade.
+- [x] 375px sem rolagem horizontal; no celular, linhas e brilhos ficam mais fracos para não
       esconder o HUD.
 
 ### Fora do escopo
@@ -147,7 +147,7 @@ contínua. Nada muda no motor, e os ganchos de som ficam prontos.
 | Tipo e raridade da skill | `skillSlug` → `effect.kind` / `rarity` pelo catálogo de `getSkills()` |
 | Velocidade ativa e ganho | `telemetry[t].effects` e `runSpeed − speed` |
 | Fôlego recuperado | Ativação `staminaRecover` + diferença de `stamina` entre turnos, em % de `maxStamina` |
-| Boa largada / largou mal | `telemetry[0].placement` comparado com a colocação ao fim do turno 1 |
+| Boa largada / largou mal | Colocação no começo do turno 2 (`telemetry[1].placement`): metade da frente do páreo é boa largada. No começo do turno 1 estão todas empatadas na linha, então não serve de comparação |
 | Reta final | Primeiro turno com `telemetry[t].phase === "spurt"` |
 | Fôlego baixo | `stamina / maxStamina < 0.25` |
 
@@ -173,6 +173,10 @@ som e visual saem do mesmo lugar.
   `useRacePlayback`.
 - Tokens CSS: `--fx-skill` `#ffb81a`, `--fx-heal` `#22c773`, `--fx-boost` `#4fadff`,
   `--fx-danger` `#e03838`.
+- **Animações com GSAP** (pedido do Eduardo): a contagem, o banner da reta final, a
+  entrada da cutscene, os selos, o alerta do HUD, as linhas de velocidade e os números
+  rolando (`useTween`). Os pulsos em loop (anel da skill, "+" do fôlego, fôlego baixo)
+  ficaram em CSS. Tudo checa `prefers-reduced-motion` antes de animar.
 
 **Arquivos afetados**
 
@@ -193,44 +197,44 @@ som e visual saem do mesmo lugar.
 | `docs/guia-do-jogador.md` | editar | O que cada efeito quer dizer, reta final, botão de som |
 
 ## 5. Plano de execução
-1. [ ] `useRaceEffects` e `useTween`, conferidos contra um replay real do mock.
-2. [ ] **Parte A:** destaque de skill, toast, câmera e feed; fôlego e velocidade; cutscene.
-3. [ ] **Parte B:** contagem, portões, selo da largada; banner da reta final.
-4. [ ] **Parte C:** HUD vivo.
-5. [ ] **Parte D:** `raceAudio` com os eventos e o botão de som.
-6. [ ] Movimento reduzido, 4x, 375px e fila de selos.
-7. [ ] Guia do jogador e tabela de status.
+1. [x] `useRaceEffects` e `useTween`, conferidos contra um replay real do mock.
+2. [x] **Parte A:** destaque de skill, toast, câmera e feed; fôlego e velocidade; cutscene.
+3. [x] **Parte B:** contagem, portões, selo da largada; banner da reta final.
+4. [x] **Parte C:** HUD vivo.
+5. [x] **Parte D:** `raceAudio` com os eventos e o botão de som.
+6. [x] Movimento reduzido, 4x, 375px e fila de selos.
+7. [x] Guia do jogador e tabela de status.
 
 ## 6. Critérios de aceite
-- [ ] **Dado** uma rival que ativa uma skill, **quando** a reprodução passa pelo turno,
+- [x] **Dado** uma rival que ativa uma skill, **quando** a reprodução passa pelo turno,
       **então** a bolinha dela ganha halo na cor dela e o toast diz o nome dela e da skill.
-- [ ] **Dado** a égua do jogador ativando Concentração, **quando** acontece, **então** a
+- [x] **Dado** a égua do jogador ativando Concentração, **quando** acontece, **então** a
       bolinha fica dourada, as outras esmaecem, o balão diz "✦ Concentração!" e a câmera
       LIVE fica dourada por ~1 turno.
-- [ ] **Dado** Segundo Fôlego, **quando** ativa, **então** o card de Fôlego fica verde com
+- [x] **Dado** Segundo Fôlego, **quando** ativa, **então** o card de Fôlego fica verde com
       "+N%", onde N é o que o turno realmente recuperou.
-- [ ] **Dado** um turno com `speedBoost`, **quando** é mostrado, **então** há linhas de
+- [x] **Dado** um turno com `speedBoost`, **quando** é mostrado, **então** há linhas de
       velocidade e o card mostra o ganho; elas somem quando o efeito acaba.
-- [ ] **Dado** Último Fôlego (`unique`) do jogador em 1x ou 2x, **quando** ativa, **então**
+- [x] **Dado** Último Fôlego (`unique`) do jogador em 1x ou 2x, **quando** ativa, **então**
       a cutscene abre, a corrida pausa, e clique, espaço ou Esc fecham e retomam. Em 4x não abre.
-- [ ] **Dado** uma skill que não é `unique` (do jogador ou de rival), ou uma `unique` de
+- [x] **Dado** uma skill que não é `unique` (do jogador ou de rival), ou uma `unique` de
       rival, **quando** ativa, **então** não há cutscene, só o destaque.
-- [ ] **Dado** uma corrida nova, **quando** a tela abre, **então** a contagem roda e a
+- [x] **Dado** uma corrida nova, **quando** a tela abre, **então** a contagem roda e a
       reprodução só começa no "VAI!"; um clique pula direto para a largada.
-- [ ] **Dado** a égua ganhando posições no turno 1, **quando** ele termina, **então**
+- [x] **Dado** a égua ganhando posições no turno 1, **quando** ele termina, **então**
       aparece "BOA LARGADA!". Perdendo posições, "LARGOU MAL".
-- [ ] **Dado** a entrada nos últimos 20%, **quando** acontece, **então** o banner "RETA
+- [x] **Dado** a entrada nos últimos 20%, **quando** acontece, **então** o banner "RETA
       FINAL" passa uma vez e o evento `finalStretch` dispara.
-- [ ] **Dado** o fôlego abaixo de 25%, **quando** o turno é mostrado, **então** o card pulsa
+- [x] **Dado** o fôlego abaixo de 25%, **quando** o turno é mostrado, **então** o card pulsa
       em vermelho, e para se ela recuperar.
-- [ ] **Dado** números mudando de um turno para outro, **quando** acontece, **então** eles
+- [x] **Dado** números mudando de um turno para outro, **quando** acontece, **então** eles
       rolam até o novo valor.
-- [ ] **Dado** ← até antes de uma ativação e → de novo, **quando** a reprodução cruza a
+- [x] **Dado** ← até antes de uma ativação e → de novo, **quando** a reprodução cruza a
       ativação outra vez, **então** o destaque aparece, mas a cutscene e os selos não repetem.
-- [ ] **Dado** o som em mudo, **quando** a página recarrega, **então** continua mudo.
+- [x] **Dado** o som em mudo, **quando** a página recarrega, **então** continua mudo.
 - [ ] **Dado** `prefers-reduced-motion`, **quando** a corrida roda, **então** só cor e texto
       mudam.
-- [ ] **Dado** 375px, **quando** a corrida roda, **então** não há rolagem horizontal.
+- [x] **Dado** 375px, **quando** a corrida roda, **então** não há rolagem horizontal.
 
 ## 7. Como verificar
 
@@ -252,8 +256,8 @@ mock no fim.
   modal de resultado; o HUD continua mudo quando não há nada a dizer.
 
 ## 8. Impacto em documentação
-- [ ] `docs/guia-do-jogador.md`: o que cada efeito quer dizer, reta final, botão de som
-- [ ] `docs/tasks/README.md` (linha da tabela + status)
+- [x] `docs/guia-do-jogador.md`: o que cada efeito quer dizer, reta final, botão de som
+- [x] `docs/tasks/README.md` (linha da tabela + status)
 - N/A `README.md`, `docs/race-system-design.md` e a spec da API: nada muda no motor nem nas rotas.
 
 ## 9. Riscos e questões em aberto
@@ -266,9 +270,9 @@ mock no fim.
 
 ## 10. Definition of Done
 - [ ] Critérios de aceite (seção 6) todos marcados
-- [ ] `npm run build --prefix frontend` e `npm run lint --prefix frontend` passam
-- [ ] Sem `console.log`/`console.debug` / código morto deixado para trás; mock apagado
-- [ ] Documentação da seção 8 atualizada
+- [x] `npm run build --prefix frontend` passa; `npm run lint --prefix frontend` só acusa o erro antigo de `TrackCard.tsx`, fora desta task
+- [x] Sem `console.log`/`console.debug` / código morto deixado para trás; mock apagado
+- [x] Documentação da seção 8 atualizada
 - [ ] Commit e push em `feat/race-visual-effects`; tabela em `docs/tasks/README.md` atualizada
 
 ---
@@ -279,3 +283,50 @@ mock no fim.
 |---|---|
 | 2026-09-28 | Oito estados desenhados no Figma pelo MCP Talk to Figma e aprovados pelo Eduardo; o estado "exausta" foi descartado. Task criada. |
 | 2026-09-28 | Frame "Pelotão sob pressão" descartado; frames renumerados de 1 a 7 e alinhados no Figma. Cutscene só para skills `unique`. |
+| 2026-09-28 | Implementada. Notas abaixo. |
+
+**O que mudou de rumo**
+- **Um commit só** em vez de um por parte: as quatro partes mexem nos mesmos arquivos
+  (`RaceRunner.tsx`, `RaceHud.tsx`) e não havia como separar sem commits que não compilam.
+- **GSAP** nas animações, a pedido do Eduardo no meio da implementação (ver seção 4).
+- **Janela de uma skill:** uma ativação com `time = n` age no turno `n + 1`, ou seja, no
+  intervalo `(n, n + 1]`. O destaque e o evento seguem esse intervalo; assim, ao
+  avançar com → até o fim de um turno, nada do turno seguinte aparece antes da hora.
+- **Duas skills dela no mesmo turno** (comum: Segundo Fôlego e Último Fôlego juntas):
+  a `unique` fica com o balão e a câmera, e a recuperação continua aparecendo no cartão
+  de Fôlego.
+- **Fila de selos:** até 3 esperando, os dela e o da largada na frente dos das rivais, e
+  um selo com mais de 2 turnos de atraso é descartado (senão, ao avançar vários turnos
+  com →, apareciam selos velhos). Pausado, a fila espera.
+- **O banner espera a cutscene fechar** para cruzar a tela; antes ele passava escondido
+  atrás dela.
+- **A faixa da cutscene** usa o gradiente do Figma (violeta, magenta, coral), não a cor
+  da égua: na Oguri Cap, cinza, a faixa ficava apagada.
+- **O HUD na contagem** mostra os números do turno 1 com o aviso "Largada", não "0,0
+  m/turno": o replay não tem um turno 0.
+- **"FALTAM N m" do banner** é o que faltava no começo do primeiro turno em `spurt`. Com
+  éguas rápidas (400+ m/turno) isso pode ser menos de 100 m, porque o turno anterior
+  começou antes dos últimos 20%.
+- `raceAudio` emite os eventos, mas nenhum som está registrado; os arquivos ficam para a
+  task `24`. O mudo fica em `localStorage` (`umasprint:race-audio:muted`).
+
+**Como foi verificado.** Nunca contra o backend local. Um mock em memória (fora do
+repositório) serviu `simulateRace` e `generateRivals` de verdade com os catálogos do seed,
+Oguri Cap com Concentração, Segundo Fôlego, Passo Relâmpago e Último Fôlego, Stamina 260,
+na Tokyo Classic (2400 m). O frontend rodou em `--mode mock`.
+
+| Cenário | Resultado |
+|---|---|
+| Rivais → Largar | Contagem 3 · 2 · 1 · VAI! (~600 ms por número, ~280 ms em 4x), portões na pista, aviso "Largada" no HUD |
+| Turno 1 | Concentração: halo dourado, outras esmaecidas, câmera "✦ SKILL · VOCÊ", balão "✦ Concentração!", linhas de velocidade e brilho azul, card Velocidade azul |
+| Depois do turno 1 | Selo "BOA LARGADA! · 1º após o turno 1" |
+| Turno 8 em 1x | Cutscene do Último Fôlego → banner RETA FINAL → selo do Segundo Fôlego, um de cada vez; Fôlego verde "+18%", barra com a parte verde, trecho "Últimos 300m" destacado |
+| Fôlego < 25% | Card vermelho pulsando, alerta "FÔLEGO BAIXO" |
+| 4x | Sem cutscene |
+| Clique / Esc na cutscene | Fecha; a corrida volta ao estado anterior (pausada se estava) |
+| 375 px | Sem rolagem horizontal; contagem menor; cutscene legível |
+| Mudo + recarregar | Continua mudo |
+
+Não deu para emular `prefers-reduced-motion` no navegador do app; o caminho foi
+conferido no código (cutscene não abre, GSAP não anima, loops em CSS desligam). Esse
+critério fica aberto até alguém testar com a opção ligada no sistema.

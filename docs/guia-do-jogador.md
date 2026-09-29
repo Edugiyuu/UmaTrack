@@ -379,9 +379,9 @@ algo pede atenção. Um HUD todo apagado quer dizer uma corrida limpa.
 | Cartão | O que mostra | Quando acende |
 |---|---|---|
 | **Velocidade** | m/turno contra o teto (o Speed), e o estado: *largada*, *acelerando (+16)*, *no teto*, *perdeu 20 na curva*, *cansada* | Amarelo no turno em que ela entra numa curva; vermelho quando cansa (a barra mostra o teto caindo pela metade) |
-| **Fôlego** | Quanto sobra do tanque, o gasto do turno e o **alcance**: quantos metros o fôlego ainda aguenta contra os metros que faltam | Vermelho quando zera |
+| **Fôlego** | Quanto sobra do tanque, o gasto do turno e o **alcance**: quantos metros o fôlego ainda aguenta contra os metros que faltam | Vermelho e pulsando abaixo de 25%; verde no turno em que uma skill devolve fôlego |
 | **Ritmo** | *com sobra*, *no limite* ou *forçando*, e por quanto | Verde em *no limite*, que é o ideal; vermelho em *forçando* |
-| **Pressão** | ×1, ×1,25 ou ×1,5: o multiplicador do gasto no terço atual | Nunca acende; explica por que o gasto sobe no fim |
+| **Pressão** | ×1, ×1,25 ou ×1,5: o multiplicador do gasto no terço atual (1º, 2º e último terço da prova) | Nunca acende; explica por que o gasto sobe no fim |
 | **Skills ativas** | Os efeitos ligados neste turno | Quando há algum |
 
 **O aviso mais importante é o *forçando*.** O alcance projeta o fôlego até a
@@ -395,9 +395,46 @@ Wit também ajuda, porque baixa o gasto de cada turno.
 - **No limite:** chega na linha com o tanque perto do fim. É o ponto certo.
 - **Forçando:** vai secar antes da linha e terminar com o teto pela metade.
 
-Só um aviso em texto aparece por vez: *cansada* passa na frente de *forçando*.
+Os números rolam até o valor novo em vez de trocar de repente, e a Velocidade
+mostra uma seta com quanto mudou desde o turno anterior (▲ 0,6).
+
+Só um aviso em texto aparece por vez: *cansada* passa na frente de *fôlego
+baixo*, que passa na frente de *forçando*. No turno em que uma skill sua faz
+efeito, o aviso fala dela.
 Quem só quer assistir pode clicar em **Esconder HUD**; a escolha vale até o fim
 da prova. No celular, o HUD mostra só velocidade, fôlego e ritmo.
+
+### Os efeitos na pista
+
+A corrida marca os momentos importantes na tela:
+
+- **Largada:** depois de conhecer as rivais, a pista escurece e conta
+  **3 · 2 · 1 · VAI!**. No VAI! os portões abrem. Um clique (ou Espaço) pula a
+  contagem. Depois do primeiro turno aparece **BOA LARGADA!** se ela terminou o
+  turno na metade da frente do páreo, ou **LARGOU MAL** se ficou na de trás.
+- **Skill ativada:** a bolinha de quem ativou ganha um halo na cor dela por um
+  turno, e um aviso na pista diz quem ativou e o que a skill faz. Quando a skill é
+  **sua**, o halo é dourado, as outras bolinhas esmaecem, a câmera vira
+  **✦ SKILL · VOCÊ** e o balão mostra o nome da skill.
+- **Fôlego de volta:** uma skill de recuperação deixa o cartão de Fôlego verde com
+  o quanto voltou (+18%), e a parte recuperada aparece em verde na barra.
+- **Velocidade extra:** enquanto uma skill de velocidade age, a pista ganha linhas
+  de velocidade, a tela brilha em azul e o cartão de Velocidade mostra o ganho.
+- **Skill única:** as skills **únicas** da sua égua abrem uma cena em tela cheia
+  com o nome da skill. A corrida espera; clique, Espaço ou Esc fecham na hora. A
+  cena não abre em 4x (fica só o destaque), e as skills comuns, raras e as das
+  rivais nunca abrem.
+- **Reta final:** nos últimos 20% da prova passa uma faixa **RETA FINAL** com
+  quantos metros faltam, e o trecho final da faixa da pista fica destacado.
+
+Os avisos aparecem um de cada vez; os seus passam na frente dos das rivais.
+Voltar com ← mostra de novo os destaques do turno, mas a contagem, a cena, a
+faixa e os avisos não se repetem. Com **redução de movimento** ligada no
+sistema, a cena de skill única não abre e nada se mexe: ficam só as cores e os
+textos.
+
+O botão **🔊** no alto, ao lado das velocidades, liga e desliga o som da
+corrida. A escolha fica guardada para as próximas.
 
 ---
 
