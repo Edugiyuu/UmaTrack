@@ -1,149 +1,133 @@
+/**
+ * A track card, v2 (docs/tasks/27, Figma "ChooseTrackScreen v2"). The button carries the
+ * selection scale and the face inside it the hover scale, both from GSAP, so the two
+ * never fight over one transform.
+ */
 .TrackCard {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.TrackCard.is-selected {
+  z-index: 1;
+}
+
+.TrackCard:focus-visible {
+  outline: none;
+}
+
+.TrackCard:focus-visible .TrackCard__face {
+  box-shadow: var(--focus-ring);
+}
+
+.TrackCard__face {
+  position: relative;
   display: flex;
   flex-direction: column;
-  text-align: left;
-  padding: 0;
-  border: 2px solid transparent;
-  border-radius: 14px;
-  background: #ffffff;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-  cursor: pointer;
+  height: 100%;
   overflow: hidden;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-  font-family: inherit;
-  color: inherit;
+  border: 1.5px solid #e3e3e3;
+  border-radius: 16px;
+  background-color: var(--surface);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
 }
 
-.TrackCard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.14);
+/* The selected look: green frame and a green tint, faded in by GSAP. */
+.TrackCard__ring {
+  position: absolute;
+  inset: 0;
+  border: 2.5px solid #48d43e;
+  border-radius: inherit;
+  background-color: #f2fcf0;
+  opacity: 0;
+  pointer-events: none;
 }
 
-.TrackCard--selected {
-  border-color: #24bb6d;
-  box-shadow: 0 12px 26px rgba(36, 187, 109, 0.28);
-}
-
-.TrackCard__art {
+.TrackCard__thumb {
   position: relative;
-  height: 140px;
-  background: #e9e9e9;
+  display: block;
+  height: clamp(64px, 11.5vh, 112px);
+  background-color: var(--surface-sunken);
 }
 
-.TrackCard__art img,
-.TrackCard__art-placeholder {
+.TrackCard__thumb img,
+.TrackCard__thumb-empty {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
 }
 
-.TrackCard__terrain {
+.TrackCard__chip {
   position: absolute;
-  bottom: 8px;
-  left: 8px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #ffffff;
-  background: #444444;
+  top: 10px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 0.7rem;
+  font-weight: var(--weight-bold);
+  line-height: 1.2;
+  color: var(--on-solid);
 }
 
-.TrackCard__terrain--flat { background: #2e8bc0; }
-.TrackCard__terrain--incline { background: #e4572e; }
-.TrackCard__terrain--rolling { background: #e0a100; }
-.TrackCard__terrain--technical { background: #7b5ea7; }
+.TrackCard__chip.is-ready {
+  left: 10px;
+  background-color: #48d43e;
+}
+
+.TrackCard__chip.is-below {
+  left: 10px;
+  background-color: #f28c21;
+}
+
+.TrackCard__chip--difficulty {
+  right: 10px;
+  background-color: rgba(26, 26, 26, 0.65);
+}
 
 .TrackCard__body {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 14px 16px 18px;
+  gap: 2px;
+  padding: clamp(6px, 1.1vh, 10px) 14px clamp(8px, 1.3vh, 12px);
 }
 
-.TrackCard__body header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
+.TrackCard__name {
+  overflow: hidden;
+  font-size: 1.02rem;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #2b2b2b;
 }
 
-.TrackCard__body h3 {
-  font-family: var(--font-ui);
-  margin: 0;
-  font-size: 1.1rem;
-}
-
-.TrackCard__location {
-  font-size: 0.8rem;
-  color: #767676;
-}
-
-.TrackCard__badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.TrackCard__badges span {
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: #f1f1f1;
-  font-size: 0.75rem;
-  color: #4a4a4a;
-}
-
-.TrackCard__description {
-  margin: 0;
-  font-size: 0.82rem;
-  line-height: 1.4;
-  color: #5d5d5d;
-}
-
-.TrackCard__requirements {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.TrackCard__requirements li {
-  display: flex;
-  justify-content: space-between;
-  gap: 6px;
-  padding: 5px 9px;
-  border-radius: 8px;
-  font-size: 0.78rem;
-  background: #f5f5f5;
-}
-
-.TrackCard__requirements li.is-met {
-  background: rgba(36, 187, 109, 0.14);
-  color: #17794a;
-}
-
-.TrackCard__requirements li.is-missing {
-  background: rgba(228, 87, 46, 0.14);
-  color: #b03a1a;
+.TrackCard__meta {
+  font-size: 0.74rem;
+  color: #8c979b;
 }
 
 .TrackCard__footer {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: clamp(4px, 1vh, 10px);
   font-size: 0.8rem;
-  color: #4a4a4a;
+  font-weight: var(--weight-bold);
 }
 
 .TrackCard__prize {
-  font-weight: 700;
+  color: #b07a2a;
 }
 
-.TrackCard__warning {
-  margin: 0;
-  font-size: 0.76rem;
-  color: #b03a1a;
+.TrackCard__fee {
+  color: #8c979b;
 }

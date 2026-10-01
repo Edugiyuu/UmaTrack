@@ -1,0 +1,17 @@
+/**
+ * The curtain between career screens: a block in her colour, wider than the window and
+ * cut on both sides with the same diagonal as the wedge of the v2 screens. Parked off
+ * screen; GSAP sweeps it across.
+ */
+.PageTransition {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: -25vw;
+  z-index: 1000;
+  width: 150vw;
+  background-color: var(--curtain-color, var(--brand-red));
+  /* Covers the window exactly when it sits at x = 0. */
+  clip-path: polygon(16.667% 0, 100% 0, 83.333% 100%, 0 100%);
+  visibility: hidden;
+}

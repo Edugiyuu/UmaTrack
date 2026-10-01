@@ -1,11 +1,7 @@
-import TrackProfile from "../TrackProfile/TrackProfile";
-import {
-  CATEGORY_LABEL,
-  STAT_LABEL,
-  SURFACE_LABEL,
-  TERRAIN_LABEL,
-  trackImage
-} from "../../constants/trackVisuals";
+import { useLayoutEffect, useRef } from "react";
+import { gsap } from "gsap";
+import { usePrefersReducedMotion } from "../../hooks/usePrefersReducedMotion";
+import { CATEGORY_LABEL, STAT_LABEL, SURFACE_LABEL, trackImage } from "../../constants/trackVisuals";
 import type { StatName, TrackResponse } from "../../types/race";
 import type { HorseResponseProfile } from "../../types/horse";
 import "./TrackCard.css";
@@ -34,74 +30,79 @@ interface TrackCardProps {
   track: TrackResponse;
   horse: HorseResponseProfile;
   selected: boolean;
+  /** The career race has no entry fee. */
+  free?: boolean;
   onSelect: () => void;
 }
 
-const TrackCard = ({ track, horse, selected, onSelect }: TrackCardProps) => {
+/**
+ * A track on the track screen, v2 (docs/tasks/27, Figma "ChooseTrackScreen v2"): the
+ * picture with whether she is ready and how hard it is, then name, distance, prize and
+ * fee. The description and the stat checks moved to the tooltip.
+ */
+const TrackCard = ({ track, horse, selected, free = false, onSelect }: TrackCardProps) => {
   const checks = checkRequirements(track, horse);
   const unmet = checks.filter((check) => !check.met);
-  const maxGrade = track.segments.reduce((max, segment) => Math.max(max, segment.grade), 0);
+  const art = trackImage(track.image);
+  const fee = free ? "Sem inscrição" : track.entryFee > 0 ? `Inscrição ${track.entryFee}` : "Grátis";
+  const tooltip = [
+    track.description,
+    `Recomendado: ${checks.map((check) => `${STAT_LABEL[check.stat]} ${check.current}/${check.required}`).join(" · ")}`
+  ].join("\n");
+
+  // Picking a card: it grows a little and the green frame fades in.
+  const cardRef = useRef<HTMLButtonElement>(null);
+  const ringRef = useRef<HTMLSpanElement>(null);
+  const placed = useRef(false);
+  const reduced = usePrefersReducedMotion();
+  useLayoutEffect(() => {
+    const card = cardRef.current;
+    const ring = ringRef.current;
+    if (!card || !ring) return;
+    const scale = selected ? 1.035 : 1;
+    const opacity = selected ? 1 : 0;
+    if (reduced || !placed.current) {
+      placed.current = true;
+      gsap.set(card, { scale });
+      gsap.set(ring, { opacity });
+      return;
+    }
+    const tweens = [
+      gsap.to(card, { scale, duration: 0.3, ease: selected ? "back.out(2)" : "power2.out" }),
+      gsap.to(ring, { opacity, duration: 0.25, ease: "power1.out" })
+    ];
+    return () => tweens.forEach((tween) => tween.kill());
+  }, [selected, reduced]);
 
   return (
     <button
+      ref={cardRef}
       type="button"
-      className={`TrackCard${selected ? " TrackCard--selected" : ""}`}
+      className={`TrackCard${selected ? " is-selected" : ""}`}
       onClick={onSelect}
       aria-pressed={selected}
+      title={tooltip}
     >
-      <div className="TrackCard__art">
-        {trackImage(track.image) ? (
-          <img src={trackImage(track.image)} alt={track.name} />
-        ) : (
-          <div className="TrackCard__art-placeholder" />
-        )}
-        <span className={`TrackCard__terrain TrackCard__terrain--${track.terrain}`}>
-          {TERRAIN_LABEL[track.terrain]}
-          {maxGrade > 0 && ` · +${maxGrade}%`}
+      <span className="TrackCard__face">
+        <span ref={ringRef} className="TrackCard__ring" aria-hidden="true" />
+        <span className="TrackCard__thumb">
+          {art ? <img src={art} alt="" /> : <span className="TrackCard__thumb-empty" />}
+          <span className={`TrackCard__chip ${unmet.length ? "is-below" : "is-ready"}`}>
+            {unmet.length ? "! Abaixo" : "✓ Pronta"}
+          </span>
+          <span className="TrackCard__chip TrackCard__chip--difficulty">Dif. {track.difficulty}</span>
         </span>
-      </div>
-
-      <div className="TrackCard__body">
-        <header>
-          <h3>{track.name}</h3>
-          <span className="TrackCard__location">{track.location}</span>
-        </header>
-
-        <div className="TrackCard__badges">
-          <span>{track.distance}m</span>
-          <span>{CATEGORY_LABEL[track.category]}</span>
-          <span>{SURFACE_LABEL[track.surface]}</span>
-          <span>Dif. {track.difficulty}/10</span>
-        </div>
-
-        <TrackProfile segments={track.segments} distance={track.distance} height={54} />
-
-        <p className="TrackCard__description">{track.description}</p>
-
-        <ul className="TrackCard__requirements">
-          {checks.map((check) => (
-            <li key={check.stat} className={check.met ? "is-met" : "is-missing"}>
-              <span>{STAT_LABEL[check.stat]}</span>
-              <strong>
-                {check.current}/{check.required}
-              </strong>
-            </li>
-          ))}
-        </ul>
-
-        <footer className="TrackCard__footer">
-          <span className="TrackCard__prize">🏆 {track.prizeMoney[0]?.toLocaleString("pt-BR")}</span>
-          <span>💎 {track.skillPointReward} SP</span>
-          <span>{track.entryFee > 0 ? `Inscrição ${track.entryFee}` : "Grátis"}</span>
-        </footer>
-
-        {unmet.length > 0 && (
-          <p className="TrackCard__warning">
-            Abaixo do recomendado em {unmet.map((check) => STAT_LABEL[check.stat]).join(", ")} — dá
-            para correr, mas ela vai sofrer.
-          </p>
-        )}
-      </div>
+        <span className="TrackCard__body">
+          <strong className="TrackCard__name">{track.name}</strong>
+          <span className="TrackCard__meta">
+            {track.distance} m · {CATEGORY_LABEL[track.category]} · {SURFACE_LABEL[track.surface]}
+          </span>
+          <span className="TrackCard__footer">
+            <span className="TrackCard__prize">🏆 {track.prizeMoney[0]?.toLocaleString("pt-BR")}</span>
+            <span className="TrackCard__fee">{fee}</span>
+          </span>
+        </span>
+      </span>
     </button>
   );
 };

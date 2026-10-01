@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import confetti from "canvas-confetti";
 import Button from "../ui/Button/Button";
+import { usePageReveal, useTransitionNavigate } from "../PageTransition/PageTransition";
 import { RaceFinalBanner, RaceSeal, BANNER_MS, type Seal } from "./RaceBanner";
 import RaceCam from "./RaceCam";
 import RaceCountdown, { type CountdownStep } from "./RaceCountdown";
@@ -76,6 +77,7 @@ const RaceRunner = () => {
   const { horseId, trackSlug } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const go = useTransitionNavigate();
 
   const [track, setTrack] = useState<TrackResponse | null>(null);
   const [race, setRace] = useState<RunRaceResponse | null>(null);
@@ -98,6 +100,8 @@ const RaceRunner = () => {
   const reducedMotion = usePrefersReducedMotion();
 
   const style = (searchParams.get("style") ?? "pace") as RunningStyle;
+  // The page curtain from the track screen lifts once the race is in (or failed).
+  usePageReveal(race !== null || error !== null);
 
   useEffect(() => {
     if (!horseId || !trackSlug) return;
@@ -642,8 +646,12 @@ const RaceRunner = () => {
           playerResult={playerResult}
           results={simulation.results}
           shortfalls={simulation.shortfalls.player ?? []}
-          onAnotherTrack={() => navigate(`/Race/${horseId}`)}
-          onBackToTraining={() => navigate(`/HorseSelector/Career/${horseId}`)}
+          onAnotherTrack={() =>
+            go(`/Race/${horseId}`, { color: horseColors[race.horse.name] })
+          }
+          onBackToTraining={() =>
+            go(`/HorseSelector/Career/${horseId}`, { color: horseColors[race.horse.name] })
+          }
         />
       )}
     </div>

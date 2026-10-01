@@ -22,6 +22,8 @@
   --font-rampart: 'Rampart One', cursive;
   --font-staat: 'Staatliches', cursive;
   --font-daydream: 'Daydream', sans-serif;
+  /** Inter Black: her name running up the v2 screens (Figma, task 27). */
+  --font-name: 'Inter', var(--font-inder);
 
   /** Headings and controls, as in the header and the hero. */
   --font-ui: var(--font-tilt);
