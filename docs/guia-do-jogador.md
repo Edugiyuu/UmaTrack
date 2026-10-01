@@ -30,8 +30,8 @@ Em **Play** você vê o elenco. As que você já tem abrem a tela de carreira;
 as que ainda não tem abrem a tela de compra. Comprar desconta o preço do seu
 dinheiro e você não pode comprar a mesma duas vezes.
 
-Na tela de carreira ficam os botões de treino, o descanso, o painel de skills
-e o acesso às corridas.
+Na tela de carreira ficam os botões de treino, o descanso, o botão **Skills**
+(que abre a loja de skills) e o acesso às corridas.
 
 ### O ciclo do jogo
 
@@ -68,7 +68,9 @@ de 30 a 60, e Kokura, a mais dura, chega a 175.
 
 Cada botão **Treinar** mostra o custo (−20 de energia). Com energia abaixo de 25
 ele avisa *risco de falhar* (ver [Treinar sem energia é ruim](#treinar-sem-energia-é-ruim)),
-e o **Start race!** só libera com 35 de energia, dizendo quanto falta.
+e o **Escolher pista** só libera com 35 de energia, dizendo quanto falta. Ele
+leva à tela de escolha de pista, onde fica o **Start race!** de verdade; no dia da
+prova da carreira ele vira **Ir para a prova**.
 
 ---
 
@@ -169,12 +171,17 @@ turno para quase nada. **Descanse antes.**
 ### Descanso
 
 Gasta 1 turno (ou nada, se você não tiver turnos) e devolve **+45** de energia.
+Abre a tela de descanso, com a energia de antes e de depois, se gastou turno e
+quantos turnos faltam para a próxima prova; **Continuar** volta ao treino.
 
 ---
 
 ## 5. Skills e skill points
 
-Skills são aprendidas na tela de carreira gastando SP. O **único preço são os
+Skills são aprendidas na loja de skills (botão **Skills** na tela de carreira)
+gastando SP. A loja mostra os SP que ela tem, filtra entre *Todas*, *Posso
+aprender* e *Aprendidas* e, em cada cartão, o efeito, quando dispara e quantos SP
+faltam. O **único preço são os
 skill points**: não há atributo mínimo, então qualquer égua aprende qualquer skill
 assim que juntar os pontos. Cada uma só pode ser aprendida uma vez.
 

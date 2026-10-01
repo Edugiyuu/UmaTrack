@@ -67,6 +67,7 @@ O design do sistema de corridas está em [`docs/race-system-design.md`](../race-
 | 24 | [Música e som do jogo (trilha por tela, corrida e efeitos sonoros)](24-game-audio.md) | `feat/race-visual-effects` | G | 🔲 |
 | 25 | [Passivas únicas de cada égua](25-horse-passives.md) | `feat/horse-passives` | M | 🔲 |
 | 26 | [Remover o sistema de humor](26-remove-mood.md) | `feat/remove-mood` | M | ✅ |
+| 27 | [Telas v2 de descanso, escolha de pista e skills, com animações GSAP (Figma)](27-ui-v2-rest-track.md) | `feat/ui-v2-rest-track` | G | ✅ |
 
 ### Ordem sugerida para 11–14
 
