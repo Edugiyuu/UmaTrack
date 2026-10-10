@@ -5,7 +5,7 @@
 | **ID** | `28` |
 | **Branch** | `feat/ui-v2-stable` (nova: a `feat/ui-v2-rest-track` da 27 já foi para a `main`) |
 | **Base** | `main` |
-| **Status** | 🔍 Em revisão |
+| **Status** | ✅ Concluída |
 | **Tamanho** | M |
 | **Depende de** | `27` (hooks de animação GSAP e transição de página) |
 | **Bloqueia** | — |
@@ -112,7 +112,7 @@ outras telas v2.
 - [x] Build passa: `npm run build --prefix frontend`
 - [x] Sem `console.log` / código morto deixado para trás
 - [x] Documentação da seção 8 atualizada
-- [ ] Revisão do Eduardo e merge
+- [x] Revisão do Eduardo e merge
 
 ---
 
@@ -120,3 +120,4 @@ outras telas v2.
 | Data | Nota |
 |---|---|
 | 2026-10-10 | Feita e verificada com API mockada: troca de égua, filtro, compra, desktop e celular. |
+| 2026-10-10 | Tela cabe numa janela sem rolagem (grade mede o espaço que sobra). Mergeada na `main`. |
