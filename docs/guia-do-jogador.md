@@ -26,9 +26,12 @@ Crie uma conta em **Create Account**. Você começa com:
 - **1.000** de dinheiro
 - **1 garota-cavalo sorteada** do elenco, de graça
 
-Em **Play** você vê o elenco. As que você já tem abrem a tela de carreira;
-as que ainda não tem abrem a tela de compra. Comprar desconta o preço do seu
-dinheiro e você não pode comprar a mesma duas vezes.
+Em **Play** você chega ao **Estábulo**. À esquerda fica a égua escolhida; à direita,
+as notas dos quatro atributos, a passiva dela e a grade **Suas éguas** (filtros
+*Todas*, *Desbloqueadas* e *À venda*). As que você ainda não tem aparecem com cadeado
+e preço: escolha uma e o botão vira **Comprar**. Comprar desconta o preço do seu
+saldo e você não pode comprar a mesma duas vezes. Com uma égua sua escolhida, o
+botão **Começar carreira!** (ou **Continuar carreira!**) abre a tela de carreira.
 
 Na tela de carreira ficam os botões de treino, o descanso, o botão **Skills**
 (que abre a loja de skills) e o acesso às corridas.

@@ -1,11 +1,5 @@
-import HorseSelectorSelect from "../components/HorseSelectorSelect/HorseSelectorSelect";
+import Stable from "../components/Stable/Stable";
 
-const HorseSelector = () => {
-  return (
-    <div>
-      <HorseSelectorSelect />
-    </div>
-  )
-}
+const HorseSelector = () => <Stable />;
 
 export default HorseSelector;
