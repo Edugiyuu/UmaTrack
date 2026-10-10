@@ -1,204 +1,343 @@
-.RaceTrackSelect {
-  font-family: var(--font-body);
+/**
+ * The track screen, v2 (docs/tasks/27-ui-v2-rest-track.md, Figma "ChooseTrackScreen v2").
+ * The v2 frame: her art running on the wedge in her colour on the left, the tracks on
+ * the right. It covers the window and fits it on a desktop without scrolling. GSAP
+ * moves things; CSS only holds the resting states.
+ */
+
+.TrackSelect {
+  --horse-color: var(--brand-red);
+  --track-ink: #2b2b2b;
+  --track-muted: #8c979b;
+  --track-go: #48d43e;
+  --track-go-ink: #2f9e28;
+  --track-go-soft: #e4fbe1;
+
+  position: relative;
   display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 24px;
-  align-items: start;
-  padding: 24px;
-  min-height: 100vh;
-  background: #f4f6f5;
+  grid-template-columns: minmax(0, 46%) minmax(0, 1fr);
+  height: 100vh;
+  height: 100dvh;
+  min-height: 600px;
+  background-color: var(--surface);
+  color: var(--track-ink);
+  font-family: var(--font-body);
+  overflow: hidden;
 }
 
-.RaceTrackSelect__state {
-  padding: 40px;
+.TrackSelect--empty {
+  display: grid;
+  place-items: center;
+}
+
+.TrackSelect__state {
+  padding: var(--space-8);
   text-align: center;
-  font-size: 1.1rem;
+  color: var(--text-muted);
 }
 
-.RaceTrackSelect__horse {
-  position: sticky;
-  top: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 18px;
-  border-top: 6px solid #24bb6d;
-  border-radius: 14px;
-  background: #ffffff;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+/* The block in her colour that closes the bottom-right corner, as in the Figma. */
+.TrackSelect__corner {
+  position: absolute;
+  inset: 0;
+  background-color: var(--horse-color);
+  opacity: 0.85;
+  clip-path: polygon(100% 70%, 100% 100%, 78% 100%);
+  pointer-events: none;
 }
 
-.RaceTrackSelect__horse h2 {
-  font-family: var(--font-ui);
-  margin: 0;
-  font-size: 1.3rem;
+/* --- hero ----------------------------------------------------------------- */
+
+.TrackSelect__hero {
+  position: relative;
+  min-height: 0;
 }
 
-.RaceTrackSelect__passive {
-  margin: 0;
-  font-size: 0.82rem;
-  color: #6b6b6b;
+.TrackSelect__wedge {
+  position: absolute;
+  inset: 0;
+  background-color: var(--horse-color);
+  opacity: 0.85;
+  clip-path: polygon(0 0, 85% 0, 50% 100%, 0 100%);
 }
 
-.RaceTrackSelect__stats {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
+/* A square GIF as tall as the window; she leans into the content a little, as in the
+   Figma. Placed without a transform: GSAP owns her transform. */
+.TrackSelect__art {
+  --art-size: min(150%, 100vh);
 
-.RaceTrackSelect__stats li {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.86rem;
-}
-
-.RaceTrackSelect__stats strong {
-  margin-left: auto;
-}
-
-.RaceTrackSelect__stats img {
-  width: 20px;
-  height: 20px;
+  position: absolute;
+  bottom: 0;
+  left: calc(68% - var(--art-size) / 2);
+  width: var(--art-size);
+  height: var(--art-size);
   object-fit: contain;
+  object-position: bottom center;
+  filter: drop-shadow(24px 4px 0 rgba(0, 0, 0, 0.18));
 }
 
-.RaceTrackSelect__meters {
+/* --- content -------------------------------------------------------------- */
+
+.TrackSelect__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--space-2), 1.8vh, var(--space-4));
+  width: 100%;
+  max-width: 760px;
+  min-height: 0;
+  padding: clamp(var(--space-4), 6.5vh, 64px) var(--space-7) clamp(var(--space-4), 5vh, 64px) var(--space-6);
+}
+
+.TrackSelect__header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.TrackSelect__eyebrow,
+.TrackSelect__label {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--track-muted);
+}
+
+.TrackSelect__title {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: clamp(2rem, 6.6vh, 3.75rem);
+  font-weight: var(--weight-regular);
+  line-height: 1.1;
+  color: var(--track-ink);
+}
+
+.TrackSelect__context {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-sm);
+  color: #6b757a;
+}
+
+.TrackSelect__context.is-due {
+  padding: var(--space-2) var(--space-3);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius-md);
+  background-color: var(--accent-soft);
+  color: var(--track-ink);
+}
+
+.TrackSelect__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(10px, 1.6vh, 15px);
+}
+
+/* --- strategy (segmented) ------------------------------------------------- */
+
+.TrackSelect__strategy {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 0.82rem;
-  color: #4a4a4a;
 }
 
-.RaceTrackSelect__meters p {
+.TrackSelect__segmented {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: var(--space-1);
+  border-radius: var(--radius-pill);
+  background-color: #f7f7f7;
+}
+
+/* Slides with xPercent (useSegmentSlider). */
+.TrackSelect__segmented-thumb {
+  position: absolute;
+  top: var(--space-1);
+  bottom: var(--space-1);
+  left: var(--space-1);
+  width: calc((100% - 2 * var(--space-1)) / 4);
+  border: 1.5px solid var(--track-go);
+  border-radius: var(--radius-pill);
+  background-color: var(--surface);
+}
+
+.TrackSelect__segmented button {
+  position: relative;
+  padding: clamp(6px, 1.1vh, 10px) var(--space-2);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  font: inherit;
+  font-size: var(--text-md);
+  color: var(--track-muted);
+  cursor: pointer;
+}
+
+.TrackSelect__segmented button:hover {
+  color: var(--track-ink);
+}
+
+.TrackSelect__segmented button.is-active {
+  font-weight: var(--weight-bold);
+  color: var(--track-go-ink);
+}
+
+.TrackSelect__hint {
   margin: 0;
+  font-size: var(--text-xs);
+  color: var(--track-muted);
 }
 
-.RaceTrackSelect__meters label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.RaceTrackSelect__meters progress {
-  flex: 1;
-  height: 10px;
-}
-
-.RaceTrackSelect__styles {
+.TrackSelect__notes {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
+}
+
+.TrackSelect__blocker,
+.TrackSelect__warning {
   margin: 0;
-  padding: 10px 12px;
-  border: 1px solid #e3e3e3;
-  border-radius: 10px;
-  font-size: 0.84rem;
+  font-size: var(--text-xs);
 }
 
-.RaceTrackSelect__styles legend {
-  padding: 0 6px;
-  font-weight: 700;
+.TrackSelect__blocker {
+  color: var(--danger);
 }
 
-.RaceTrackSelect__styles label {
+.TrackSelect__warning {
+  color: #b86a12;
+}
+
+/* --- actions -------------------------------------------------------------- */
+
+.TrackSelect__actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  cursor: pointer;
+  gap: var(--space-4);
+  margin-top: auto;
 }
 
-.RaceTrackSelect__style-hint {
-  margin: 6px 0 0;
-  font-size: 0.76rem;
-  color: #6b6b6b;
-}
-
-.RaceTrackSelect__start {
+.TrackSelect__back,
+.TrackSelect__start {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: var(--radius-pill);
   font-family: var(--font-ui);
-  padding: 12px 16px;
-  border: none;
-  border-radius: 10px;
-  background: #24bb6d;
-  color: #ffffff;
-  font-size: 1rem;
-  font-weight: 700;
   cursor: pointer;
-  transition: filter 0.15s ease;
 }
 
-.RaceTrackSelect__start:hover:not(:disabled) {
-  filter: brightness(1.08);
+.TrackSelect__back span,
+.TrackSelect__start span {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
 }
 
-.RaceTrackSelect__start:disabled {
-  background: #c4c4c4;
+.TrackSelect__back {
+  flex: 0 0 auto;
+  min-width: 140px;
+  padding: clamp(8px, 1.4vh, 14px) var(--space-6);
+  border: 2px solid var(--track-go);
+  background-color: var(--surface);
+  font-size: var(--text-md);
+  color: var(--track-go-ink);
+}
+
+.TrackSelect__back span {
+  color: var(--track-muted);
+}
+
+.TrackSelect__start {
+  flex: 1;
+  padding: clamp(10px, 1.6vh, 16px) var(--space-6);
+  border: 0;
+  background-color: var(--track-go);
+  box-shadow: var(--shadow-2);
+  font-size: clamp(1.2rem, 3vh, 1.6rem);
+  color: var(--on-solid);
+}
+
+.TrackSelect__start span {
+  color: var(--track-go-soft);
+}
+
+.TrackSelect__start:disabled {
+  background-color: var(--border-strong);
+  box-shadow: none;
   cursor: not-allowed;
 }
 
-.RaceTrackSelect__back {
-  font-family: var(--font-ui);
-  padding: 8px 12px;
-  border: 1px solid #d0d0d0;
-  border-radius: 10px;
-  background: transparent;
-  cursor: pointer;
-  font-size: 0.84rem;
+.TrackSelect__back:focus-visible,
+.TrackSelect__start:focus-visible,
+.TrackSelect__segmented button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
-.RaceTrackSelect__blocker {
-  margin: 0;
-  font-size: 0.78rem;
-  color: #b03a1a;
-}
+/* --- small screens -------------------------------------------------------- */
 
-.RaceTrackSelect__tracks h1 {
-  font-family: var(--font-ui);
-  margin: 0 0 6px;
-}
-
-.RaceTrackSelect__intro {
-  margin: 0 0 18px;
-  color: #5d5d5d;
-  font-size: 0.9rem;
-}
-
-.RaceTrackSelect__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 18px;
-}
-
+/* Below a desktop the art becomes a band on top and the page scrolls as a whole. */
 @media (max-width: 900px) {
-  .RaceTrackSelect {
+  .TrackSelect {
+    grid-template-columns: 1fr;
+    grid-template-rows: 260px auto;
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .TrackSelect__corner {
+    display: none;
+  }
+
+  .TrackSelect__wedge {
+    clip-path: polygon(0 0, 100% 0, 100% 78%, 0 100%);
+  }
+
+  .TrackSelect__art {
+    --art-size: 260px;
+
+    left: calc(50% - var(--art-size) / 2);
+  }
+
+  .TrackSelect__content {
+    max-width: none;
+    padding: var(--space-5) var(--space-4) var(--space-6);
+  }
+
+  .TrackSelect__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .TrackSelect__segmented button {
+    font-size: var(--text-xs);
+  }
+
+  .TrackSelect__actions {
+    position: sticky;
+    bottom: var(--space-4);
+    z-index: 2;
+    gap: var(--space-2);
+  }
+
+  .TrackSelect__back {
+    min-width: 0;
+    padding-inline: var(--space-4);
+  }
+
+  .TrackSelect__start {
+    padding-inline: var(--space-3);
+    font-size: 1.2rem;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .TrackSelect__grid {
     grid-template-columns: 1fr;
   }
-
-  .RaceTrackSelect__horse {
-    position: static;
-  }
-}
-
-.RaceTrackSelect--empty {
-  grid-template-columns: 1fr;
-  align-content: start;
-}
-
-/* Where the career stands: an optional race, or the career race that is due (task 17). */
-.RaceTrackSelect__career {
-  margin: 0 0 12px;
-  padding: 10px 14px;
-  border-left: 4px solid var(--brand-gold);
-  border-radius: 10px;
-  background-color: var(--highlight-soft);
-  font-size: 0.9rem;
-}
-
-.RaceTrackSelect__career.is-due {
-  border-left-color: var(--accent);
-  background-color: var(--accent-soft);
 }

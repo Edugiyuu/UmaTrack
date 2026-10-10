@@ -31,7 +31,7 @@
 
 /* --- hero ----------------------------------------------------------------- */
 
-/* Stays in view while the content scrolls (the skill list makes the page tall). */
+/* Stays in view while the content scrolls on a short window. */
 .Career__hero {
   position: sticky;
   top: 0;
@@ -47,15 +47,17 @@
   clip-path: polygon(0 0, 100% 0, 62% 100%, 0 100%);
 }
 
+/* Centred with auto margins rather than a transform: GSAP owns her transform. */
 .Career__art {
   position: absolute;
   bottom: 0;
-  left: 50%;
+  left: 0;
+  right: 0;
   width: min(100%, 720px);
   max-height: 96%;
+  margin-inline: auto;
   object-fit: contain;
   object-position: bottom center;
-  transform: translateX(-50%);
   filter: var(--career-art-shadow);
 }
 
@@ -312,25 +314,18 @@
 .Career__energy-bar {
   flex: 1;
   height: 12px;
-  border: none;
   border-radius: var(--radius-pill);
   background-color: var(--surface-sunken);
   overflow: hidden;
-  appearance: none;
 }
 
-.Career__energy-bar::-webkit-progress-bar {
-  background-color: var(--surface-sunken);
-}
-
-.Career__energy-bar::-webkit-progress-value {
+/* Filled with scaleX (GSAP), so it can grow smoothly after a rest or a session. */
+.Career__energy-bar span {
+  display: block;
+  height: 100%;
   border-radius: var(--radius-pill);
   background: linear-gradient(90deg, var(--accent), #9be35a);
-}
-
-.Career__energy-bar::-moz-progress-bar {
-  border-radius: var(--radius-pill);
-  background: linear-gradient(90deg, var(--accent), #9be35a);
+  transform-origin: left center;
 }
 
 .Career__notice,
@@ -408,6 +403,7 @@
 
 .StatCard__rank {
   flex: 0 0 72px;
+  display: inline-block;
   font-family: var(--font-ui);
   font-size: 3.6rem;
   line-height: 1;
@@ -441,6 +437,7 @@
   height: 100%;
   border-radius: inherit;
   background-color: var(--stat);
+  transform-origin: left center;
 }
 
 .StatCard__next {
@@ -463,12 +460,11 @@
   font-size: var(--text-md);
   text-transform: uppercase;
   cursor: pointer;
-  transition: background-color var(--duration-fast) var(--ease), transform var(--duration-fast) var(--ease);
 }
 
+/* The scale on hover and press is GSAP's (useHoverScale). */
 .StatCard__train:hover:not(:disabled) {
   background-color: color-mix(in srgb, var(--stat) 26%, white);
-  transform: translateY(-1px);
 }
 
 .StatCard__train:focus-visible {
@@ -515,7 +511,6 @@
   border-radius: var(--radius-pill);
   font-family: var(--font-ui);
   cursor: pointer;
-  transition: transform var(--duration-fast) var(--ease), background-color var(--duration-fast) var(--ease);
 }
 
 .Career__ghost span,
@@ -552,11 +547,6 @@
   text-transform: none;
 }
 
-.Career__ghost:hover:not(:disabled),
-.Career__race:hover:not(:disabled) {
-  transform: translateY(-1px);
-}
-
 .Career__ghost:focus-visible,
 .Career__race:focus-visible {
   outline: none;
@@ -578,15 +568,11 @@
   color: var(--surface);
 }
 
-.Career__skills {
-  padding-top: var(--space-2);
-}
-
 /* --- fit the window ------------------------------------------------------- */
 
 /* On a desktop the whole screen fits the window: no page scroll. Spacing, the name, the
    grades and the buttons scale with the window height, and the stat grid takes what is
-   left. Only the skill list, when open, scrolls, inside the right-hand column. */
+   left. The skills open in their own screen (SkillsScreen). */
 @media (min-width: 961px) {
   .Career {
     height: 100vh;

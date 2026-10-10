@@ -1,0 +1,27 @@
+/* In the Figma it sits at x = 18 and spans y = 28..857 of a 944-high frame. */
+.VerticalName {
+  position: absolute;
+  top: 3%;
+  left: clamp(8px, 1.26vw, 24px);
+  height: 88%;
+  overflow: hidden;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-family: var(--font-name);
+  font-size: min(9.2vh, calc(86vh / var(--name-chars)));
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--on-solid);
+  pointer-events: none;
+}
+
+/* On a phone the art is a band on top: the name shrinks to its height. */
+@media (max-width: 960px) {
+  .VerticalName {
+    font-size: min(2.2rem, calc(220px / var(--name-chars)));
+  }
+}
