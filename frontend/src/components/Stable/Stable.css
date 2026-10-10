@@ -196,7 +196,6 @@
   flex-direction: column;
   gap: var(--space-5);
   min-width: 0;
-  max-width: 900px;
 }
 
 .Stable__header {
@@ -479,9 +478,16 @@
   color: var(--on-solid);
 }
 
+/* Fixed-size tiles, as in the Figma; Stable.tsx reads --tile and the gap to work out
+   how many "?" slots fit without scrolling. */
 .Stable__grid {
+  --tile: 84px;
+
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  grid-template-columns: repeat(auto-fill, var(--tile));
+  grid-auto-rows: var(--tile);
+  justify-content: space-between;
+  align-content: start;
   gap: 14px;
   margin: 0;
   padding: 6px;
@@ -679,15 +685,97 @@
 
 /* --- layout --------------------------------------------------------------- */
 
-/* A desktop window shows the whole screen without scrolling; the roster scrolls. */
-@media (min-width: 1100px) and (min-height: 700px) {
+/* A desktop window shows the whole screen without scrolling: the page is one window
+   tall and the roster grid takes whatever height is left (keep in sync with
+   FITS_WINDOW in Stable.tsx). */
+@media (min-width: 1100px) and (min-height: 600px) {
   .Stable {
+    grid-template-rows: minmax(0, 1fr);
     height: 100vh;
     height: 100dvh;
+    overflow: hidden;
   }
 
   .Stable__hero {
     min-height: 0;
+  }
+
+  .Stable__content {
+    min-height: 0;
+  }
+
+  .Stable__roster {
+    min-height: 0;
+  }
+
+  .Stable__grid {
+    flex: 1;
+    min-height: 0;
+  }
+}
+
+/* A short desktop window (a laptop, or the browser zoomed in): everything tightens so
+   the roster still gets at least a row of tiles. */
+@media (min-width: 1100px) and (min-height: 600px) and (max-height: 800px) {
+  .Stable {
+    gap: var(--space-5);
+    padding: var(--space-4);
+  }
+
+  .Stable__content {
+    gap: var(--space-3);
+  }
+
+  .Stable__title {
+    font-size: 2rem;
+  }
+
+  .Stable__balance {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .StableStat__head {
+    height: 30px;
+  }
+
+  .StableStat__body {
+    padding-block: var(--space-2);
+  }
+
+  .StableStat__rank {
+    font-size: 2.4rem;
+  }
+
+  .StableStat__value {
+    font-size: 20px;
+  }
+
+  .Stable__passive {
+    padding: var(--space-2) var(--space-4);
+  }
+
+  .Stable__roster {
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-5);
+  }
+
+  .Stable__grid {
+    --tile: 64px;
+
+    gap: 10px;
+  }
+
+  .StableTile__price {
+    bottom: 4px;
+    font-size: 9px;
+  }
+
+  .Stable__back {
+    height: 58px;
+  }
+
+  .Stable__cta {
+    min-height: 62px;
   }
 }
 

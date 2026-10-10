@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { gsap } from "gsap";
 import confetti from "canvas-confetti";
 import "./Stable.css";
@@ -44,9 +44,46 @@ type StatKey = (typeof STATS)[number]["key"];
 /** The grades from the bottom up, so a higher index is a better grade. */
 const GRADE_ORDER = "GFEDCBAS";
 
-/** The roster always shows at least this many slots; the rest are "?" for horse girls to come. */
-const MIN_SLOTS = 24;
-const SLOTS_PER_ROW = 8;
+/** Same query as the one-window layout in Stable.css. */
+const FITS_WINDOW = "(min-width: 1100px) and (min-height: 600px)";
+/** Rows of "?" when the page scrolls anyway (narrow or short window). */
+const ROWS_WHEN_SCROLLING = 3;
+
+/**
+ * How many tiles the roster grid holds: on desktop as many whole rows as fit in the
+ * height left for it, so the "?" slots never make it scroll.
+ */
+const useGridCapacity = (grid: HTMLUListElement | null) => {
+  const [capacity, setCapacity] = useState({ columns: 8, rows: ROWS_WHEN_SCROLLING });
+
+  useEffect(() => {
+    if (!grid) return;
+    const measure = () => {
+      const style = getComputedStyle(grid);
+      const tile = parseFloat(style.getPropertyValue("--tile")) || 84;
+      const gap = parseFloat(style.rowGap) || 0;
+      const padding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+      const step = tile + gap;
+      const columns = Math.max(1, Math.floor((grid.clientWidth - padding + gap) / step));
+      const rows = window.matchMedia(FITS_WINDOW).matches
+        ? Math.max(1, Math.floor((grid.clientHeight - padding + gap) / step))
+        : ROWS_WHEN_SCROLLING;
+      setCapacity((current) =>
+        current.columns === columns && current.rows === rows ? current : { columns, rows }
+      );
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(grid);
+    window.addEventListener("resize", measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [grid]);
+
+  return capacity;
+};
 
 const FALLBACK_COLOR = "#6185e0";
 
@@ -151,6 +188,12 @@ const Stable = () => {
   const rootRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLUListElement>(null);
+  const [gridNode, setGridNode] = useState<HTMLUListElement | null>(null);
+  const attachGrid = useCallback((node: HTMLUListElement | null) => {
+    gridRef.current = node;
+    setGridNode(node);
+  }, []);
+  const capacity = useGridCapacity(gridNode);
   const shownId = useRef<string | null>(null);
   const reduced = usePrefersReducedMotion();
   const go = useTransitionNavigate();
@@ -210,10 +253,9 @@ const Stable = () => {
   const visible = entries.filter(({ copy }) =>
     filter === "owned" ? copy : filter === "forSale" ? !copy : true
   );
-  const emptySlots =
-    filter === "all"
-      ? Math.max(MIN_SLOTS, Math.ceil(entries.length / SLOTS_PER_ROW) * SLOTS_PER_ROW) - entries.length
-      : 0;
+  // The "?" fill the rows that fit; with more horse girls than that, they only close the last row.
+  const fill = Math.max(capacity.columns * capacity.rows, Math.ceil(entries.length / capacity.columns) * capacity.columns);
+  const emptySlots = filter === "all" ? fill - entries.length : 0;
 
   useScreenEnter(rootRef, !loading);
   useHoverScale(rootRef, ".Stable__back, .Stable__cta", { hover: 1.03 });
@@ -429,7 +471,7 @@ const Stable = () => {
             </div>
           </header>
 
-          <ul ref={gridRef} className="Stable__grid">
+          <ul ref={attachGrid} className="Stable__grid">
             {visible.map((entry) => {
               const isSelected = entry.horse._id === selectedId;
               return (
