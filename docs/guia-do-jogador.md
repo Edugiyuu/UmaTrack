@@ -38,11 +38,18 @@ Na tela de carreira ficam os botões de treino, o descanso, o botão **Skills**
 
 ### O ciclo do jogo
 
+```mermaid
+flowchart LR
+    A["Comprar"] --> B["Treinar<br/>(gasta turnos e energia)"]
+    B --> C["Aprender skills<br/>com os SP"]
+    C --> D["Escolher a<br/>pista certa"]
+    D --> E["Correr"]
+    E --> F["Prêmio +<br/>turnos de volta"]
+    F --> B
 ```
-Comprar  ->  Treinar (gasta turnos e energia)  ->  Aprender skills com os SP
-         ->  Escolher a pista certa  ->  Correr  ->  Prêmio + turnos de volta
-         ->  Treinar de novo
-```
+
+O ciclo completo da carreira (metas, aposentadoria) está desenhado na
+[visão geral](./visao-geral.md#2-ciclo-da-carreira).
 
 ---
 
@@ -538,6 +545,8 @@ Depois de mudar qualquer um deles, rode as verificações:
 ```bash
 cd backend && npm run race:check && npm run training:check
 ```
+
+Os diagramas de arquitetura, telas e dados estão na [visão geral](./visao-geral.md).
 
 O design técnico por trás dessas regras está em
 [`race-system-design.md`](./race-system-design.md).

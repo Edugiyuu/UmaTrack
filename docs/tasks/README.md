@@ -3,6 +3,7 @@
 Cada task roda numa branch criada a partir de `main`. Tasks parecidas podem dividir a mesma
 branch (ver [Convenções](#convenções)) para não acumular uma branch por task.
 O design do sistema de corridas está em [`docs/race-system-design.md`](../race-system-design.md).
+Para entender o projeto em diagramas, veja a [visão geral](../visao-geral.md).
 
 ## Como criar uma task
 

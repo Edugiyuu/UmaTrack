@@ -8,6 +8,8 @@ Procurando como **jogar** em vez de como o sistema é construído? Veja o
 
 ## 1. Visão geral
 
+> Diagramas do fluxo da corrida (quem chama quem) e dos dados: [visão geral](./visao-geral.md#4-uma-corrida-por-dentro).
+
 O loop de jogo passa a ser:
 
 ```
