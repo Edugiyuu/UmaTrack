@@ -10,12 +10,10 @@ import { usePrefersReducedMotion } from "../../hooks/usePrefersReducedMotion";
 import { getSkills, learnSkill } from "../../services/Race";
 import { horseColors } from "../../constants/horseColors";
 import { RARITY_LABEL, describeEffect, describeTrigger } from "../../constants/skillText";
+import { skillIcon } from "../../constants/skillIcons";
 import { horseAnimation } from "../../utils/horseImage";
 import type { HorseResponseProfile } from "../../types/horse";
 import type { SkillResponse } from "../../types/race";
-import speedIcon from "../../assets/skillIcons/speed.png";
-import staminaIcon from "../../assets/skillIcons/stamina.png";
-import startIcon from "../../assets/skillIcons/start.png";
 import "./SkillsScreen.css";
 
 type Filter = "all" | "available" | "learned";
@@ -26,17 +24,6 @@ const FILTERS: { id: Filter; label: string }[] = [
   { id: "available", label: "Posso aprender" },
   { id: "learned", label: "Aprendidas" }
 ];
-
-/** The three icons drawn in the Figma: the start gate, the runner and the sparkle. */
-const ICON_BY_KIND: Record<string, string> = {
-  startDash: startIcon,
-  accelBoost: startIcon,
-  staminaRecover: staminaIcon,
-  staminaSave: staminaIcon,
-  flatStat: staminaIcon
-};
-
-const iconFor = (skill: SkillResponse) => ICON_BY_KIND[skill.effect.kind] ?? speedIcon;
 
 /** Skill points are the only price: there are no stat minimums (task 16). */
 const blockerFor = (skill: SkillResponse, horse: HorseResponseProfile): Blocker => {
@@ -239,7 +226,7 @@ const SkillsScreen = ({ horse, horseId, onHorseUpdated, onClose }: SkillsScreenP
               >
                 {blocker === "learned" && <span className="SkillCard__flash" aria-hidden="true" />}
                 <span className="SkillCard__icon">
-                  <img src={iconFor(skill)} alt="" />
+                  <img src={skillIcon(skill)} alt="" />
                 </span>
                 <div className="SkillCard__head">
                   <h2>{skill.name}</h2>
