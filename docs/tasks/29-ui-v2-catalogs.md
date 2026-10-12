@@ -5,7 +5,7 @@
 | **ID** | `29` |
 | **Branch** | `feat/ui-v2-catalogs` (nova: a `feat/ui-v2-stable` da 28 já foi para a `main`) |
 | **Base** | `main` |
-| **Status** | 🔍 Em revisão |
+| **Status** | ✅ Concluída |
 | **Tamanho** | M |
 | **Depende de** | `27` (hooks de animação GSAP e transição de página) |
 | **Bloqueia** | — |
@@ -122,7 +122,7 @@ npm run dev --prefix frontend
 - [x] Build passa: `npm run build --prefix frontend`
 - [x] Sem `console.log` / código morto deixado para trás
 - [x] Documentação da seção 8 atualizada
-- [ ] Revisão do Eduardo e merge
+- [x] Revisão do Eduardo e merge
 
 ---
 
@@ -131,3 +131,4 @@ npm run dev --prefix frontend
 |---|---|
 | 2026-10-12 | Frames feitos no Figma (`2281:4`, `2281:228`, `2281:583`) e páginas implementadas. |
 | 2026-10-12 | Verificado a 1440×950 com o backend local: Flip na ordenação, filtro, entrada e revelação (esta com update manual). |
+| 2026-10-12 | Mergeada na `main`. |
