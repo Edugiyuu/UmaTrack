@@ -1,95 +1,169 @@
-.header{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 12px;
-    background-color: #ffffff;
-    height: 72px;
-    width: 100%;
-    font-family: "Tilt Warp", sans-serif;
-}
-.headerContent{
-    display: flex;
-    align-items: center;
-    flex-direction: row;
-    gap: 70px;
-}
-.headerLink{
-    text-decoration: none;
-    color: #1a1a1a;
-    font-size: 18px;
-    font-weight: 550;
+/**
+ * The site's top bar, v2 (Figma: the nav of the catalogue frames). White bar with a
+ * hairline, wordmark on the left, links in the middle, account on the right. GSAP moves
+ * the green underline and the hover scale; CSS only holds the resting states.
+ */
+
+.header {
+  --header-ink: #2b2b2b;
+  --header-muted: #6b6678;
+  --header-line: #e6e0ef;
+  --header-go: #48d43e;
+  --header-go-dark: #2f9e27;
+
+  position: relative;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-4);
+  height: 72px;
+  padding: 0 clamp(var(--space-4), 3vw, 40px);
+  border-bottom: 1px solid var(--header-line);
+  background-color: var(--surface);
+  color: var(--header-ink);
+  font-family: var(--font-body);
 }
 
-#Home.active,#Horses.active, #Skills.active, #Guide.active{
-    color: #050505;
-    border-bottom: 3px solid #000000;
-    margin-top: 5px;
-    padding: 2px;
-}
-#Login{
-    padding: 12px 35px;
-    border-radius: 50px;
-    background: #e043ce;
-    background: linear-gradient(90deg, rgb(232, 97, 217) 0%, rgba(212, 82, 255, 1) 100%);
-    color: white;
-    margin-right: 35px;
+.header__brand {
+  justify-self: start;
+  font-family: var(--font-name);
+  font-size: 1.65rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  color: var(--header-ink);
+  user-select: none;
 }
 
-#HorseLogo{
-    width: 50px;
-    height: 50px;
+.header__brand span {
+  color: var(--header-go);
 }
 
-.headerLoginSection {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-right: 35px;
+/* --- links -------------------------------------------------------------------- */
+
+.header__nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: clamp(var(--space-5), 3vw, 44px);
+  height: 100%;
 }
 
-.headerUsername {
-    color: #1a1a1a;
-    font-size: 18px;
-    font-weight: 550;
+.header__link {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  color: var(--header-muted);
+  font-size: 1.05rem;
+  font-weight: var(--weight-bold);
+  text-decoration: none;
 }
 
-.logoutButton {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
-    padding: 12px 35px;
-    border-radius: 50px;
-    background: #e043ce;
-    background: linear-gradient(90deg, rgba(224, 67, 206, 1) 0%, rgba(212, 82, 255, 1) 100%);
-    color: white;
+.header__link.is-current,
+.header__link:hover {
+  color: var(--header-ink);
 }
-/* The header used a fixed 70px gap and a 35px right margin, which pushed it past the
-   viewport on narrow screens and gave every page a horizontal scrollbar. */
+
+.header__link:focus-visible,
+.header__button:focus-visible,
+.header__username:focus-visible {
+  outline: none;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--focus-ring);
+}
+
+/* Drawn UNDERLINE_WIDTH wide at the left edge; GSAP sets x and scaleX per link. */
+.header__underline {
+  position: absolute;
+  bottom: 12px;
+  left: 0;
+  width: 100px;
+  height: 4px;
+  border-radius: 2px;
+  background-color: var(--header-go);
+  transform-origin: left;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* --- account ------------------------------------------------------------------ */
+
+.header__account {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.header__button {
+  padding: 9px var(--space-6);
+  border: 2px solid var(--header-go);
+  border-radius: var(--radius-pill);
+  background-color: var(--header-go);
+  color: var(--on-solid);
+  font: inherit;
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.header__button--ghost {
+  background-color: transparent;
+  color: var(--header-go-dark);
+}
+
+.header__user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.header__avatar {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background-color: #e4f8e2;
+  color: var(--header-go-dark);
+  font-weight: var(--weight-bold);
+}
+
+.header__username {
+  max-width: 160px;
+  overflow: hidden;
+  color: var(--header-ink);
+  font-weight: var(--weight-bold);
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* On narrow screens the links get a row of their own under the brand and account. */
 @media (max-width: 900px) {
   .header {
-    flex-wrap: wrap;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "brand account"
+      "nav nav";
     height: auto;
-    gap: 10px;
-    padding: 10px 12px;
+    row-gap: 0;
+    padding-top: var(--space-3);
   }
 
-  .headerContent {
-    flex-wrap: wrap;
-    gap: 18px;
+  .header__brand { grid-area: brand; font-size: 1.35rem; }
+  .header__account { grid-area: account; }
+
+  .header__nav {
+    grid-area: nav;
+    justify-content: space-between;
+    height: 48px;
+    gap: var(--space-3);
   }
 
-  .headerLink {
-    font-size: 16px;
-  }
-
-  #Login {
-    padding: 10px 22px;
-    margin-right: 0;
-  }
-
-  #HorseLogo {
-    width: 38px;
-  }
+  .header__link { font-size: var(--text-md); }
+  .header__underline { bottom: 6px; }
+  .header__button { padding: 7px var(--space-4); }
+  .header__username { display: none; }
 }
