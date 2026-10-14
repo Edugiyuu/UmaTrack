@@ -71,6 +71,7 @@ Para entender o projeto em diagramas, veja a [visão geral](../visao-geral.md).
 | 27 | [Telas v2 de descanso, escolha de pista e skills, com animações GSAP (Figma)](27-ui-v2-rest-track.md) | `feat/ui-v2-rest-track` | G | ✅ |
 | 28 | [Tela v2 do Estábulo, com animações GSAP (Figma)](28-ui-v2-stable.md) | `feat/ui-v2-stable` | M | ✅ |
 | 29 | [Páginas v2 de Elenco, Skills e Guia, com animações GSAP (Figma)](29-ui-v2-catalogs.md) | `feat/ui-v2-catalogs` | M | ✅ |
+| 30 | [Barra de navegação v2, com a marca UmaTrack (Figma)](30-ui-v2-header.md) | `feat/ui-v2-header` | P | ✅ |
 
 ### Ordem sugerida para 11–14
 
