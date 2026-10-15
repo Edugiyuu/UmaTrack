@@ -15,13 +15,13 @@ const sceneFor = (pathname: string): MusicScene => {
 };
 
 /**
- * The music button, fixed in a corner of every screen (the career and race screens have
- * no header). The music only starts from this click, so the browser's autoplay rule is
- * never in the way. While it plays, three bars bounce with GSAP.
+ * The music button, fixed in the bottom-left corner of every screen (the career and race
+ * screens have no header). The music is on by default; this turns it off and on, and
+ * starts it if the browser held it back. While it plays, three bars bounce with GSAP.
  */
 const MusicToggle = () => {
   const { pathname } = useLocation();
-  const on = useSyncExternalStore(bgMusic.subscribe, bgMusic.isEnabled);
+  const on = useSyncExternalStore(bgMusic.subscribe, bgMusic.isPlaying);
   const reduced = usePrefersReducedMotion();
   const rootRef = useRef<HTMLDivElement>(null);
   const barsRef = useRef<HTMLSpanElement>(null);
@@ -66,7 +66,7 @@ const MusicToggle = () => {
         aria-pressed={on}
         aria-label={label}
         title={label}
-        onClick={() => bgMusic.setEnabled(!on)}
+        onClick={() => bgMusic.toggle()}
       >
         {on ? (
           <span className='MusicToggle__bars' ref={barsRef} aria-hidden='true'>
