@@ -76,6 +76,27 @@ const notify = () => listeners.forEach((listener) => listener());
 
 const currentScene = () => overlays[overlays.length - 1]?.scene ?? baseScene;
 
+/**
+ * GSAP ticks on animation frames, which stop in a background tab or a busy frame, so a
+ * fade may never finish. A timer settles where each fade should have ended anyway: the
+ * track that left is paused, the one playing is at full volume.
+ */
+const settleAfter = (id: TrackId, seconds: number) => {
+  window.setTimeout(() => {
+    const audio = player(id);
+    if (playing === id) {
+      if (audio.volume < VOLUME) {
+        gsap.killTweensOf(audio);
+        audio.volume = VOLUME;
+      }
+    } else if (!audio.paused) {
+      gsap.killTweensOf(audio);
+      audio.volume = 0;
+      audio.pause();
+    }
+  }, (seconds + 0.25) * 1000);
+};
+
 const fadeOut = (id: TrackId) => {
   const audio = player(id);
   gsap.to(audio, {
@@ -85,6 +106,7 @@ const fadeOut = (id: TrackId) => {
     overwrite: true,
     onComplete: () => audio.pause()
   });
+  settleAfter(id, FADE_OUT);
 };
 
 /** Pointer and key events that count as the interaction browsers wait for. */
@@ -120,6 +142,7 @@ const fadeIn = (id: TrackId) => {
     notify();
   });
   gsap.to(audio, { volume: VOLUME, duration: FADE_IN, ease: "sine.in", overwrite: true });
+  settleAfter(id, FADE_IN);
 };
 
 /** Plays the current scene's track, fading the previous one out. */
@@ -176,3 +199,11 @@ export const bgMusic = {
     };
   }
 };
+
+// A hot reload in dev replaces this module; silence the old one's players with it.
+import.meta.hot?.dispose(() => {
+  players.forEach((audio) => {
+    gsap.killTweensOf(audio);
+    audio.pause();
+  });
+});
