@@ -18,6 +18,7 @@ import {
     type TrainingOutcome
 } from '../../services/User';
 import { useScreenEnter } from '../../animations/screen';
+import { useMusicScene } from '../../hooks/useMusicScene';
 import { useBarTween } from '../../animations/useBarTween';
 import { useCountUp } from '../../animations/useCountUp';
 import { useHoverScale } from '../../animations/useHoverScale';
@@ -105,6 +106,7 @@ const CareerMenu = () => {
     const energy = view?.energy ?? 0;
 
     useScreenEnter(rootRef, view !== null);
+    useMusicScene(training ? 'training' : showSkills ? 'skills' : null);
     useHoverScale(rootRef, '.StatCard__train, .Career__ghost, .Career__race');
     const energyBarRef = useBarTween<HTMLSpanElement>(energy / 100, { duration: 0.9 });
     const energyRef = useCountUp<HTMLSpanElement>(energy, { duration: 0.9 });
