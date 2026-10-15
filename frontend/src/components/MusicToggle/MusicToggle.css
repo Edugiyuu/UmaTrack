@@ -1,0 +1,76 @@
+/**
+ * The music button: a dark pill in the bottom-left corner, above the screens but under
+ * the page curtain. GSAP handles the hover scale and the bars; CSS only holds the shapes.
+ */
+
+.MusicToggle {
+  position: fixed;
+  left: var(--space-4);
+  bottom: var(--space-4);
+  z-index: 900;
+  pointer-events: none;
+}
+
+.MusicToggle__button {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 40px;
+  padding: 0 var(--space-4) 0 var(--space-3);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background-color: rgba(12, 12, 12, 0.78);
+  color: var(--on-solid);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  letter-spacing: 0.04em;
+  box-shadow: var(--shadow-3);
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+}
+
+.MusicToggle__button.is-on {
+  background-color: var(--brand-turf);
+  border-color: transparent;
+}
+
+.MusicToggle__button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.MusicToggle__icon {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.MusicToggle__bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+  width: 18px;
+  height: 16px;
+}
+
+.MusicToggle__bars span {
+  flex: 1;
+  height: 100%;
+  border-radius: 2px;
+  background-color: currentColor;
+  transform-origin: 50% 100%;
+  transform: scaleY(0.25);
+}
+
+@media (max-width: 600px) {
+  .MusicToggle__text {
+    display: none;
+  }
+
+  .MusicToggle__button {
+    width: 40px;
+    padding: 0;
+    justify-content: center;
+  }
+}
