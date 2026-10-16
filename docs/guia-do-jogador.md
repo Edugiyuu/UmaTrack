@@ -450,6 +450,12 @@ textos.
 O botão **🔊** no alto, ao lado das velocidades, liga e desliga o som da
 corrida. A escolha fica guardada para as próximas.
 
+**Música.** O site toca música de fundo, que muda com a tela: um tema calmo no
+site e no hub da carreira, um mais animado no treino, nas skills e na escolha de
+pista, e 仕掛け na corrida. Ela começa sozinha; se o navegador segurar o som,
+começa no primeiro clique. O botão no canto inferior esquerdo de todas as telas
+liga e desliga, e desligada ela continua assim nas próximas visitas.
+
 ---
 
 ## 9. Prêmios

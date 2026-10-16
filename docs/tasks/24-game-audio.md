@@ -261,3 +261,4 @@ curtos de teste nas pastas e tirá-los antes do commit.
 |---|---|
 | 2026-09-28 | Task criada. Continua na branch da task `23`, que prepara os eventos de som. |
 | 2026-09-28 | Escopo ampliado: música de fundo em todas as telas, não só na corrida. O Eduardo coloca as músicas e os efeitos. |
+| 2026-10-16 | A **parte A** (música por tela com crossfade) foi feita na task [`31`](31-background-music.md), com outro mapa: 3 faixas (Story Menu, Gacha Menu, 仕掛け na corrida), módulo `bgMusic` em vez de `SoundProvider`, e música ligada por padrão. Partes B–D continuam abertas; a música da corrida hoje é só o 仕掛け, sem troca na reta final. |
