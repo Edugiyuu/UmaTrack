@@ -37,33 +37,70 @@ vazio e precisa de `npm run seed:horses`).
 
 ### 2. Render (backend)
 
-1. Crie a conta e ligue o GitHub, dando acesso ao repositório `UmaTrack`.
-2. **New → Blueprint**, escolha o repositório. O Render lê o `render.yaml` e propõe o
-   serviço `umasprint-api`.
-3. Ele pede as variáveis marcadas `sync: false`. Preencha:
+Crie a conta no Render e ligue o GitHub, dando acesso ao repositório `UmaTrack`. Depois
+siga a opção A (tudo à mão no painel) ou a B (o Render lê o `render.yaml` e preenche
+sozinho). O resultado é o mesmo.
 
-   | Variável | Valor |
+#### Opção A: Web Service à mão
+
+1. **New → Web Service** e escolha o repositório `UmaTrack`.
+2. Preencha a tela de criação:
+
+   | Campo | Valor |
    |---|---|
-   | `MONGODB_URI` | a connection string do passo 1 |
+   | **Name** | `umasprint-api` (vira parte da URL) |
+   | **Language** | `Node` |
+   | **Branch** | `main` |
+   | **Region** | a mais perto do cluster do Atlas (veja a região no Atlas; na dúvida, `Virginia (US East)`) |
+   | **Root Directory** | `backend` |
+   | **Build Command** | `npm install --include=dev && npm run build` |
+   | **Start Command** | `npm start` |
+   | **Instance Type** | `Free` |
 
-   As outras já vêm do `render.yaml`:
+   O `--include=dev` é obrigatório: com `NODE_ENV=production` o npm pula as
+   devDependencies, e o `tsc` precisa dos `@types` que estão nelas.
 
-   | Variável | Valor | Para quê |
+3. Em **Environment Variables**, clique em **Add Environment Variable** para cada uma:
+
+   | Key | Value | Para quê |
    |---|---|---|
-   | `NODE_ENV` | `production` | |
-   | `NODE_VERSION` | `22` | |
-   | `SECRET_KEY` | gerado pelo Render | assina o JWT do login |
+   | `NODE_VERSION` | `22` | mesma versão do Node usada aqui |
+   | `NODE_ENV` | `production` | modo produção |
+   | `MONGODB_URI` | a connection string do passo 1 | banco |
+   | `SECRET_KEY` | um texto aleatório e longo (veja abaixo) | assina o JWT do login |
    | `CORS_ORIGINS` | `https://edugiyuu.github.io` | só o site do Pages chama a API |
    | `API_DOCS` | `false` | Swagger desligado (o "Try it out" escreve no banco real) |
-   | `PORT` | o Render define | o `app.ts` já lê |
 
-4. **Apply.** O primeiro build demora uns minutos. Quando o log mostrar
-   `Servidor rodando`, abra a URL do serviço: deve aparecer `Hello, World!`. Anote a URL
-   (`https://umasprint-api.onrender.com` ou parecida, se o nome estiver ocupado).
+   **Não crie `PORT`**: o Render define sozinho e o `app.ts` já lê. Para gerar o
+   `SECRET_KEY`, rode na sua máquina e cole o resultado:
 
-Sem Blueprint, dá para criar à mão um **Web Service** com: Root Directory `backend`,
-Build Command `npm install --include=dev && npm run build`, Start Command `npm start`,
-Health Check Path `/`, e as variáveis acima.
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+   ```
+
+   Não precisa ser o mesmo do `backend/.env`; trocar só desloga quem estiver logado.
+
+4. Abra **Advanced** (no fim da página):
+
+   | Campo | Valor |
+   |---|---|
+   | **Health Check Path** | `/` |
+   | **Auto-Deploy** | `On Commit` (cada push na `main` que mexe em `backend/` publica de novo) |
+
+5. **Deploy Web Service.** O primeiro build demora uns minutos. Quando o log mostrar
+   `Conectou ao banco!` e depois `Servidor rodando`, abra a URL do serviço (no alto da
+   página, `https://umasprint-api.onrender.com` ou parecida se o nome estiver ocupado):
+   deve aparecer `Hello, World!`. Anote essa URL para o passo 3.
+
+Se o log parar em `Erro ao conectar ao banco`, quase sempre é o Atlas bloqueando o IP
+(passo 1.1) ou usuário/senha errados no `MONGODB_URI`.
+
+#### Opção B: Blueprint (`render.yaml`)
+
+O [`render.yaml`](../render.yaml) já tem todos os campos da opção A. **New → Blueprint**,
+escolha o repositório, e o Render cria o serviço `umasprint-api` com eles. Ele só pede o
+`MONGODB_URI`; o `SECRET_KEY` ele gera sozinho. Clique em **Apply** e confira o log como
+no passo 5 acima.
 
 ### 3. GitHub (frontend)
 
