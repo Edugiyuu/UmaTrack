@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getCurrentUser, getToken } from "../../services/User";
 import type { UserResponseProfile } from "../../types/user";
 import CustomLink from "../../utils/CustomLink";
+import { horseAsset, horseFolder } from "../../utils/horseImage";
 import RaceHistory from "../RaceHistory/RaceHistory";
 import RetiredHorses from "../RetiredHorses/RetiredHorses";
 import "./UserProfileMain.css";
@@ -58,7 +59,7 @@ const UserProfileMain = () => {
       <div className="FavoriteHorse">
         <h3>Favorite Horse</h3>
         {favoriteHorse && (
-          <img alt={favoriteHorse.name} src={`/horses/${favoriteHorse.name.replace(/\s+/g, "")}/${favoriteHorse.name.replace(/\s+/g, "")}1.png`}/>
+          <img alt={favoriteHorse.name} src={horseAsset(favoriteHorse.name, `${horseFolder(favoriteHorse.name)}1.png`)}/>
         )}
       </div>
       <div className="UserInfos">

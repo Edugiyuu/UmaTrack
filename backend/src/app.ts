@@ -9,9 +9,13 @@ import { ensureTracksSeeded } from "./services/seedTracks";
 import { ensureSkillsSeeded } from "./services/seedSkills";
 import { mountApiDocs } from "./docs/swagger";
 
+// CORS_ORIGINS lists the sites allowed to call the API, comma-separated (in production,
+// the GitHub Pages origin). Unset, any origin may call it, as in development.
+const corsOrigins = process.env.CORS_ORIGINS?.split(',').map((origin) => origin.trim()).filter(Boolean);
+
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors(corsOrigins?.length ? { origin: corsOrigins } : undefined));
 mountApiDocs(app);
 app.use(routes);
 
@@ -41,4 +45,6 @@ mongoose.connect(mongoUri)
   })
   .catch((err: any) => {
     console.error('Erro ao conectar ao banco:', err);
+    // Without a database the server never listens; exit so the host (Render) restarts it.
+    process.exit(1);
   });

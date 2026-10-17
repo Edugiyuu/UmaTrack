@@ -1,0 +1,37 @@
+# Render Blueprint for the UmaSprint API (docs/deploy.md).
+# Render → New → Blueprint → this repository. Secrets marked `sync: false` are asked for
+# in the dashboard when the Blueprint is created; they never live in the repository.
+services:
+  - type: web
+    name: umasprint-api
+    runtime: node
+    plan: free
+    # Put it near the MongoDB Atlas cluster: every request makes several queries.
+    region: virginia
+    rootDir: backend
+    branch: main
+    # NODE_ENV=production makes npm skip devDependencies, and `tsc` needs the @types.
+    buildCommand: npm install --include=dev --no-audit --no-fund && npm run build
+    startCommand: npm start
+    # GET / answers "Hello, World!" once the database is connected and the server listens.
+    healthCheckPath: /
+    # With rootDir set, only pushes that touch backend/ redeploy.
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      # Atlas connection string (Atlas → Connect → Drivers). Same database as today.
+      - key: MONGODB_URI
+        sync: false
+      # Signs the login JWT. Render generates a random value.
+      - key: SECRET_KEY
+        generateValue: true
+      # Origin of the GitHub Pages site, with no path and no trailing slash.
+      - key: CORS_ORIGINS
+        value: https://edugiyuu.github.io
+      # Swagger UI stays off in production ("Try it out" writes to the real database).
+      - key: API_DOCS
+        value: "false"
+      # PORT is set by Render; app.ts already reads it.

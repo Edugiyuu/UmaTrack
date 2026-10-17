@@ -21,6 +21,10 @@ Os números deste guia vêm direto do código (`backend/src/data/` e
 
 ## 1. Começando
 
+O beta aberto fica em **https://edugiyuu.github.io/UmaTrack/**. O servidor dorme quando
+ninguém joga por um tempo: se o primeiro login ou a lista de éguas demorar até um minuto,
+é ele acordando. Depois disso fica normal.
+
 Crie uma conta em **Create Account**. Você começa com:
 
 - **1.000** de dinheiro
@@ -559,3 +563,6 @@ O design técnico por trás dessas regras está em
 
 As rotas da API, com corpo, respostas e exemplos, estão no Swagger: com o backend rodando,
 abra `http://localhost:3000/docs`.
+
+Como o site e a API são publicados (GitHub Pages e Render) está em
+[`deploy.md`](./deploy.md).

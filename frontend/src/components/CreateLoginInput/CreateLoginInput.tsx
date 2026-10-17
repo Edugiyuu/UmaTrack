@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import './CreateLoginInput.css';
 import CustomLink from '../../utils/CustomLink';
 import { createUser, LoginUser } from '../../services/User';
-import GrassWonderChibi from '/horses/GrassWonder/Chibi1.png'
+import { horseAsset } from '../../utils/horseImage';
 import { useNavigate } from 'react-router-dom';
 import confetti from "canvas-confetti";
 import SnackBar from '../SnackBar/SnackBar';
 import PopUp from '../PopUp/PopUp';
+
+const GrassWonderChibi = horseAsset('GrassWonder', 'Chibi1.png');
 
 interface CreateLoginInputProps {
   isLogin?: boolean;

@@ -1,0 +1,70 @@
+# Builds the frontend and publishes it on GitHub Pages (docs/deploy.md).
+name: Deploy frontend (GitHub Pages)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - ".github/workflows/deploy-frontend.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; a newer push does not cancel one already publishing.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      # Repository variable (Settings → Secrets and variables → Actions → Variables).
+      VITE_API_URL: ${{ vars.VITE_API_URL }}
+      # Pages serves the site at https://<user>.github.io/<repo>/.
+      BASE_PATH: /${{ github.event.repository.name }}/
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check VITE_API_URL
+        run: |
+          if [ -z "$VITE_API_URL" ]; then
+            echo "::error::Set the VITE_API_URL repository variable to the Render URL (see docs/deploy.md)."
+            exit 1
+          fi
+
+      # package-lock.json is gitignored, so `npm ci` is not an option.
+      - run: npm install --no-audit --no-fund
+
+      - run: npm run build
+
+      # Pages has no SPA rewrites: an unknown path serves 404.html, so it gets the app too
+      # and React Router (basename = BASE_PATH) renders the route.
+      - run: cp dist/index.html dist/404.html
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -19,7 +19,7 @@ const Card = ({ horseName, jpName }: CardProps) => {
     <div className='card'>
       <div className='cardContent'>
         <h2 className={`horseName ${horseName}`}>{formatHorseName(horseName)}</h2>
-        <img className='horseImg' src={`/horses/${horseName}/card${horseName}.png`}/>
+        <img className='horseImg' src={`${import.meta.env.BASE_URL}horses/${horseName}/card${horseName}.png`}/>
         <h2 className='jpName'>{jpName}</h2>
       </div>
         
