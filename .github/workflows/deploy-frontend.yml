@@ -29,10 +29,11 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
-      - run: npm run build
+      # The services append "/route" to the API URL, so drop a trailing slash.
+      - run: VITE_API_URL="${API_URL%/}" npm run build
         env:
           VITE_BASE: /${{ github.event.repository.name }}/
-          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          API_URL: ${{ vars.VITE_API_URL }}
       # Pages has no SPA fallback: serving index.html as 404.html lets React Router
       # handle a reload on any route.
       - run: cp dist/index.html dist/404.html
