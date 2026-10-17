@@ -3,25 +3,33 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import confetti from "canvas-confetti";
 import Button from "../ui/Button/Button";
 import { usePageReveal, useTransitionNavigate } from "../PageTransition/PageTransition";
-import { RaceFinalBanner, RaceSeal, BANNER_MS, type Seal } from "./RaceBanner";
-import RaceCam from "./RaceCam";
 import RaceCountdown, { type CountdownStep } from "./RaceCountdown";
+import RaceCourse from "./RaceCourse";
 import RaceCutscene from "./RaceCutscene";
+import RaceDrone from "./RaceDrone";
+import RaceField from "./RaceField";
 import RaceFxOverlay from "./RaceFxOverlay";
-import RaceHeader from "./RaceHeader";
-import RaceHud from "./RaceHud";
-import RaceOval from "./RaceOval";
+import RaceMoment, { BANNER_MS, type RaceMomentProps, type Seal } from "./RaceMoment";
+import RaceNotebook from "./RaceNotebook";
 import RaceResults from "./RaceResults";
 import RaceRivals from "./RaceRivals";
-import RaceStandings from "./RaceStandings";
-import TrackStrip from "./TrackStrip";
-import { ordinal } from "./format";
+import RaceTensionBar from "./RaceTensionBar";
+import { currentTurn, ordinal } from "./format";
+import {
+  buildField,
+  courseStops,
+  notebookNotes,
+  projectPass,
+  sampleFrames,
+  tensionAt
+} from "./fieldModel";
 import { useRacePlayback } from "./useRacePlayback";
 import { skillEffectText, useRaceEffects, type RaceEvent } from "./useRaceEffects";
 import { usePrefersReducedMotion } from "../../hooks/usePrefersReducedMotion";
 import { getSkills, getTracks, runRace, type RunRaceResponse } from "../../services/Race";
 import { raceAudio } from "../../services/raceAudio";
 import { horseColors } from "../../constants/horseColors";
+import { RUNNING_STYLE_LABEL } from "../../constants/trackVisuals";
 import type {
   RaceSimulation,
   RunningStyle,
@@ -43,6 +51,8 @@ const PLAYBACK_SPEEDS = [1, 2, 4] as const;
 const SEAL_QUEUE = 3;
 /** A seal older than this, in turns of race time, is stale and never shown. */
 const SEAL_TTL = 2;
+/** The projection is only worth showing in the last part of the race. */
+const PROJECTION_FROM = 0.6;
 
 const segmentAt = (track: TrackResponse, distance: number) => {
   let cursor = 0;
@@ -73,6 +83,13 @@ interface CutsceneState {
   remaining: number;
 }
 
+const metres = (value: number) => `${Math.max(0, Math.round(value)).toLocaleString("pt-BR")} m`;
+
+/**
+ * The race screen, v3 (docs/tasks/32-race-v3.md, Figma "Race v3 · G1–G4"): the field
+ * down the left, the drone view in the middle, the distance, the trainer's notebook and
+ * the course on the right, and the tension line with the replay controls at the bottom.
+ */
 const RaceRunner = () => {
   const { horseId, trackSlug } = useParams();
   const [searchParams] = useSearchParams();
@@ -87,9 +104,6 @@ const RaceRunner = () => {
   const [paused, setPaused] = useState(false);
   /** Held until the player has seen her rivals and sent the field off. */
   const [started, setStarted] = useState(false);
-  /** The player's call; it holds until the race ends. */
-  const [hudHidden, setHudHidden] = useState(false);
-  const toggleHud = useCallback(() => setHudHidden((hidden) => !hidden), []);
   const [skills, setSkills] = useState<Map<string, SkillResponse>>(() => new Map());
   /** 3, 2, 1, "VAI!" (0), then -1 once the gates are open for good. Runs once per race. */
   const [countdown, setCountdown] = useState<CountdownStep | -1>(3);
@@ -173,8 +187,8 @@ const RaceRunner = () => {
 
   const togglePause = useCallback(() => setPaused((current) => !current), []);
   /**
-   * Moves to the end of the turn after (or before) the one on the clock, where the HUD
-   * shows everything that turn decided. The ref moves with it, so several presses
+   * Moves to the end of the turn after (or before) the one on the clock, where the
+   * screen shows everything that turn decided. The ref moves with it, so several presses
    * between two renders still count as several turns.
    */
   const stepTo = useCallback(
@@ -229,18 +243,35 @@ const RaceRunner = () => {
     [simulation]
   );
 
-  /**
-   * The references the HUD measures against, read once from the telemetry: her ceiling
-   * before tiring, and the stamina she left the gates with (turn 1's leftover plus its cost).
-   */
-  const hudScale = useMemo(() => {
-    const turns = simulation?.telemetry ?? [];
-    if (!turns.length) return null;
-    return {
-      topCeiling: Math.max(...turns.map((turn) => turn.ceiling)),
-      maxStamina: turns[0].stamina + turns[0].staminaCost
-    };
+  /** Stamina she left the gates with (turn 1's leftover plus its cost): the effects' scale. */
+  const maxStamina = useMemo(() => {
+    const first = simulation?.telemetry?.[0];
+    return first ? first.stamina + first.staminaCost : 0;
   }, [simulation]);
+
+  const colorOf = useCallback(
+    (lane: number) => {
+      const runner = simulation?.runners[lane];
+      if (!runner) return "var(--brand-turf)";
+      return runner.isPlayer
+        ? horseColors[runner.name] ?? "var(--brand-turf)"
+        : RIVAL_COLORS[lane % RIVAL_COLORS.length];
+    },
+    [simulation]
+  );
+
+  const colorOfRunner = useCallback(
+    (runnerId: string) => {
+      if (!simulation) return undefined;
+      const lane = simulation.runners.findIndex((runner) => runner.id === runnerId);
+      return lane >= 0 ? colorOf(lane) : undefined;
+    },
+    [simulation, colorOf]
+  );
+
+  const playerResult = simulation?.results.find((result) => result.isPlayer) ?? null;
+  /** She has crossed the line: the screen turns into the finish (G4). */
+  const arrived = Boolean(playerResult) && playback.time >= (playerResult?.finishTime ?? Infinity);
 
   useEffect(() => {
     if (!playback.finished || !race || showResults) return;
@@ -250,21 +281,7 @@ const RaceRunner = () => {
     }
   }, [playback.finished, race, showResults]);
 
-  const currentSegment = useMemo(() => {
-    if (!track || playerLane < 0) return null;
-    return segmentAt(track, playback.positions[playerLane] ?? 0);
-  }, [track, playback.positions, playerLane]);
-
-  // --- effects: toasts, the banner and the cutscene come from one-off race events ----
-  const colorOfRunner = useCallback(
-    (runnerId: string) => {
-      if (!simulation) return undefined;
-      const lane = simulation.runners.findIndex((runner) => runner.id === runnerId);
-      return lane >= 0 ? RIVAL_COLORS[lane % RIVAL_COLORS.length] : undefined;
-    },
-    [simulation]
-  );
-
+  // --- effects: moments and the cutscene come from one-off race events --------------
   const pushSeal = useCallback((seal: Omit<Seal, "id">) => {
     sealId.current += 1;
     const next = { ...seal, id: sealId.current };
@@ -333,12 +350,12 @@ const RaceRunner = () => {
     simulation: simulation ?? EMPTY_SIMULATION,
     time: playback.time,
     skills,
-    maxStamina: hudScale?.maxStamina ?? 0,
+    maxStamina,
     live: Boolean(simulation) && !introducingRivals && !showResults && countdown <= 0,
     onEvent: onRaceEvent
   });
 
-  // One seal at a time; the banner and the cutscene go first, and a pause holds it.
+  // One seal at a time; the final stretch and the cutscene go first, and a pause holds it.
   const holdSeals = Boolean(banner || cutscene) || paused;
   const currentSeal = seals[0];
   const staleSeal = currentSeal ? currentSeal.at < playback.time - SEAL_TTL : false;
@@ -356,7 +373,7 @@ const RaceRunner = () => {
     return () => window.clearTimeout(timer);
   }, [currentSeal, staleSeal, holdSeals, speed]);
 
-  // The banner waits for a cutscene to close, then crosses once.
+  // The final stretch waits for a cutscene to close, then shows once.
   useEffect(() => {
     if (!banner || cutscene) return;
     const timer = window.setTimeout(() => setBanner(null), BANNER_MS);
@@ -372,6 +389,42 @@ const RaceRunner = () => {
     setCountdown(-1);
   }, [showResults]);
 
+  // --- the field at this instant ------------------------------------------------------
+  const field = useMemo(
+    () =>
+      simulation
+        ? buildField({
+            simulation,
+            time: playback.time,
+            colorOf,
+            skills,
+            playerSkills: race?.horse.skills ?? []
+          })
+        : [],
+    [simulation, playback.time, colorOf, skills, race]
+  );
+
+  const stops = useMemo(() => (track ? courseStops(track) : []), [track]);
+
+  /** How far ahead of the next runner she won by, or how far behind the winner she was. */
+  const finishGap = useMemo(() => {
+    if (!simulation || !playerResult) return 0;
+    const placeLane = (placement: number) =>
+      simulation.runners.findIndex(
+        (runner) => runner.id === simulation.results.find((result) => result.placement === placement)?.id
+      );
+    if (playerResult.placement === 1) {
+      const second = placeLane(2);
+      if (second < 0) return 0;
+      const at = sampleFrames(simulation.frames, playerResult.finishTime);
+      return simulation.distance - (at.positions[second] ?? 0);
+    }
+    const winner = simulation.results.find((result) => result.placement === 1);
+    if (!winner) return 0;
+    const at = sampleFrames(simulation.frames, winner.finishTime);
+    return simulation.distance - (at.positions[playerLane] ?? 0);
+  }, [simulation, playerResult, playerLane]);
+
   if (error) {
     return (
       <div className="RaceRunner RaceRunner--state">
@@ -386,7 +439,7 @@ const RaceRunner = () => {
     );
   }
 
-  if (!race || !simulation || !track) {
+  if (!race || !simulation || !track || !playerResult) {
     return (
       <div className="RaceRunner RaceRunner--state">
         <div className="RaceRunner__state-card">
@@ -402,55 +455,131 @@ const RaceRunner = () => {
     );
   }
 
-  const playerResult = simulation.results.find((result) => result.isPlayer)!;
-  const playerCovered = playerLane >= 0 ? (playback.positions[playerLane] ?? 0) : 0;
-  const playerProgress = playerCovered / simulation.distance;
-  const playerPlacement = playback.order.indexOf(playerLane) + 1;
-  const latestActivations = playback.activations.slice(-4).reverse();
-
-  const colorOf = (lane: number) => {
-    const runner = simulation.runners[lane];
-    return runner.isPlayer
-      ? horseColors[runner.name] ?? "var(--brand-turf)"
-      : RIVAL_COLORS[lane % RIVAL_COLORS.length];
-  };
-
-  const standings = playback.order.map((lane) => ({
-    ...simulation.runners[lane],
-    color: colorOf(lane),
-    position: playback.positions[lane] ?? 0
-  }));
-  const leader = standings[0];
-  const player = playerLane >= 0 ? simulation.runners[playerLane] : null;
-  const leaderLead = standings.length > 1 ? leader.position - standings[1].position : 0;
-  const playerGap = leader ? leader.position - playerCovered : 0;
+  const player = field.find((runner) => runner.isPlayer) ?? null;
+  const playerCovered = player?.position ?? 0;
+  const remaining = simulation.distance - playerCovered;
   const lastTurn = Math.ceil(simulation.frames.at(-1)?.t ?? 1);
+  const turn = currentTurn(playback.time, lastTurn);
+  const segment = segmentAt(track, playerCovered);
+  const telemetry = playback.telemetry;
 
-  const { playerSkill, boost, heal } = effects;
-  const ovalBubble = heal
-    ? { text: `+${Math.round(heal.gain * 100)}% FÔLEGO`, tone: "heal" as const }
-    : playerSkill
-      ? { text: `✦ ${playerSkill.activation.skillName}!`, tone: "skill" as const }
-      : boost && boost.gain > 0
-        ? { text: `▲ +${Math.round(boost.gain)} m/turno`, tone: "boost" as const }
-        : undefined;
-  const cutsceneSegment = cutscene ? segmentAt(track, cutscene.activation.distance) : null;
+  const projection =
+    !arrived && playerCovered >= simulation.distance * PROJECTION_FROM
+      ? projectPass(field, simulation.distance, playback.time)
+      : null;
+  const notebook = notebookNotes({
+    field,
+    track,
+    time: countdown > 0 ? 0 : playback.time,
+    telemetry,
+    projection,
+    skills,
+    arrived,
+    finishGap
+  });
+  const tension = tensionAt(field, telemetry, arrived);
+  const turnsLeft = telemetry
+    ? Math.max(1, Math.ceil(telemetry.remaining / Math.max(1, telemetry.runSpeed)))
+    : 0;
+
+  // --- the moment over the drone view -------------------------------------------------
+  let moment: RaceMomentProps | null = null;
+  if (arrived) {
+    moment =
+      playerResult.placement === 1
+        ? {
+            kind: "win",
+            title: "VITÓRIA!",
+            detail: finishGap < 1.5 ? "por um focinho · photo finish" : `por ${metres(finishGap)}`
+          }
+        : {
+            kind: "placed",
+            title: `${ordinal(playerResult.placement)} LUGAR`,
+            detail: `a ${metres(finishGap)} da vencedora`
+          };
+  } else if (!counting && countdown !== 0 && !cutscene) {
+    if (banner) {
+      moment = {
+        kind: "final",
+        title: "RETA FINAL",
+        detail: `faltam ${metres(banner.remaining)} · uns ${turnsLeft} turnos`
+      };
+    } else if (currentSeal && !staleSeal) {
+      if (currentSeal.tone === "player") {
+        moment = {
+          kind: "skill",
+          kicker: `✦ SKILL ATIVOU · TURNO ${currentSeal.at + 1}`,
+          title: currentSeal.name ?? "",
+          detail: currentSeal.detail
+        };
+      } else if (currentSeal.tone === "skill") {
+        moment = {
+          kind: "rival",
+          kicker: currentSeal.lead,
+          title: `✦ ${currentSeal.name ?? ""}`,
+          detail: currentSeal.detail,
+          color: currentSeal.color
+        };
+      } else {
+        moment = { kind: currentSeal.tone, title: currentSeal.lead, detail: currentSeal.detail };
+      }
+    } else if (playback.time < 1.2) {
+      moment = { kind: "start", title: "LARGADA!", detail: "todas saem com o fôlego cheio" };
+    }
+  }
+
+  const momentLabel = arrived ? "CHEGADA" : countdown > 0 || playback.time < 1 ? "LARGADA" : segment?.label;
+  const { boost } = effects;
 
   return (
     <div
-      className={[
-        "RaceRunner",
-        paused || cutscene ? "is-paused" : "",
-        boost && !counting ? "has-boost" : ""
-      ]
+      className={["RaceRunner", paused || cutscene ? "is-paused" : "", boost && !counting ? "has-boost" : ""]
         .filter(Boolean)
         .join(" ")}
     >
-      <RaceHeader
-        track={track}
-        style={style}
-        time={playback.time}
+      <aside className="RaceRunner__left">
+        <RaceField field={field} arrived={arrived} />
+      </aside>
+
+      <section className="RaceRunner__course" aria-label="Corrida em andamento">
+        <RaceDrone
+          field={field}
+          distance={simulation.distance}
+          gatesShut={countdown > 0}
+          projection={projection}
+          grade={segment?.grade ?? 0}
+        >
+          {moment && <RaceMoment key={`${moment.kind}-${moment.title}`} {...moment} />}
+        </RaceDrone>
+        {boost && !counting && !arrived && <RaceFxOverlay paused={paused || Boolean(cutscene)} />}
+        {(counting || countdown === 0) && (
+          <RaceCountdown step={countdown as CountdownStep} beat={countdownBeat / 1000} onSkip={skipCountdown} />
+        )}
+      </section>
+
+      <aside className="RaceRunner__right">
+        <section className={`RaceRunner__distance${arrived && playerResult.placement === 1 ? " is-win" : ""}`} aria-label="Distância">
+          <p className="RaceRunner__distance-label">
+            {track.name} · {momentLabel}
+          </p>
+          <p className="RaceRunner__distance-value">
+            {arrived ? `${ordinal(playerResult.placement)} lugar` : metres(remaining)}
+          </p>
+          <p className="RaceRunner__distance-sub">
+            {arrived
+              ? `turno ${turn} de ${lastTurn} · ${RUNNING_STYLE_LABEL[style]}`
+              : `turno ${turn} de ${lastTurn} · ${playback.time < 1 ? "distância total" : "faltam"}`}
+          </p>
+        </section>
+        <RaceNotebook notes={notebook.notes} verdict={notebook.verdict} />
+        <RaceCourse stops={stops} covered={playerCovered} distance={simulation.distance} />
+      </aside>
+
+      <RaceTensionBar
+        level={tension}
+        turn={turn}
         lastTurn={lastTurn}
+        time={playback.time}
         speed={speed}
         speeds={PLAYBACK_SPEEDS}
         onSpeedChange={setSpeed}
@@ -458,153 +587,9 @@ const RaceRunner = () => {
         onTogglePause={togglePause}
         onStepBack={stepBack}
         onStepForward={stepForward}
+        arrived={arrived}
         onSkip={() => setShowResults(true)}
       />
-
-      <div className="RaceRunner__stage">
-        <section className="RaceRunner__course" aria-label="Corrida em andamento">
-          <RaceOval
-            runners={simulation.runners.map((runner, lane) => ({
-              id: runner.id,
-              color: colorOf(lane),
-              isPlayer: runner.isPlayer,
-              progress: (playback.positions[lane] ?? 0) / simulation.distance,
-              lane
-            }))}
-            playerPlacement={playerPlacement}
-            covered={playerCovered}
-            distance={simulation.distance}
-            segmentLabel={currentSegment?.label}
-            fx={{
-              highlights: [...effects.highlights.keys()].map((runnerId) => ({
-                id: runnerId,
-                color:
-                  runnerId === "player" ? "var(--fx-skill)" : colorOfRunner(runnerId) ?? "var(--fx-skill)"
-              })),
-              dimOthers: Boolean(playerSkill),
-              player: heal ? "heal" : boost ? "boost" : null,
-              bubble: ovalBubble,
-              gates: countdown > 0
-            }}
-          />
-          {boost && !counting && <RaceFxOverlay paused={paused || Boolean(cutscene)} />}
-          {counting || countdown === 0 ? (
-            <RaceCountdown
-              step={countdown as CountdownStep}
-              beat={countdownBeat / 1000}
-              onSkip={skipCountdown}
-            />
-          ) : (
-            currentSeal &&
-            !staleSeal &&
-            !banner &&
-            !cutscene && <RaceSeal key={currentSeal.id} seal={currentSeal} />
-          )}
-        </section>
-
-        {banner && !cutscene && (
-          <div className="RaceFinalBanner-slot">
-            <RaceFinalBanner remaining={banner.remaining} />
-          </div>
-        )}
-
-        <aside className="RaceRunner__side RaceRunner__side--left">
-          {player && (
-            <RaceCam
-              title={playerSkill ? "✦ SKILL · VOCÊ" : "LIVE"}
-              tone={playerSkill ? "skill" : "live"}
-              name={player.name}
-              caption={
-                playerPlacement === 1
-                  ? "1º · liderando"
-                  : `${ordinal(playerPlacement)} · ${Math.round(playerGap)}m do líder`
-              }
-              color={colorOf(playerLane)}
-              hasArt
-            />
-          )}
-          <section className="RaceRunner__panel" aria-labelledby="race-standings-title">
-            <header className="RaceRunner__panel-head">
-              <h2 id="race-standings-title">Classificação</h2>
-              <span>{standings.length} corredoras</span>
-            </header>
-            <RaceStandings runners={standings} />
-          </section>
-        </aside>
-
-        <aside className="RaceRunner__side RaceRunner__side--right">
-          {leader && (
-            <RaceCam
-              title="1º LUGAR"
-              tone="leader"
-              name={leader.name}
-              caption={`${Math.round(leaderLead)}m à frente`}
-              color={leader.color}
-              hasArt={leader.isPlayer}
-            />
-          )}
-          <section className="RaceRunner__panel" aria-labelledby="race-skills-title">
-            <header className="RaceRunner__panel-head">
-              <h2 id="race-skills-title">Skills</h2>
-              <span>{playback.activations.length} no páreo</span>
-            </header>
-            {latestActivations.length === 0 ? (
-              <p className="RaceRunner__muted">Nenhuma skill ativada ainda.</p>
-            ) : (
-              <ul className="RaceRunner__activations">
-                {latestActivations.map((activation, index) => (
-                  <li
-                    key={`${activation.runnerId}-${activation.skillSlug}-${index}`}
-                    className={
-                      [
-                        activation.runnerId === "player" ? "is-player" : "",
-                        playback.time - activation.time <= 1 ? "is-fresh" : ""
-                      ]
-                        .filter(Boolean)
-                        .join(" ") || undefined
-                    }
-                  >
-                    <strong>{activation.skillName}</strong>
-                    <span>
-                      {activation.runnerName} · {activation.distance}m
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-        </aside>
-      </div>
-
-      <section className="RaceRunner__hud">
-        {playback.telemetry && hudScale && (
-          <RaceHud
-            telemetry={playback.telemetry}
-            topCeiling={hudScale.topCeiling}
-            maxStamina={hudScale.maxStamina}
-            hidden={hudHidden}
-            onToggle={toggleHud}
-            fx={{
-              boost: counting ? null : boost,
-              heal,
-              lowStamina: effects.lowStamina,
-              speedTrend: effects.speedTrend,
-              skillGlow: Boolean(playerSkill),
-              notice: counting
-                ? {
-                    title: "Largada",
-                    body: "Portões fechados: a corrida começa no VAI! (clique para pular)"
-                  }
-                : undefined
-            }}
-          />
-        )}
-        <TrackStrip
-          segments={track.segments}
-          progress={playerProgress}
-          finalStretch={effects.finalStretch}
-        />
-      </section>
 
       {introducingRivals && (
         <RaceRivals
@@ -631,7 +616,7 @@ const RaceRunner = () => {
           context={[
             track.name,
             `turno ${cutscene.activation.time + 1} / ${lastTurn}`,
-            cutsceneSegment?.label
+            segmentAt(track, cutscene.activation.distance)?.label
           ]
             .filter(Boolean)
             .join(" · ")}
@@ -646,9 +631,7 @@ const RaceRunner = () => {
           playerResult={playerResult}
           results={simulation.results}
           shortfalls={simulation.shortfalls.player ?? []}
-          onAnotherTrack={() =>
-            go(`/Race/${horseId}`, { color: horseColors[race.horse.name] })
-          }
+          onAnotherTrack={() => go(`/Race/${horseId}`, { color: horseColors[race.horse.name] })}
           onBackToTraining={() =>
             go(`/HorseSelector/Career/${horseId}`, { color: horseColors[race.horse.name] })
           }
