@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, type CSSProperties, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { gsap } from "gsap";
 import RunnerAvatar from "./RunnerAvatar";
 import { usePrefersReducedMotion } from "../../hooks/usePrefersReducedMotion";
@@ -9,6 +9,11 @@ const MIN_WINDOW = 120;
 /** Room left behind the last runner and ahead of the first, as a share of the field's spread. */
 const PAD_BEHIND = 0.08;
 const PAD_AHEAD = 0.2;
+/** Length on the track of one turf stripe and its gap, and of one lane dash and its gap. */
+const STRIPE_METRES = 20;
+const DASH_METRES = 6;
+/** A distance post every this many metres, counting down to the line. */
+const POST_EVERY = 100;
 /** The band's top and bottom, as a share of the card's height. */
 const BAND_TOP = 26;
 const BAND_BOTTOM = 76;
@@ -62,6 +67,37 @@ const RaceDrone = ({ field, distance, gatesShut, projection, grade, children }: 
   const start = last - spread * PAD_BEHIND;
   const view = spread * (1 + PAD_BEHIND + PAD_AHEAD);
   const toX = (metres: number) => ((metres - start) / view) * 100;
+
+  // The ground scrolls with the camera, in metres: the turf stripes and the lane dashes
+  // are drawn at a fixed length on the track, so they slide as the field moves on.
+  const cardRef = useRef<HTMLElement>(null);
+  const [width, setWidth] = useState(0);
+  useLayoutEffect(() => {
+    const card = cardRef.current;
+    if (!card) return;
+    setWidth(card.clientWidth);
+    const observer = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
+    observer.observe(card);
+    return () => observer.disconnect();
+  }, []);
+  const pxPerMetre = width / view;
+  const ground = (period: number) => {
+    const size = Math.max(4, period * pxPerMetre);
+    return { size: `${size}px`, offset: `${-((start * pxPerMetre) % size)}px` };
+  };
+  const stripes = ground(STRIPE_METRES);
+  const dashes = ground(DASH_METRES);
+  const groundStyle = {
+    "--stripe-size": stripes.size,
+    "--stripe-offset": stripes.offset,
+    "--dash-size": dashes.size,
+    "--dash-offset": dashes.offset
+  } as CSSProperties;
+  const posts: number[] = [];
+  for (let metre = Math.ceil(Math.max(1, start) / POST_EVERY) * POST_EVERY; metre < Math.min(distance, start + view); metre += POST_EVERY) {
+    posts.push(metre);
+  }
+
   const lanes = Math.max(1, field.length);
   const laneY = (lane: number) => BAND_TOP + ((lane + 0.5) * (BAND_BOTTOM - BAND_TOP)) / lanes;
   const crowded = lanes > 10;
@@ -82,7 +118,12 @@ const RaceDrone = ({ field, distance, gatesShut, projection, grade, children }: 
   const targetSpot = projection ? placed.get(projection.target.id) : undefined;
 
   return (
-    <section className={`RaceDrone${grade > 0 ? " is-uphill" : ""}`} aria-label="Corrida vista de cima">
+    <section
+      ref={cardRef}
+      className={`RaceDrone${grade > 0 ? " is-uphill" : ""}`}
+      style={groundStyle}
+      aria-label="Corrida vista de cima"
+    >
       <div className="RaceDrone__turf RaceDrone__turf--top" aria-hidden="true" />
       <div className="RaceDrone__band" aria-hidden="true" style={{ top: `${BAND_TOP - 3}%`, bottom: `${100 - BAND_BOTTOM - 3}%` }}>
         {Array.from({ length: lanes - 1 }, (_, index) => (
@@ -90,6 +131,12 @@ const RaceDrone = ({ field, distance, gatesShut, projection, grade, children }: 
         ))}
       </div>
       <div className="RaceDrone__turf RaceDrone__turf--bottom" aria-hidden="true" />
+
+      {posts.map((metre) => (
+        <span key={metre} className="RaceDrone__post" style={{ left: `${toX(metre)}%` }} aria-hidden="true">
+          {(distance - metre).toLocaleString("pt-BR")} m
+        </span>
+      ))}
 
       {grade > 0 && (
         <span className="RaceDrone__sign RaceDrone__sign--grade" style={{ left: "82%" }}>
