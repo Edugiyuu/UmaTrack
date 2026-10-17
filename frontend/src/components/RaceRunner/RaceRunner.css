@@ -429,8 +429,7 @@
   color: var(--skill-gold-dark);
 }
 
-.RaceDrone__tag,
-.RaceDrone__offscreen {
+.RaceDrone__tag {
   position: absolute;
   top: 50%;
   left: calc(100% + 6px);
@@ -456,15 +455,33 @@
   color: var(--skill-gold-dark);
 }
 
-.RaceDrone__runner.is-flipped .RaceDrone__tag,
-.RaceDrone__runner.is-ahead .RaceDrone__offscreen {
+.RaceDrone__runner.is-flipped .RaceDrone__tag {
   left: auto;
   right: calc(100% + 6px);
 }
 
-.RaceDrone__runner.is-behind,
-.RaceDrone__runner.is-ahead {
-  opacity: 0.75;
+/* Out of the frame: a small marker pinned to the edge, in the runner's lane. */
+.RaceDrone__runner.is-behind { translate: 0 -50%; }
+.RaceDrone__runner.is-ahead { translate: -100% -50%; }
+
+.RaceDrone__edge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+  background-color: rgba(255, 255, 255, 0.85);
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--skill-used-ink);
+  white-space: nowrap;
+}
+
+.RaceDrone__edge i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--runner-color);
 }
 
 .RaceDrone__field.is-crowded .RaceDrone__runner:not(.is-player) .RaceDrone__pip {
@@ -495,9 +512,10 @@
   color: var(--you-ink);
 }
 
+/* Under the track: her lane is the top one, so a moment up there would cover her. */
 .RaceDrone__moment {
   position: absolute;
-  top: 5%;
+  bottom: 3%;
   left: 50%;
   z-index: 6;
   pointer-events: none;

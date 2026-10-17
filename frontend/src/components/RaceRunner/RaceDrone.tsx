@@ -4,16 +4,15 @@ import RunnerAvatar from "./RunnerAvatar";
 import { usePrefersReducedMotion } from "../../hooks/usePrefersReducedMotion";
 import type { FieldRunner, Projection } from "./fieldModel";
 
-/** The drone never zooms in closer than this many metres of track. */
-const MIN_WINDOW = 120;
-/** Room left behind the last runner and ahead of the first, as a share of the field's spread. */
-const PAD_BEHIND = 0.08;
-const PAD_AHEAD = 0.2;
+/** Metres of track the drone shows: a fixed zoom, so the ground never stretches. */
+const VIEW = 160;
+/** Where she sits across the view, as a share of it: a little behind the middle. */
+const PLAYER_AT = 0.4;
 /** Length on the track of one turf stripe and its gap, and of one lane dash and its gap. */
 const STRIPE_METRES = 20;
 const DASH_METRES = 6;
 /** A distance post every this many metres, counting down to the line. */
-const POST_EVERY = 100;
+const POST_EVERY = 50;
 /** The band's top and bottom, as a share of the card's height. */
 const BAND_TOP = 26;
 const BAND_BOTTOM = 76;
@@ -52,20 +51,16 @@ const SkillBurst = () => {
 
 /**
  * Race v3's main view (Figma "Race v3 · G"): the field seen from above on a straight
- * stretch. The field spreads over hundreds of metres, so the drone frames all of it,
- * from the last runner to the first; that keeps the gates in view at the start and the
- * finish at the end. Each runner is her face in a stamina ring, with a pip for a skill
- * still waiting (✦) or already spent (✓).
+ * stretch, the camera always on her at a fixed zoom, so the ground scrolls under her at
+ * her pace. It stops at the gates at the start and at the line at the end. Runners out
+ * of the frame wait at its edge, in their lane, with how far away they are. Each runner
+ * is her face in a stamina ring, with a pip for a skill waiting (✦) or spent (✓).
  */
 const RaceDrone = ({ field, distance, gatesShut, projection, grade, children }: RaceDroneProps) => {
   const player = field.find((runner) => runner.isPlayer);
-  const anchor = player?.position ?? 0;
-  const positions = field.map((runner) => Math.min(distance, runner.position));
-  const last = positions.length ? Math.min(...positions) : 0;
-  const first = positions.length ? Math.max(...positions) : 0;
-  const spread = Math.max(MIN_WINDOW, first - last);
-  const start = last - spread * PAD_BEHIND;
-  const view = spread * (1 + PAD_BEHIND + PAD_AHEAD);
+  const anchor = Math.min(distance, player?.position ?? 0);
+  const view = VIEW;
+  const start = Math.max(-20, Math.min(anchor - VIEW * PLAYER_AT, distance + 30 - VIEW));
   const toX = (metres: number) => ((metres - start) / view) * 100;
 
   // The ground scrolls with the camera, in metres: the turf stripes and the lane dashes
@@ -107,7 +102,8 @@ const RaceDrone = ({ field, distance, gatesShut, projection, grade, children }: 
   const placed = new Map(
     field.map((runner) => {
       const raw = toX(runner.position);
-      return [runner.id, { x: Math.min(97, Math.max(3, raw)), y: laneY(runner.lane), off: raw < 3 ? "behind" : raw > 97 ? "ahead" : null }];
+      const off = raw < 2 ? "behind" : raw > 98 ? "ahead" : null;
+      return [runner.id, { x: off === "behind" ? 0.8 : off === "ahead" ? 99.2 : raw, y: laneY(runner.lane), off }];
     })
   );
 
@@ -185,33 +181,39 @@ const RaceDrone = ({ field, distance, gatesShut, projection, grade, children }: 
               style={{ left: `${spot.x}%`, top: `${spot.y}%`, "--runner-color": runner.color, zIndex: runner.isPlayer ? 5 : firing ? 4 : 2 } as CSSProperties}
               title={`${runner.placement}º · ${runner.name} · fôlego ${Math.round(runner.stamina * 100)}%`}
             >
-              {firing && <SkillBurst />}
-              {!spot.off && runner.speed > 0 && (
-                <span className="RaceDrone__trail" style={{ width: `${Math.min(90, runner.speed * 3)}px` }} aria-hidden="true" />
-              )}
-              <RunnerAvatar
-                name={runner.name}
-                color={runner.color}
-                isPlayer={runner.isPlayer}
-                stamina={runner.stamina}
-                size={size}
-                className={firing ? "is-firing" : undefined}
-              />
-              {(waiting || spent) && (
-                <span className={`RaceDrone__pip${waiting ? " is-ready" : ""}`} aria-hidden="true">
-                  {waiting ? "✦" : "✓"}
-                </span>
-              )}
               {spot.off ? (
-                <span className="RaceDrone__offscreen">
-                  {spot.off === "behind" ? "◀" : ""} {Math.round(Math.abs(runner.position - anchor))} m {spot.off === "ahead" ? "▶" : ""}
+                // Out of the frame: a marker at its edge, in her lane, with the distance.
+                <span className="RaceDrone__edge">
+                  {spot.off === "behind" && "◀ "}
+                  <i aria-hidden="true" />
+                  {Math.round(Math.abs(runner.position - anchor))} m
+                  {spot.off === "ahead" && " ▶"}
                 </span>
               ) : (
-                tagged(runner) && (
-                  <span className="RaceDrone__tag">
-                    {runner.placement}º · {runner.isPlayer ? "VOCÊ" : runner.name}
-                  </span>
-                )
+                <>
+                  {firing && <SkillBurst />}
+                  {runner.speed > 0 && (
+                    <span className="RaceDrone__trail" style={{ width: `${Math.min(90, runner.speed * 0.6)}px` }} aria-hidden="true" />
+                  )}
+                  <RunnerAvatar
+                    name={runner.name}
+                    color={runner.color}
+                    isPlayer={runner.isPlayer}
+                    stamina={runner.stamina}
+                    size={size}
+                    className={firing ? "is-firing" : undefined}
+                  />
+                  {(waiting || spent) && (
+                    <span className={`RaceDrone__pip${waiting ? " is-ready" : ""}`} aria-hidden="true">
+                      {waiting ? "✦" : "✓"}
+                    </span>
+                  )}
+                  {tagged(runner) && (
+                    <span className="RaceDrone__tag">
+                      {runner.placement}º · {runner.isPlayer ? "VOCÊ" : runner.name}
+                    </span>
+                  )}
+                </>
               )}
               {projection?.target.id === runner.id && !spot.off && (
                 <span className="RaceDrone__callout" role="note">

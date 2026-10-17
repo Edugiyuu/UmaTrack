@@ -27,8 +27,9 @@ rivais, as recompensas e o fluxo (contagem, rivais, cutscene, resultado) não mu
 ## 3. Escopo
 
 ### Dentro do escopo
-- [x] **Pista vista de drone** (`RaceDrone`): uma raia por corredora (8–14), câmera que
-  enquadra o pelotão inteiro (o motor espalha o páreo por centenas de metros), portões na
+- [x] **Pista vista de drone** (`RaceDrone`): uma raia por corredora (8–14), câmera sempre
+  na égua dela com zoom fixo (160 m), o chão rolando em metros e placas a cada 50 m; quem
+  sai do quadro vira um marcador na borda, na raia dela, com a distância. Portões na
   largada, linha de chegada no fim, sinal de subida, rastro de velocidade.
 - [x] **Rosto no anel de fôlego** (`RunnerAvatar`): verde > 50%, amarelo, vermelho < 25%.
   A égua do jogador usa `Selection.png`; as rivais são geradas, então usam as iniciais
