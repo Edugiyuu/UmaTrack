@@ -6,6 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon  src/app.ts",
+    "build": "tsc",
+    "start": "node dist/app.js",
     "race:check": "ts-node --compilerOptions {\\\"module\\\":\\\"CommonJS\\\"} src/scripts/raceEngineCheck.ts",
     "training:check": "ts-node --compilerOptions {\\\"module\\\":\\\"CommonJS\\\"} src/scripts/trainingEngineCheck.ts",
     "career:check": "ts-node --compilerOptions {\\\"module\\\":\\\"CommonJS\\\"} src/scripts/careerCheck.ts",
