@@ -35,11 +35,10 @@ cada push na `main` publica a parte que mudou.
 - [x] `render.yaml` (Blueprint): build, start, health check em `/`, variáveis.
 - [x] Backend: `npm run build` (tsc) e `npm start`; CORS por `CORS_ORIGINS`; sai com
   erro se o banco não conecta.
-- [x] Guia de deploy em [`docs/deploy.md`](../deploy.md).
 
 ### Fora do escopo
 - Criar as contas, cadastrar segredos, ligar o Pages e fazer o primeiro deploy: o Eduardo
-  faz pelos painéis (passo a passo no guia).
+  faz pelos painéis.
 - Domínio próprio, banco separado para o beta, divisão do bundle (o JS tem ~700 kB).
 - Tirar o `package-lock.json` do `.gitignore` (o CI usa `npm install` por causa disso).
 
@@ -74,14 +73,13 @@ cada push na `main` publica a parte que mudou.
 | `backend/package.json` | editar | Scripts `build` e `start`. |
 | `backend/src/app.ts` | editar | `CORS_ORIGINS`; `process.exit(1)` sem banco. |
 | `backend/.env.example` | editar | `CORS_ORIGINS`. |
-| `docs/deploy.md` | criar | Guia de deploy. |
 
 ## 5. Plano de execução
 1. [x] Frontend: `base`, URL da API, caminhos de `public/`.
 2. [x] Workflow do Pages com `404.html`.
 3. [x] Backend: scripts, CORS, saída sem banco; `render.yaml`.
-4. [x] Guia de deploy e registro da task.
-5. [ ] Eduardo: Atlas, Render e GitHub (seção "Passo a passo" do guia).
+4. [x] Registro da task.
+5. [ ] Eduardo: Atlas (liberar `0.0.0.0/0`), Web Service no Render, Pages e `VITE_API_URL` no GitHub.
 6. [ ] Primeiro deploy e jogar uma carreira inteira no site publicado.
 
 ## 6. Critérios de aceite
@@ -104,11 +102,10 @@ cada push na `main` publica a parte que mudou.
 - Depois do deploy: abrir o site, criar conta, treinar e correr.
 
 ## 8. Impacto em documentação
-- [x] `docs/deploy.md` (novo)
 - [x] `docs/tasks/README.md` (linha da tabela)
-- [x] `docs/guia-do-jogador.md` (onde jogar, espera do primeiro acesso, link do guia de deploy)
+- [x] `docs/guia-do-jogador.md` (onde jogar, espera do primeiro acesso)
 - [x] `backend/.env.example` (`CORS_ORIGINS`)
-- N/A — `README.md`: é UTF-16; o guia de deploy fica em `docs/`.
+- N/A — `README.md`: nada de regra ou rota mudou.
 
 ## 9. Riscos e questões em aberto
 | Risco / dúvida | Impacto | Mitigação / quem decide |
@@ -132,4 +129,4 @@ cada push na `main` publica a parte que mudou.
 ## Registro de execução
 | Data | Nota |
 |---|---|
-| 2026-10-16 | Configuração de deploy, workflow, `render.yaml` e guia na branch `feat/open-beta-deploy`. Falta o Eduardo configurar os painéis. |
+| 2026-10-16 | Configuração de deploy, workflow e `render.yaml` na branch `feat/open-beta-deploy`. Falta o Eduardo configurar os painéis. |

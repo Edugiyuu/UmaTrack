@@ -1,4 +1,4 @@
-# Builds the frontend and publishes it on GitHub Pages (docs/deploy.md).
+# Builds the frontend and publishes it on GitHub Pages.
 name: Deploy frontend (GitHub Pages)
 
 on:
@@ -40,7 +40,7 @@ jobs:
       - name: Check VITE_API_URL
         run: |
           if [ -z "$VITE_API_URL" ]; then
-            echo "::error::Set the VITE_API_URL repository variable to the Render URL (see docs/deploy.md)."
+            echo "::error::Set the VITE_API_URL repository variable to the Render URL."
             exit 1
           fi
 

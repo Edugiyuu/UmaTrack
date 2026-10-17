@@ -1,4 +1,4 @@
-# Render Blueprint for the UmaSprint API (docs/deploy.md).
+# Render Blueprint for the UmaSprint API.
 # Render → New → Blueprint → this repository. Secrets marked `sync: false` are asked for
 # in the dashboard when the Blueprint is created; they never live in the repository.
 services:

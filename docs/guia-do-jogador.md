@@ -563,6 +563,3 @@ O design técnico por trás dessas regras está em
 
 As rotas da API, com corpo, respostas e exemplos, estão no Swagger: com o backend rodando,
 abra `http://localhost:3000/docs`.
-
-Como o site e a API são publicados (GitHub Pages e Render) está em
-[`deploy.md`](./deploy.md).
