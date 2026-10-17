@@ -22,7 +22,7 @@ import { horseAnimation, horseAsset } from "../../utils/horseImage";
 import speedIcon from "../../assets/gameIcons/speedIcon.png";
 import staminaIcon from "../../assets/gameIcons/staminaIcon.png";
 import powerIcon from "../../assets/gameIcons/powerIcon.png";
-import witIcon from "../../assets/gameIcons/WitIcon.png";
+import witIcon from "../../assets/gameIcons/witIcon.png";
 
 type Filter = "all" | "owned" | "forSale";
 

@@ -29,7 +29,7 @@ import { horseAsset, horseFolder, withImageFallback } from '../../utils/horseIma
 import speedIcon from '../../assets/gameIcons/speedIcon.png';
 import staminaIcon from '../../assets/gameIcons/staminaIcon.png';
 import powerIcon from '../../assets/gameIcons/powerIcon.png';
-import witIcon from '../../assets/gameIcons/WitIcon.png';
+import witIcon from '../../assets/gameIcons/witIcon.png';
 
 /** Mirrors TRAINING_ENERGY_COST and RACE_ENERGY_COST on the server. */
 const TRAINING_ENERGY_COST = 20;
